@@ -3,737 +3,757 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>프레젠테이션 도구</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Presentation AI Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Malgun Gothic', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* PowerPoint-like Ribbon Menu */
-        .ribbon {
-            background-color: #2b579a;
-            color: white;
-            padding: 4px 10px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .ribbon-title {
-            font-size: 18px;
-            margin-right: 20px;
-        }
-        
-        .ribbon-tabs {
-            display: flex;
-            background-color: #f3f3f3;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .ribbon-tab {
-            padding: 8px 15px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .ribbon-tab.active {
-            background-color: #fff;
-            border-bottom: 3px solid #2b579a;
-        }
-        
-        .ribbon-tab:hover {
-            background-color: #e6e6e6;
-        }
-        
-        .ribbon-content {
-            background-color: #fff;
-            padding: 8px 15px;
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            flex-wrap: wrap;
-        }
-        
-        .ribbon-group {
-            margin-right: 20px;
-            padding-right: 20px;
-            border-right: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .ribbon-group:last-child {
-            border-right: none;
-        }
-        
-        .ribbon-group-title {
-            font-size: 11px;
-            text-align: center;
-            margin-top: 4px;
-            color: #666;
-        }
-        
-        .ribbon-btn {
-            background: none;
-            border: 1px solid transparent;
-            border-radius: 3px;
-            padding: 6px 8px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .ribbon-btn:hover {
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-        }
-        
-        .ribbon-btn i {
-            font-size: 18px;
-            margin-bottom: 4px;
-            color: #2b579a;
-        }
-        
-        .ribbon-btn-label {
-            font-size: 11px;
-        }
-        
-        /* PowerPoint-like Main Area */
-        .main-area {
-            display: flex;
-            height: calc(100vh - 110px);
-        }
-        
-        .slides-pane {
-            width: 200px;
-            background-color: #f9f9f9;
-            border-right: 1px solid #ddd;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        
-        .slide-item {
-            background: white;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            cursor: pointer;
-            position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-            padding: 5px;
-        }
-        
-        .slide-item.active {
-            border: 2px solid #2b579a;
-        }
-        
-        .slide-item:hover {
-            border-color: #aaa;
-        }
-        
-        .slide-number {
-            position: absolute;
-            left: 5px;
-            top: 5px;
-            background: #2b579a;
-            color: white;
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-        
-        .slide-thumbnail {
-            width: 100%;
-            height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            font-size: 11px;
-            color: #666;
-            text-align: center;
-            overflow: hidden;
-        }
-        
-        /* PowerPoint-like Editor */
-        .editor-pane {
-            flex: 1;
-            background-color: #8c8c8c;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            overflow: auto;
-        }
-        
-        .slide-canvas {
-            background: white;
-            width: 960px;
-            height: 540px;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        /* PowerPoint-like Format Panel */
-        .format-panel {
-            width: 250px;
-            background-color: #f9f9f9;
-            border-left: 1px solid #ddd;
-            padding: 15px;
-            overflow-y: auto;
-        }
-        
-        .panel-section {
-            margin-bottom: 20px;
-        }
-        
-        .panel-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2b579a;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .panel-row {
-            display: flex;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        
-        .panel-label {
-            width: 80px;
-            font-size: 12px;
-        }
-        
-        .panel-control {
-            flex: 1;
-        }
-        
-        /* Status bar */
-        .status-bar {
-            background-color: #f3f3f3;
-            border-top: 1px solid #ddd;
-            padding: 5px 15px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        /* Element styles - from your existing code */
-        .slide-element {
-            position: absolute;
-            border: 1px solid transparent;
-            box-sizing: border-box;
-        }
-        
-        .slide-element:hover {
-            outline: 1px dashed #3498db;
-        }
-        
-        .slide-element.selected {
-            outline: 2px solid #3498db;
-        }
-        
-        .slide-element.text {
-            min-width: 50px;
-            min-height: 20px;
-            background-color: transparent;
-            overflow-wrap: break-word;
-        }
-        
-        /* Hide initial setup once we get to the main UI */
-        .hero, .initial-setup, .workspace-tools {
-            display: none;
-        }
-        
-        /* Element Selection Handles */
-        .selection-handle {
-            position: absolute;
-            width: 7px;
-            height: 7px;
-            background-color: white;
-            border: 1px solid #3498db;
-        }
-        
-        .handle-nw { top: -4px; left: -4px; cursor: nw-resize; }
-        .handle-n { top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-        .handle-ne { top: -4px; right: -4px; cursor: ne-resize; }
-        .handle-w { top: 50%; left: -4px; transform: translateY(-50%); cursor: w-resize; }
-        .handle-e { top: 50%; right: -4px; transform: translateY(-50%); cursor: e-resize; }
-        .handle-sw { bottom: -4px; left: -4px; cursor: sw-resize; }
-        .handle-s { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-        .handle-se { bottom: -4px; right: -4px; cursor: se-resize; }
-        .handle-rotate { top: -20px; left: 50%; transform: translateX(-50%); cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'><path d='M12 5v8.25L16.5 9l2.25 2.25L12 18l-6.75-6.75L7.5 9l4.5 4.25V5h-3V2h6v3h-3z' fill='black'/></svg>") 8 8, auto; }
-        
-        /* Color picker and theme section */
-        .color-palette {
-            display: flex;
-            flex-wrap: wrap;
-            margin-top: 5px;
-        }
-        
-        .color-swatch {
-            width: 20px;
-            height: 20px;
-            margin: 2px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-        }
-        
-        .color-swatch:hover {
-            transform: scale(1.1);
-            border-color: #2b579a;
-        }
-        
-        .theme-swatch {
-            height: 40px;
-            margin-bottom: 5px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            display: flex;
-        }
-        
-        .theme-swatch:hover {
-            border-color: #2b579a;
-        }
-        
-        .theme-color {
-            flex: 1;
-            height: 100%;
-        }
-        
-        /* Media queries for responsive design */
-        @media (max-width: 1200px) {
-            .format-panel {
-                width: 200px;
-            }
-        }
-        
-        @media (max-width: 992px) {
-            .slides-pane {
-                width: 150px;
-            }
-        }
-        
-        /* Retain some essential styles from your original code */
-        /* ... existing code ... */
-    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Initial view (welcome screen) -->
-        <div class="hero" style="display: block;">
-            <div class="hero-text">
-                <h1>프레젠테이션 도구</h1>
-                <p>인공지능을 활용한 프레젠테이션 자동 생성 도구</p>
-                <button id="startBtn" class="btn-primary">시작하기</button>
+    <div class="app-container">
+        <!-- 좌측 사이드바 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Presentation AI</h1>
+            </div>
+            <div class="sidebar-content">
+                <div class="slide-list" id="slideList">
+                    <!-- 슬라이드 썸네일이 여기에 표시됩니다 -->
+                </div>
+                <button id="addSlideBtn" class="action-btn">
+                    <i class="fas fa-plus"></i> 새 슬라이드
+                </button>
             </div>
         </div>
-        
-        <div class="workspace" id="workspace">
-            <!-- Initial setup form -->
-            <div class="initial-setup" id="initialSetup" style="display: block;">
-                <h2>프레젠테이션 설정</h2>
-                <div class="form-group">
-                    <label for="topicInput">주제</label>
-                    <input type="text" id="topicInput" placeholder="프레젠테이션 주제를 입력하세요" required>
+
+        <!-- 메인 편집 영역 -->
+        <div class="main-content">
+            <!-- 상단 도구 모음 -->
+            <div class="toolbar">
+                <div class="tool-group">
+                    <button id="newSlideBtn" class="tool-btn" title="새 슬라이드">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button id="deleteSlideBtn" class="tool-btn" title="슬라이드 삭제">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button id="duplicateSlideBtn" class="tool-btn" title="슬라이드 복제">
+                        <i class="fas fa-copy"></i>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="slideCountInput">슬라이드 개수</label>
-                    <input type="number" id="slideCountInput" min="1" max="20" value="5" required>
+                <div class="tool-group">
+                    <button id="addTextBtn" class="tool-btn" title="텍스트 추가">
+                        <i class="fas fa-font"></i>
+                    </button>
+                    <button id="addShapeBtn" class="tool-btn" title="도형 추가">
+                        <i class="fas fa-shapes"></i>
+                    </button>
+                    <button id="addImageBtn" class="tool-btn" title="이미지 추가">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button id="addChartBtn" class="tool-btn" title="차트 추가">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
                 </div>
-                <div style="text-align: center;">
-                    <button id="createPresentationBtn" class="btn-primary">프레젠테이션 생성</button>
+                <div class="tool-group">
+                    <button id="undoBtn" class="tool-btn" title="실행 취소">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button id="redoBtn" class="tool-btn" title="다시 실행">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                <div class="tool-group">
+                    <button id="toggleAIBtn" class="tool-btn" title="AI 도구">
+                        <i class="fas fa-robot"></i>
+                    </button>
+                    <button id="exportBtn" class="tool-btn" title="내보내기">
+                        <i class="fas fa-file-export"></i>
+                    </button>
                 </div>
             </div>
-            
-            <!-- PowerPoint-like UI -->
-            <div id="powerpoint-ui" style="display: none;">
-                <!-- Ribbon menu -->
-                <div class="ribbon">
-                    <div class="ribbon-title">프레젠테이션</div>
-                </div>
-                
-                <div class="ribbon-tabs">
-                    <div class="ribbon-tab active">홈</div>
-                    <div class="ribbon-tab">삽입</div>
-                    <div class="ribbon-tab">디자인</div>
-                    <div class="ribbon-tab">전환</div>
-                    <div class="ribbon-tab">애니메이션</div>
-                    <div class="ribbon-tab">보기</div>
-                </div>
-                
-                <div class="ribbon-content">
-                    <!-- Clipboard Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="newSlideBtn">
-                            <i class="fas fa-plus-square"></i>
-                            <span class="ribbon-btn-label">새 슬라이드</span>
-                        </div>
-                        <div class="ribbon-group-title">슬라이드</div>
-                    </div>
-                    
-                    <!-- Font Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="addTextBoxBtn">
-                            <i class="fas fa-font"></i>
-                            <span class="ribbon-btn-label">텍스트 상자</span>
-                        </div>
-                        <div class="ribbon-group-title">텍스트</div>
-                    </div>
-                    
-                    <!-- Drawing Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="addShapeBtn">
-                            <i class="fas fa-shapes"></i>
-                            <span class="ribbon-btn-label">도형</span>
-                        </div>
-                        <div class="ribbon-btn" id="addImageBtn">
-                            <i class="fas fa-image"></i>
-                            <span class="ribbon-btn-label">이미지</span>
-                        </div>
-                        <div class="ribbon-group-title">그리기</div>
-                    </div>
-                    
-                    <!-- Edit Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="deleteBtn">
-                            <i class="fas fa-trash-alt"></i>
-                            <span class="ribbon-btn-label">삭제</span>
-                        </div>
-                        <div class="ribbon-btn" id="duplicateBtn">
-                            <i class="fas fa-copy"></i>
-                            <span class="ribbon-btn-label">복제</span>
-                        </div>
-                        <div class="ribbon-group-title">편집</div>
-                    </div>
-                    
-                    <!-- Arrange Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="bringForwardBtn">
-                            <i class="fas fa-level-up-alt"></i>
-                            <span class="ribbon-btn-label">앞으로</span>
-                        </div>
-                        <div class="ribbon-btn" id="sendBackwardBtn">
-                            <i class="fas fa-level-down-alt"></i>
-                            <span class="ribbon-btn-label">뒤로</span>
-                        </div>
-                        <div class="ribbon-group-title">정렬</div>
-                    </div>
-                    
-                    <!-- AI Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="aiEditBtn">
-                            <i class="fas fa-magic"></i>
-                            <span class="ribbon-btn-label">AI 도움</span>
-                        </div>
-                        <div class="ribbon-group-title">AI 도구</div>
-                    </div>
-                    
-                    <!-- Presentation Group -->
-                    <div class="ribbon-group">
-                        <div class="ribbon-btn" id="previewBtn">
-                            <i class="fas fa-play"></i>
-                            <span class="ribbon-btn-label">미리보기</span>
-                        </div>
-                        <div class="ribbon-btn" id="downloadBtn">
-                            <i class="fas fa-download"></i>
-                            <span class="ribbon-btn-label">다운로드</span>
-                        </div>
-                        <div class="ribbon-group-title">발표</div>
+
+            <!-- 편집 영역 -->
+            <div class="editor-container">
+                <div class="slide-preview">
+                    <div id="currentSlide" class="slide-canvas">
+                        <!-- 현재 슬라이드 내용이 여기에 표시됩니다 -->
                     </div>
                 </div>
-                
-                <!-- Main Workspace -->
-                <div class="main-area">
-                    <!-- Slides Pane -->
-                    <div class="slides-pane" id="slides-pane">
-                        <!-- Slide thumbnails will be inserted here -->
-                    </div>
-                    
-                    <!-- Editor Pane -->
-                    <div class="editor-pane">
-                        <div class="slide-canvas" id="slide-canvas">
-                            <!-- Slide elements will appear here -->
+            </div>
+        </div>
+
+        <!-- 우측 속성 패널 -->
+        <div class="properties-panel">
+            <div class="panel-tabs">
+                <button class="tab-btn active" data-tab="style">스타일</button>
+                <button class="tab-btn" data-tab="position">위치/크기</button>
+                <button class="tab-btn" data-tab="format">서식</button>
+                <button class="tab-btn" data-tab="animation">애니메이션</button>
+                <button class="tab-btn" data-tab="transition">전환</button>
+            </div>
+            <div class="panel-content">
+                <!-- 스타일 탭 -->
+                <div class="tab-content active" id="styleTab">
+                    <!-- 슬라이드 배경 -->
+                    <div class="style-group">
+                        <h4>슬라이드 배경</h4>
+                        <div class="color-controls">
+                            <label>색상</label>
+                            <input type="color" id="backgroundColorPicker">
+                            <div class="preset-colors">
+                                <div class="color-preset" style="background-color: #ffffff"></div>
+                                <div class="color-preset" style="background-color: #f0f0f0"></div>
+                                <div class="color-preset" style="background-color: #000000"></div>
+                                <div class="color-preset" style="background-color: #3498db"></div>
+                                <div class="color-preset" style="background-color: #e74c3c"></div>
+                                <div class="color-preset" style="background-color: #2ecc71"></div>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label>불투명도</label>
+                            <input type="range" id="backgroundOpacitySlider" min="0" max="100" value="100">
+                            <span id="backgroundOpacityValue">100%</span>
                         </div>
                     </div>
-                    
-                    <!-- Format Panel -->
-                    <div class="format-panel">
-                        <div class="panel-section">
-                            <div class="panel-title">형식</div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">채우기</div>
-                                <div class="panel-control">
-                                    <input type="color" id="fillColor" value="#ffffff">
-                                    <div class="color-palette">
-                                        <div class="color-swatch" style="background-color: #ffffff;"></div>
-                                        <div class="color-swatch" style="background-color: #000000;"></div>
-                                        <div class="color-swatch" style="background-color: #e74c3c;"></div>
-                                        <div class="color-swatch" style="background-color: #3498db;"></div>
-                                        <div class="color-swatch" style="background-color: #2ecc71;"></div>
-                                        <div class="color-swatch" style="background-color: #f1c40f;"></div>
-                                        <div class="color-swatch" style="background-color: #9b59b6;"></div>
-                                        <div class="color-swatch" style="background-color: #e67e22;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">투명도</div>
-                                <div class="panel-control">
-                                    <input type="range" id="fillOpacity" min="0" max="100" value="100">
-                                    <span id="fillOpacityValue">100%</span>
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">테두리</div>
-                                <div class="panel-control">
-                                    <input type="color" id="borderColor" value="#000000">
-                                    <select id="borderStyle">
-                                        <option value="solid">실선</option>
-                                        <option value="dashed">점선</option>
-                                        <option value="dotted">점선 2</option>
-                                        <option value="none">없음</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">두께</div>
-                                <div class="panel-control">
-                                    <input type="range" id="borderWidth" min="0" max="10" value="1">
-                                    <span id="borderWidthValue">1px</span>
-                                </div>
-                            </div>
+
+                    <!-- 테마 선택 -->
+                    <div class="style-group">
+                        <h4>테마</h4>
+                        <select id="themeSelect">
+                            <option value="modern">모던</option>
+                            <option value="classic">클래식</option>
+                            <option value="minimal">미니멀</option>
+                            <option value="corporate">기업형</option>
+                            <option value="creative">창의적</option>
+                        </select>
+                    </div>
+
+                    <!-- 색상 팔레트 -->
+                    <div class="style-group">
+                        <h4>색상 팔레트</h4>
+                        <select id="colorPaletteSelect">
+                            <option value="blue">파란색</option>
+                            <option value="green">초록색</option>
+                            <option value="purple">보라색</option>
+                            <option value="orange">주황색</option>
+                            <option value="monochrome">흑백</option>
+                            <option value="custom">사용자 정의</option>
+                        </select>
+                    </div>
+
+                    <!-- 글꼴 -->
+                    <div class="style-group">
+                        <h4>글꼴</h4>
+                        <select id="fontSelect">
+                            <option value="Pretendard">Pretendard</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Roboto">Roboto</option>
+                            <option value="Open Sans">Open Sans</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 위치/크기 탭 -->
+                <div class="tab-content" id="positionTab">
+                    <div class="style-group">
+                        <h4>위치</h4>
+                        <div class="input-row">
+                            <label>X</label>
+                            <input type="number" id="positionX" min="0" step="1">
+                            <span>px</span>
                         </div>
-                        
-                        <div class="panel-section">
-                            <div class="panel-title">텍스트</div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">글꼴 색상</div>
-                                <div class="panel-control">
-                                    <input type="color" id="textColor" value="#000000">
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">크기</div>
-                                <div class="panel-control">
-                                    <select id="fontSize">
-                                        <option value="12px">12px</option>
-                                        <option value="14px">14px</option>
-                                        <option value="16px" selected>16px</option>
-                                        <option value="18px">18px</option>
-                                        <option value="20px">20px</option>
-                                        <option value="24px">24px</option>
-                                        <option value="28px">28px</option>
-                                        <option value="32px">32px</option>
-                                        <option value="36px">36px</option>
-                                        <option value="48px">48px</option>
-                                        <option value="64px">64px</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">정렬</div>
-                                <div class="panel-control text-align-options">
-                                    <button id="alignLeft" class="align-btn"><i class="fas fa-align-left"></i></button>
-                                    <button id="alignCenter" class="align-btn active"><i class="fas fa-align-center"></i></button>
-                                    <button id="alignRight" class="align-btn"><i class="fas fa-align-right"></i></button>
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row" id="textInputContainer">
-                                <div class="panel-label">내용</div>
-                                <div class="panel-control">
-                                    <textarea id="elementText" rows="3"></textarea>
-                                </div>
-                            </div>
+                        <div class="input-row">
+                            <label>Y</label>
+                            <input type="number" id="positionY" min="0" step="1">
+                            <span>px</span>
                         </div>
-                        
-                        <div class="panel-section">
-                            <div class="panel-title">효과</div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">회전</div>
-                                <div class="panel-control">
-                                    <input type="range" id="elementRotation" min="0" max="360" value="0">
-                                    <span id="elementRotationValue">0°</span>
-                                </div>
-                            </div>
-                            
-                            <div class="panel-row">
-                                <div class="panel-label">투명도</div>
-                                <div class="panel-control">
-                                    <input type="range" id="elementOpacity" min="0" max="100" value="100">
-                                    <span id="elementOpacityValue">100%</span>
-                                </div>
-                            </div>
+                    </div>
+
+                    <div class="style-group">
+                        <h4>크기</h4>
+                        <div class="input-row">
+                            <label>너비</label>
+                            <input type="number" id="elementWidth" min="1" step="1">
+                            <span>px</span>
                         </div>
-                        
-                        <div class="panel-section">
-                            <div class="panel-title">테마</div>
-                            <div class="theme-swatches">
-                                <div class="theme-swatch" data-theme="default">
-                                    <div class="theme-color" style="background-color: #ffffff;"></div>
-                                    <div class="theme-color" style="background-color: #3498db;"></div>
-                                    <div class="theme-color" style="background-color: #2c3e50;"></div>
-                                </div>
-                                <div class="theme-swatch" data-theme="modern">
-                                    <div class="theme-color" style="background-color: #ecf0f1;"></div>
-                                    <div class="theme-color" style="background-color: #e74c3c;"></div>
-                                    <div class="theme-color" style="background-color: #34495e;"></div>
-                                </div>
-                                <div class="theme-swatch" data-theme="business">
-                                    <div class="theme-color" style="background-color: #f9f9f9;"></div>
-                                    <div class="theme-color" style="background-color: #2980b9;"></div>
-                                    <div class="theme-color" style="background-color: #2c3e50;"></div>
-                                </div>
-                                <div class="theme-swatch" data-theme="creative">
-                                    <div class="theme-color" style="background-color: #ffffff;"></div>
-                                    <div class="theme-color" style="background-color: #9b59b6;"></div>
-                                    <div class="theme-color" style="background-color: #8e44ad;"></div>
-                                </div>
-                            </div>
+                        <div class="input-row">
+                            <label>높이</label>
+                            <input type="number" id="elementHeight" min="1" step="1">
+                            <span>px</span>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="lockAspectRatio">
+                            <label for="lockAspectRatio">가로 세로 비율 유지</label>
+                        </div>
+                    </div>
+
+                    <div class="style-group">
+                        <h4>회전</h4>
+                        <div class="input-row">
+                            <label>각도</label>
+                            <input type="number" id="rotationAngle" min="0" max="360" step="1" value="0">
+                            <span>°</span>
+                        </div>
+                        <input type="range" id="rotationSlider" min="0" max="360" value="0">
+                    </div>
+
+                    <div class="style-group">
+                        <h4>정렬</h4>
+                        <div class="align-buttons">
+                            <button id="alignLeft" title="왼쪽 정렬"><i class="fas fa-align-left"></i></button>
+                            <button id="alignCenter" title="가운데 정렬"><i class="fas fa-align-center"></i></button>
+                            <button id="alignRight" title="오른쪽 정렬"><i class="fas fa-align-right"></i></button>
+                            <button id="alignTop" title="위쪽 정렬"><i class="fas fa-align-left fa-rotate-90"></i></button>
+                            <button id="alignMiddle" title="중앙 정렬"><i class="fas fa-align-center fa-rotate-90"></i></button>
+                            <button id="alignBottom" title="아래쪽 정렬"><i class="fas fa-align-right fa-rotate-90"></i></button>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Status Bar -->
-                <div class="status-bar">
-                    <div class="status-slide-info">슬라이드 <span id="current-slide-number">1</span> / <span id="total-slides">5</span></div>
-                    <div class="status-zoom">
-                        <span>확대/축소: </span>
-                        <select id="zoom-level">
-                            <option value="0.5">50%</option>
-                            <option value="0.75">75%</option>
-                            <option value="1" selected>100%</option>
-                            <option value="1.25">125%</option>
-                            <option value="1.5">150%</option>
+
+                <!-- 서식 탭 -->
+                <div class="tab-content" id="formatTab">
+                    <!-- 도형 서식 (도형 선택 시) -->
+                    <div class="element-specific-controls" id="shapeFormatControls">
+                        <div class="style-group">
+                            <h4>채우기</h4>
+                            <div class="input-row">
+                                <label>색상</label>
+                                <input type="color" id="shapeFillColor">
+                            </div>
+                            <div class="input-row">
+                                <label>불투명도</label>
+                                <input type="range" id="shapeFillOpacity" min="0" max="100" value="100">
+                                <span id="shapeFillOpacityValue">100%</span>
+                            </div>
+                        </div>
+
+                        <div class="style-group">
+                            <h4>테두리</h4>
+                            <div class="input-row">
+                                <label>색상</label>
+                                <input type="color" id="shapeStrokeColor">
+                            </div>
+                            <div class="input-row">
+                                <label>두께</label>
+                                <input type="range" id="shapeStrokeWidth" min="0" max="20" value="1">
+                                <span id="shapeStrokeWidthValue">1px</span>
+                            </div>
+                            <div class="input-row">
+                                <label>스타일</label>
+                                <select id="shapeStrokeStyle">
+                                    <option value="solid">실선</option>
+                                    <option value="dashed">파선</option>
+                                    <option value="dotted">점선</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="style-group">
+                            <h4>효과</h4>
+                            <div class="input-row">
+                                <label>그림자</label>
+                                <input type="checkbox" id="shapeShadow">
+                            </div>
+                            <div class="input-row shadow-controls">
+                                <label>크기</label>
+                                <input type="range" id="shapeShadowSize" min="0" max="20" value="5">
+                            </div>
+                            <div class="input-row shadow-controls">
+                                <label>색상</label>
+                                <input type="color" id="shapeShadowColor" value="#000000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 텍스트 서식 (텍스트 선택 시) -->
+                    <div class="element-specific-controls" id="textFormatControls">
+                        <div class="style-group">
+                            <h4>텍스트</h4>
+                            <div class="text-format-buttons">
+                                <button id="textBold" title="굵게"><i class="fas fa-bold"></i></button>
+                                <button id="textItalic" title="기울임"><i class="fas fa-italic"></i></button>
+                                <button id="textUnderline" title="밑줄"><i class="fas fa-underline"></i></button>
+                                <button id="textStrike" title="취소선"><i class="fas fa-strikethrough"></i></button>
+                            </div>
+                            <div class="input-row">
+                                <label>색상</label>
+                                <input type="color" id="textColor">
+                            </div>
+                            <div class="input-row">
+                                <label>크기</label>
+                                <input type="number" id="fontSize" min="8" max="96" step="1" value="16">
+                                <span>pt</span>
+                            </div>
+                            <div class="input-row">
+                                <label>줄 간격</label>
+                                <input type="number" id="lineHeight" min="0.5" max="3" step="0.1" value="1.2">
+                            </div>
+                            <div class="text-align-buttons">
+                                <button id="textAlignLeft" title="왼쪽 정렬"><i class="fas fa-align-left"></i></button>
+                                <button id="textAlignCenter" title="가운데 정렬"><i class="fas fa-align-center"></i></button>
+                                <button id="textAlignRight" title="오른쪽 정렬"><i class="fas fa-align-right"></i></button>
+                                <button id="textAlignJustify" title="양쪽 정렬"><i class="fas fa-align-justify"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 이미지 서식 (이미지 선택 시) -->
+                    <div class="element-specific-controls" id="imageFormatControls">
+                        <div class="style-group">
+                            <h4>이미지</h4>
+                            <div class="input-row">
+                                <label>불투명도</label>
+                                <input type="range" id="imageOpacity" min="0" max="100" value="100">
+                                <span id="imageOpacityValue">100%</span>
+                            </div>
+                            <div class="input-row">
+                                <label>테두리</label>
+                                <input type="checkbox" id="imageBorder">
+                            </div>
+                            <div class="input-row border-controls">
+                                <label>색상</label>
+                                <input type="color" id="imageBorderColor">
+                            </div>
+                            <div class="input-row border-controls">
+                                <label>두께</label>
+                                <input type="range" id="imageBorderWidth" min="1" max="10" value="1">
+                                <span id="imageBorderWidthValue">1px</span>
+                            </div>
+                        </div>
+
+                        <div class="style-group">
+                            <h4>효과</h4>
+                            <div class="input-row">
+                                <label>필터</label>
+                                <select id="imageFilter">
+                                    <option value="none">없음</option>
+                                    <option value="grayscale">흑백</option>
+                                    <option value="sepia">세피아</option>
+                                    <option value="blur">흐림</option>
+                                    <option value="brightness">밝게</option>
+                                    <option value="contrast">대비</option>
+                                </select>
+                            </div>
+                            <div class="input-row filter-intensity">
+                                <label>강도</label>
+                                <input type="range" id="imageFilterIntensity" min="0" max="100" value="50">
+                                <span id="imageFilterIntensityValue">50%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 차트 서식 (차트 선택 시) -->
+                    <div class="element-specific-controls" id="chartFormatControls">
+                        <div class="style-group">
+                            <h4>차트 유형</h4>
+                            <div class="chart-type-buttons">
+                                <button class="chart-type-btn" data-chart-type="bar" title="막대 차트"><i class="fas fa-chart-bar"></i></button>
+                                <button class="chart-type-btn" data-chart-type="line" title="선 차트"><i class="fas fa-chart-line"></i></button>
+                                <button class="chart-type-btn" data-chart-type="pie" title="원형 차트"><i class="fas fa-chart-pie"></i></button>
+                                <button class="chart-type-btn" data-chart-type="area" title="영역 차트"><i class="fas fa-chart-area"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="style-group">
+                            <h4>데이터</h4>
+                            <button id="editChartDataBtn" class="edit-btn">차트 데이터 편집</button>
+                        </div>
+
+                        <div class="style-group">
+                            <h4>스타일</h4>
+                            <div class="input-row">
+                                <label>색상 팔레트</label>
+                                <select id="chartColorPalette">
+                                    <option value="default">기본</option>
+                                    <option value="pastel">파스텔</option>
+                                    <option value="monochrome">단색</option>
+                                    <option value="vivid">선명한</option>
+                                </select>
+                            </div>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="chartShowLegend" checked>
+                                <label for="chartShowLegend">범례 표시</label>
+                            </div>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="chartShowLabels" checked>
+                                <label for="chartShowLabels">레이블 표시</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 애니메이션 탭 -->
+                <div class="tab-content" id="animationTab">
+                    <div class="style-group">
+                        <h4>애니메이션</h4>
+                        <select id="animationSelect">
+                            <option value="none">없음</option>
+                            <option value="fade">페이드</option>
+                            <option value="slide">슬라이드</option>
+                            <option value="bounce">바운스</option>
+                            <option value="zoom">확대/축소</option>
+                            <option value="flip">뒤집기</option>
+                            <option value="rotate">회전</option>
+                        </select>
+                    </div>
+
+                    <div class="style-group animation-controls">
+                        <h4>설정</h4>
+                        <div class="input-row">
+                            <label>지속 시간</label>
+                            <input type="range" id="animationDuration" min="0.1" max="5" step="0.1" value="1">
+                            <span id="animationDurationValue">1s</span>
+                        </div>
+                        <div class="input-row">
+                            <label>지연 시간</label>
+                            <input type="range" id="animationDelay" min="0" max="5" step="0.1" value="0">
+                            <span id="animationDelayValue">0s</span>
+                        </div>
+                        <div class="input-row">
+                            <label>시작 방법</label>
+                            <select id="animationTrigger">
+                                <option value="withPrevious">이전 요소와 함께</option>
+                                <option value="afterPrevious">이전 요소 이후</option>
+                                <option value="onClick">클릭 시</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 전환 탭 -->
+                <div class="tab-content" id="transitionTab">
+                    <div class="style-group">
+                        <h4>전환 효과</h4>
+                        <select id="transitionSelect">
+                            <option value="none">없음</option>
+                            <option value="fade">페이드</option>
+                            <option value="slide">슬라이드</option>
+                            <option value="zoom">확대/축소</option>
+                            <option value="flip">뒤집기</option>
+                            <option value="rotate">회전</option>
+                            <option value="push">밀어내기</option>
+                            <option value="reveal">드러내기</option>
+                        </select>
+                    </div>
+
+                    <div class="style-group transition-controls">
+                        <h4>설정</h4>
+                        <div class="input-row">
+                            <label>지속 시간</label>
+                            <input type="range" id="transitionDuration" min="0.1" max="5" step="0.1" value="1">
+                            <span id="transitionDurationValue">1s</span>
+                        </div>
+                        <div class="input-row">
+                            <label>방향</label>
+                            <select id="transitionDirection">
+                                <option value="left">왼쪽에서</option>
+                                <option value="right">오른쪽에서</option>
+                                <option value="top">위에서</option>
+                                <option value="bottom">아래에서</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 생성 모달 -->
+    <div id="aiModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>AI 프레젠테이션 생성</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <textarea id="aiPrompt" placeholder="프레젠테이션의 주제와 원하는 내용을 자세히 설명해주세요..."></textarea>
+                <div class="ai-options">
+                    <div class="option-group">
+                        <label>슬라이드 수</label>
+                        <input type="number" id="slideCount" min="1" max="20" value="5">
+                    </div>
+                    <div class="option-group">
+                        <label>스타일</label>
+                        <select id="presentationStyle">
+                            <option value="professional">전문적</option>
+                            <option value="creative">창의적</option>
+                            <option value="minimal">미니멀</option>
                         </select>
                     </div>
                 </div>
             </div>
-            
-            <!-- Original workspace tools for backward compatibility -->
-            <div class="workspace-tools">
-                <div class="slide-controls">
-                    <button id="addSlideBtn" class="control-btn">+ 슬라이드 추가</button>
-                    <button id="analyzeBtn" class="control-btn analyze-btn">슬라이드 분석</button>
-                    <button id="previewBtn" class="control-btn">미리보기</button>
-                    <button id="downloadBtn" class="control-btn">다운로드</button>
-                </div>
+            <div class="modal-footer">
+                <button id="generateBtn" class="btn-primary">생성하기</button>
             </div>
         </div>
     </div>
 
-    <!-- Shape dropdown menu for selecting shapes -->
-    <div class="dropdown-content" id="shape-dropdown">
-        <!-- 기본 도형 -->
-        <div class="shape-category">기본 도형</div>
-        <div data-shape="rectangle">사각형</div>
-        <div data-shape="square">정사각형</div>
-        <div data-shape="circle">원</div>
-        <div data-shape="oval">타원</div>
-        
-        <!-- 다각형 -->
-        <div class="shape-category">다각형</div>
-        <div data-shape="triangle">삼각형</div>
-        <div data-shape="right-triangle">직각삼각형</div>
-        <div data-shape="pentagon">오각형</div>
-        <div data-shape="hexagon">육각형</div>
-        <div data-shape="octagon">팔각형</div>
-        
-        <!-- 특수 도형 -->
-        <div class="shape-category">특수 도형</div>
-        <div data-shape="star">별</div>
-        <div data-shape="callout">말풍선</div>
-        <div data-shape="heart">하트</div>
-        <div data-shape="diamond">다이아몬드</div>
-        
-        <!-- 화살표 -->
-        <div class="shape-category">화살표</div>
-        <div data-shape="arrow">화살표</div>
-        <div data-shape="double-arrow">양방향 화살표</div>
-        <div data-shape="curved-arrow">곡선 화살표</div>
-        <div data-shape="block-arrow">블록 화살표</div>
-        
-        <!-- 선 -->
-        <div class="shape-category">선</div>
-        <div data-shape="line">직선</div>
-        <div data-shape="dashed-line">점선</div>
-        <div data-shape="dotted-line">점선 2</div>
-        <div data-shape="curve">곡선</div>
-    </div>
-
-    <!-- 슬라이드 분석 모달 -->
-    <div id="analyze-modal" class="modal">
-        <div class="modal-content analysis-modal">
-            <span class="close">&times;</span>
-            <h3>슬라이드 분석 결과</h3>
-            <div id="analysis-loading" class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>슬라이드를 분석 중입니다...</p>
-            </div>
-            <div id="analysis-content" style="display: none;">
-                <div class="overall-feedback">
-                    <h4>전체 피드백</h4>
-                    <p id="overall-feedback-text"></p>
-                </div>
-                <div class="suggestions-container">
-                    <h4>개선 제안</h4>
-                    <div id="suggestions-list"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI 편집 모달 -->
-    <div id="ai-edit-modal" class="modal">
+    <!-- 도형 선택 모달 -->
+    <div id="shapeModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>AI 도움</h3>
-            <p>AI에게 슬라이드 요소 추가 요청하기</p>
-            <textarea id="ai-prompt" placeholder="예: '중앙에 파란색 네모 상자를 추가해줘' 또는 '오른쪽 상단에 회사 로고 이미지를 넣어줘'"></textarea>
-            <button id="ai-submit-btn">생성하기</button>
+            <h3>도형 선택</h3>
+            <div class="shape-grid">
+                <div class="shape-item" data-shape="rectangle">사각형</div>
+                <div class="shape-item" data-shape="circle">원</div>
+                <div class="shape-item" data-shape="triangle">삼각형</div>
+                <div class="shape-item" data-shape="line">선</div>
+                <div class="shape-item" data-shape="arrow">화살표</div>
+                <div class="shape-item" data-shape="star">별</div>
+            </div>
+            <button class="close-btn">닫기</button>
         </div>
     </div>
 
-    <!-- 제안사항 템플릿 (JS에서 복제하여 사용) -->
-    <template id="suggestion-template">
-        <div class="suggestion-item">
-            <div class="suggestion-header">
-                <span class="slide-number">슬라이드 1</span>
-                <span class="priority high">높음</span>
+    <!-- 이미지 업로드 모달 -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <h3>이미지 추가</h3>
+            <div class="image-upload">
+                <input type="file" id="imageInput" accept="image/*">
+                <button id="uploadImageBtn">업로드</button>
             </div>
-            <p class="suggestion-text"></p>
-            <div class="suggestion-actions">
-                <button class="apply-btn">제가 할까요?</button>
+            <button class="close-btn">닫기</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- Font Awesome 추가 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <!-- 디버그 정보 -->
+    <div id="debug-info" style="position: fixed; bottom: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 5px; font-size: 12px; z-index: 9999; display: none;">
+        <div>Slides: <span id="debug-slide-count">0</span></div>
+        <div>Current: <span id="debug-current-slide">0</span></div>
+        <div>Elements: <span id="debug-elements">0</span></div>
+        <div><button id="toggle-debug">Hide</button></div>
+    </div>
+
+    <!-- 디버그 토글 -->
+    <button id="show-debug" style="position: fixed; bottom: 0; right: 0; z-index: 9998; background: #333; color: white; border: none; padding: 5px;">Debug</button>
+
+    <!-- 차트 데이터 편집 모달 -->
+    <div id="chartDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>차트 데이터 편집</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="chart-data-container">
+                    <table id="chartDataTable">
+                        <thead>
+                            <tr>
+                                <th>카테고리</th>
+                                <th>시리즈 1</th>
+                                <th>시리즈 2</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" value="카테고리 1"></td>
+                                <td><input type="number" value="10"></td>
+                                <td><input type="number" value="20"></td>
+                                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="카테고리 2"></td>
+                                <td><input type="number" value="15"></td>
+                                <td><input type="number" value="25"></td>
+                                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="카테고리 3"></td>
+                                <td><input type="number" value="8"></td>
+                                <td><input type="number" value="18"></td>
+                                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="chart-data-buttons">
+                        <button id="addChartRowBtn">행 추가</button>
+                        <button id="addChartColumnBtn">열 추가</button>
+                    </div>
+                    
+                    <div class="chart-labels">
+                        <div class="input-row">
+                            <label>차트 제목</label>
+                            <input type="text" id="chartTitle" placeholder="차트 제목">
+                        </div>
+                        <div class="input-row">
+                            <label>X축 레이블</label>
+                            <input type="text" id="chartXLabel" placeholder="X축 레이블">
+                        </div>
+                        <div class="input-row">
+                            <label>Y축 레이블</label>
+                            <input type="text" id="chartYLabel" placeholder="Y축 레이블">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="applyChartDataBtn" class="btn-primary">적용</button>
+                <button id="cancelChartDataBtn">취소</button>
             </div>
         </div>
-    </template>
+    </div>
 
-    <!-- 일반 스크립트로 변경 -->
-    <script src="{{ url_for('static', filename='js/bundle.js') }}"></script>
+    <!-- 도형 편집 모달 -->
+    <div id="shapeEditorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>도형 세부 편집</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="shape-editing-container">
+                    <div class="shape-preview">
+                        <div id="shapePreview"></div>
+                    </div>
+
+                    <div class="shape-controls">
+                        <div class="control-section">
+                            <h4>기본 속성</h4>
+                            <div class="input-row">
+                                <label>도형 종류</label>
+                                <select id="shapeTypeSelect">
+                                    <option value="rectangle">사각형</option>
+                                    <option value="ellipse">타원</option>
+                                    <option value="triangle">삼각형</option>
+                                    <option value="pentagon">오각형</option>
+                                    <option value="hexagon">육각형</option>
+                                    <option value="star">별</option>
+                                    <option value="arrow">화살표</option>
+                                    <option value="callout">말풍선</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-section">
+                            <h4>모서리 둥글기</h4>
+                            <div class="input-row">
+                                <label>모든 모서리</label>
+                                <input type="range" id="allCornerRadius" min="0" max="50" value="0">
+                                <span id="allCornerRadiusValue">0px</span>
+                            </div>
+                            
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="individualCorners">
+                                <label for="individualCorners">각 모서리 개별 설정</label>
+                            </div>
+                            
+                            <div class="individual-corners">
+                                <div class="input-row">
+                                    <label>좌상단</label>
+                                    <input type="range" id="topLeftRadius" min="0" max="50" value="0">
+                                    <span id="topLeftRadiusValue">0px</span>
+                                </div>
+                                <div class="input-row">
+                                    <label>우상단</label>
+                                    <input type="range" id="topRightRadius" min="0" max="50" value="0">
+                                    <span id="topRightRadiusValue">0px</span>
+                                </div>
+                                <div class="input-row">
+                                    <label>좌하단</label>
+                                    <input type="range" id="bottomLeftRadius" min="0" max="50" value="0">
+                                    <span id="bottomLeftRadiusValue">0px</span>
+                                </div>
+                                <div class="input-row">
+                                    <label>우하단</label>
+                                    <input type="range" id="bottomRightRadius" min="0" max="50" value="0">
+                                    <span id="bottomRightRadiusValue">0px</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-section">
+                            <h4>특수 속성</h4>
+                            <div class="input-row star-properties">
+                                <label>별 꼭지점 수</label>
+                                <input type="range" id="starPoints" min="3" max="12" value="5">
+                                <span id="starPointsValue">5</span>
+                            </div>
+                            <div class="input-row star-properties">
+                                <label>별 안쪽 반지름</label>
+                                <input type="range" id="starInnerRadius" min="20" max="90" value="40">
+                                <span id="starInnerRadiusValue">40%</span>
+                            </div>
+                            <div class="input-row arrow-properties">
+                                <label>화살표 머리 크기</label>
+                                <input type="range" id="arrowHeadSize" min="10" max="80" value="30">
+                                <span id="arrowHeadSizeValue">30%</span>
+                            </div>
+                            <div class="input-row polygon-properties">
+                                <label>다각형 각 수</label>
+                                <input type="range" id="polygonSides" min="3" max="12" value="5">
+                                <span id="polygonSidesValue">5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="applyShapeEditorBtn" class="btn-primary">적용</button>
+                <button id="cancelShapeEditorBtn">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 그리드 및 안내선 설정 모달 -->
+    <div id="gridSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>그리드 및 안내선 설정</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="grid-settings">
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="showGrid">
+                        <label for="showGrid">그리드 표시</label>
+                    </div>
+                    <div class="input-row">
+                        <label>그리드 크기</label>
+                        <input type="range" id="gridSize" min="5" max="50" value="20">
+                        <span id="gridSizeValue">20px</span>
+                    </div>
+                    <div class="input-row">
+                        <label>그리드 색상</label>
+                        <input type="color" id="gridColor" value="#cccccc">
+                    </div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="snapToGrid">
+                        <label for="snapToGrid">그리드에 맞춤</label>
+                    </div>
+                </div>
+
+                <div class="guides-settings">
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="showGuides">
+                        <label for="showGuides">안내선 표시</label>
+                    </div>
+                    <div class="input-row">
+                        <label>안내선 색상</label>
+                        <input type="color" id="guideColor" value="#3498db">
+                    </div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="snapToGuides" checked>
+                        <label for="snapToGuides">안내선에 맞춤</label>
+                    </div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="showSmartGuides" checked>
+                        <label for="showSmartGuides">스마트 안내선 표시</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="applyGridSettingsBtn" class="btn-primary">적용</button>
+                <button id="cancelGridSettingsBtn">취소</button>
+            </div>
+        </div>
+    </div>
 </body>
-</html> 
+</html>

@@ -1,919 +1,1075 @@
-// 기본 변수 초기화
+// 전역 변수
+let currentSlideIndex = 0;
 let slides = [];
-let currentSlide = 0;
+let undoStack = [];
+let redoStack = [];
 let selectedElement = null;
+let isDragging = false;
+let startX, startY;
+
+// 기본 변수 초기화
+let currentModel = 'gpt-4';
+let aiSuggestions = [];
+let versionHistory = [];
+let collaborators = [];
+
+// AI 확장 기능 관련 변수
+let aiEnabled = false;
 
 // 문서 로드 완료 시 실행
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded');
+document.addEventListener('DOMContentLoaded', () => {
+    // 디버그 기능 초기화
+    initializeDebug();
     
-    // 기본 이벤트 리스너 설정
-    setupEventListeners();
+    // UI 초기화
+    initializeUI();
     
-    // 스타일 패널 탭 이벤트 설정
-    setupStylePanelTabs();
+    // 이벤트 리스너 초기화
+    initializeEventListeners();
     
-    // 스타일 변경 이벤트 설정
-    setupStyleChangeEvents();
+    // 슬라이드 로드
+    loadSlides();
     
-    // 삭제 버튼 설정
-    setupDeleteButton();
+    console.log('App initialized');
 });
 
-// 기본 이벤트 리스너 설정
-function setupEventListeners() {
-    // 시작하기 버튼
-    const startBtn = document.getElementById('startBtn');
-    if (startBtn) {
-        startBtn.addEventListener('click', function() {
-            console.log('Start button clicked');
-            const workspace = document.getElementById('workspace');
-            if (workspace) {
-                workspace.scrollIntoView({ behavior: 'smooth' });
-            }
+// 디버그 기능 초기화
+function initializeDebug() {
+    const showDebugBtn = document.getElementById('show-debug');
+    const toggleDebugBtn = document.getElementById('toggle-debug');
+    const debugInfo = document.getElementById('debug-info');
+    
+    if (showDebugBtn) {
+        showDebugBtn.addEventListener('click', () => {
+            debugInfo.style.display = 'block';
+            showDebugBtn.style.display = 'none';
+            updateDebugInfo();
         });
     }
     
-    // 프레젠테이션 생성 버튼
-    const createPresentationBtn = document.getElementById('createPresentationBtn');
-    if (createPresentationBtn) {
-        createPresentationBtn.addEventListener('click', function() {
-            console.log('Create presentation button clicked');
-            const topic = document.getElementById('topicInput').value.trim();
-            const slideCount = parseInt(document.getElementById('slideCountInput').value);
-            
-            if (!topic) {
-                alert('주제를 입력해주세요.');
-                return;
-            }
-            
-            if (isNaN(slideCount) || slideCount < 1 || slideCount > 20) {
-                alert('슬라이드 개수는 1에서 20 사이의 숫자로 입력해주세요.');
-                return;
-            }
-            
-            // 로딩 표시
-            this.disabled = true;
-            this.innerHTML = '<span class="loading"></span> 생성 중...';
-            
-            // 데모용 슬라이드 생성 (실제로는 서버에 요청해야 함)
-            createDemoSlides(topic, slideCount);
+    if (toggleDebugBtn) {
+        toggleDebugBtn.addEventListener('click', () => {
+            debugInfo.style.display = 'none';
+            showDebugBtn.style.display = 'block';
         });
     }
     
-    // 슬라이드 추가 버튼
-    const addSlideBtn = document.getElementById('addSlideBtn');
-    if (addSlideBtn) {
-        addSlideBtn.addEventListener('click', function() {
-            console.log('Add slide button clicked');
-            const newSlideIndex = slides.length;
-            
-            // 새 슬라이드 추가 (빈 슬라이드)
-            slides.push({
-                elements: []
-            });
-            
-            // 화면 업데이트
-            renderSlidesList();
-            selectSlide(newSlideIndex);
-            
-            // 기본 제목과 내용 텍스트 상자 추가
-            addTextElement('슬라이드 제목', 100, 50, 500, 50, '24px', true);
-            addTextElement('슬라이드 내용을 입력하세요.', 100, 150, 500, 200);
-            
-            alert('새 슬라이드가 추가되었습니다.');
-        });
-    }
-    
-    // 미리보기 및 다운로드 버튼 등의 다른 이벤트 리스너도 설정...
-    setupOtherEventListeners();
-    
-    // 슬라이드 편집 버튼들
-    setupSlideEditingButtons();
+    // 디버그 정보 업데이트 간격 설정 (1초)
+    setInterval(updateDebugInfo, 1000);
 }
 
-// 스타일 패널 탭 이벤트 설정
-function setupStylePanelTabs() {
-    const tabs = document.querySelectorAll('.style-tab');
+// 디버그 정보 업데이트
+function updateDebugInfo() {
+    const debugInfo = document.getElementById('debug-info');
+    if (!debugInfo || debugInfo.style.display === 'none') return;
     
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // 활성 탭 변경
-            document.querySelectorAll('.style-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            // 탭 내용 변경
-            const tabName = this.getAttribute('data-tab');
-            document.querySelectorAll('.style-tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(tabName + 'Tab').classList.add('active');
+    document.getElementById('debug-slide-count').textContent = slides ? slides.length : 0;
+    document.getElementById('debug-current-slide').textContent = currentSlideIndex;
+    
+    const elementsCount = slides && slides[currentSlideIndex] && slides[currentSlideIndex].elements ? 
+        slides[currentSlideIndex].elements.length : 0;
+    document.getElementById('debug-elements').textContent = elementsCount;
+}
+
+// UI 초기화
+function initializeUI() {
+    // 슬라이드 목록 초기화
+    const slideList = document.getElementById('slideList');
+    if (slideList) {
+        slideList.innerHTML = '';
+    } else {
+        console.error('Slide list element not found');
+    }
+    
+    // 속성 패널 탭 초기화
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tab = button.dataset.tab;
+            switchTab(tab);
         });
     });
 }
 
-// 스타일 변경 이벤트 설정
-function setupStyleChangeEvents() {
-    // 채우기 색상 변경
-    const fillColor = document.getElementById('fillColor');
-    if (fillColor) {
-        fillColor.addEventListener('input', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 색상 변경
-            selectedElement.style.color = this.value;
-            updateSelectedElementStyle();
-        });
-    }
+// 이벤트 리스너 초기화
+function initializeEventListeners() {
+    // 슬라이드 관리 버튼
+    attachEventListener('newSlideBtn', 'click', addNewSlide);
+    attachEventListener('deleteSlideBtn', 'click', deleteCurrentSlide);
+    attachEventListener('duplicateSlideBtn', 'click', duplicateCurrentSlide);
     
-    // 채우기 투명도 변경
-    const fillOpacity = document.getElementById('fillOpacity');
-    const fillOpacityValue = document.getElementById('fillOpacityValue');
-    if (fillOpacity && fillOpacityValue) {
-        fillOpacity.addEventListener('input', function() {
-            fillOpacityValue.textContent = this.value + '%';
-            
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 투명도 변경
-            selectedElement.style.opacity = this.value / 100;
-            updateSelectedElementStyle();
-        });
-    }
+    // 요소 추가 버튼
+    attachEventListener('addTextBtn', 'click', addTextElement);
+    attachEventListener('addShapeBtn', 'click', showShapeModal);
+    attachEventListener('addImageBtn', 'click', showImageModal);
     
-    // 테두리 색상 변경
-    const borderColor = document.getElementById('borderColor');
-    if (borderColor) {
-        borderColor.addEventListener('input', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 테두리 색상 변경
-            selectedElement.style.borderColor = this.value;
-            updateSelectedElementStyle();
-        });
-    }
+    // 실행 취소/다시 실행
+    attachEventListener('undoBtn', 'click', undo);
+    attachEventListener('redoBtn', 'click', redo);
     
-    // 테두리 두께 변경
-    const borderWidth = document.getElementById('borderWidth');
-    const borderWidthValue = document.getElementById('borderWidthValue');
-    if (borderWidth && borderWidthValue) {
-        borderWidth.addEventListener('input', function() {
-            borderWidthValue.textContent = this.value + 'px';
-            
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 테두리 두께 변경
-            selectedElement.style.borderWidth = this.value + 'px';
-            updateSelectedElementStyle();
-        });
-    }
+    // 내보내기
+    attachEventListener('exportBtn', 'click', exportPresentation);
     
-    // 테두리 스타일 변경
-    const borderStyle = document.getElementById('borderStyle');
-    if (borderStyle) {
-        borderStyle.addEventListener('change', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 테두리 스타일 변경
-            selectedElement.style.borderStyle = this.value;
-            updateSelectedElementStyle();
-        });
-    }
-    
-    // 텍스트 색상 변경
-    const textColor = document.getElementById('textColor');
-    if (textColor) {
-        textColor.addEventListener('input', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 텍스트 색상 변경
-            if (selectedElement.type === 'text' || selectedElement.hasText) {
-                selectedElement.style.textColor = this.value;
-                updateSelectedElementStyle();
+    // 모달 닫기 버튼
+    document.querySelectorAll('.close-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = btn.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
             }
         });
-    }
+    });
     
-    // 글꼴 크기 변경
-    const fontSize = document.getElementById('fontSize');
-    if (fontSize) {
-        fontSize.addEventListener('change', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 글꼴 크기 변경
-            if (selectedElement.type === 'text' || selectedElement.hasText) {
-                selectedElement.style.fontSize = this.value;
-                updateSelectedElementStyle();
+    // 도형 선택
+    document.querySelectorAll('.shape-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const shape = item.dataset.shape;
+            addShapeElement(shape);
+            const modal = document.getElementById('shapeModal');
+            if (modal) {
+                modal.style.display = 'none';
             }
         });
-    }
+    });
     
-    // 텍스트 정렬 변경
-    const alignBtns = document.querySelectorAll('.align-btn');
-    if (alignBtns) {
-        alignBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 활성 버튼 변경
-                document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                if (!selectedElement) return;
-                
-                // 선택한 요소의 텍스트 정렬 변경
-                if (selectedElement.type === 'text' || selectedElement.hasText) {
-                    let textAlign = 'center';
-                    if (this.id === 'alignLeft') textAlign = 'left';
-                    else if (this.id === 'alignRight') textAlign = 'right';
-                    
-                    selectedElement.style.textAlign = textAlign;
-                    updateSelectedElementStyle();
-                }
-            });
-        });
-    }
+    // 이미지 업로드
+    attachEventListener('uploadImageBtn', 'click', uploadImage);
     
-    // 텍스트 내용 변경
-    const elementText = document.getElementById('elementText');
-    if (elementText) {
-        elementText.addEventListener('input', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 텍스트 내용 변경
-            if (selectedElement.type === 'text' || selectedElement.hasText) {
-                selectedElement.content = this.value;
-                updateSelectedElementStyle();
-            }
-        });
-    }
-    
-    // 요소 투명도 변경
-    const elementOpacity = document.getElementById('elementOpacity');
-    const elementOpacityValue = document.getElementById('elementOpacityValue');
-    if (elementOpacity && elementOpacityValue) {
-        elementOpacity.addEventListener('input', function() {
-            elementOpacityValue.textContent = this.value + '%';
-            
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 전체 투명도 변경
-            selectedElement.opacity = this.value / 100;
-            updateSelectedElementStyle();
-        });
-    }
-    
-    // 회전 변경
-    const elementRotation = document.getElementById('elementRotation');
-    const elementRotationValue = document.getElementById('elementRotationValue');
-    if (elementRotation && elementRotationValue) {
-        elementRotation.addEventListener('input', function() {
-            elementRotationValue.textContent = this.value + '°';
-            
-            if (!selectedElement) return;
-            
-            // 선택한 요소의 회전 변경
-            selectedElement.rotation = parseInt(this.value);
-            updateSelectedElementStyle();
-        });
+    // 속성 변경 이벤트
+    attachEventListener('themeSelect', 'change', updateTheme);
+    attachEventListener('colorPaletteSelect', 'change', updateColorPalette);
+    attachEventListener('fontSelect', 'change', updateFont);
+    attachEventListener('backgroundColorPicker', 'change', updateBackgroundColor);
+    attachEventListener('opacitySlider', 'input', updateOpacity);
+    attachEventListener('animationSelect', 'change', updateAnimation);
+    attachEventListener('transitionSelect', 'change', updateTransition);
+}
+
+// 이벤트 리스너 안전하게 연결
+function attachEventListener(elementId, eventType, handler) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.addEventListener(eventType, handler);
+    } else {
+        console.error(`Element with ID "${elementId}" not found`);
     }
 }
 
-// 삭제 버튼 설정
-function setupDeleteButton() {
-    const deleteElementBtn = document.getElementById('deleteElementBtn');
-    if (deleteElementBtn) {
-        deleteElementBtn.addEventListener('click', function() {
-            if (!selectedElement) return;
-            
-            // 선택한 요소 삭제
-            deleteSelectedElement();
-        });
-        
-        // 키보드 Delete 키로도 삭제 가능하게 설정
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Delete' && selectedElement) {
-                deleteSelectedElement();
-            }
-        });
-    }
+// 슬라이드 관리
+function addNewSlide() {
+    console.log('Adding new slide');
+    const slide = {
+        id: Date.now(),
+        elements: [],
+        background: '#ffffff',
+        theme: 'modern',
+        colorPalette: 'blue',
+        fontFamily: 'Pretendard',
+        animation: 'none',
+        transition: 'none'
+    };
+    
+    slides.push(slide);
+    saveSlides();
+    updateSlideList();
+    switchToSlide(slides.length - 1);
+    console.log('New slide added, total slides:', slides.length);
 }
 
-// 도형 요소 추가
-function addShapeElement(shapeType) {
-    if (slides.length === 0) return;
+function deleteCurrentSlide() {
+    if (slides.length <= 1) return;
     
-    const newElement = {
+    slides.splice(currentSlideIndex, 1);
+    saveSlides();
+    updateSlideList();
+    
+    if (currentSlideIndex >= slides.length) {
+        currentSlideIndex = slides.length - 1;
+    }
+    
+    switchToSlide(currentSlideIndex);
+}
+
+function duplicateCurrentSlide() {
+    const slide = JSON.parse(JSON.stringify(slides[currentSlideIndex]));
+    slide.id = Date.now();
+    slides.splice(currentSlideIndex + 1, 0, slide);
+    saveSlides();
+    updateSlideList();
+    switchToSlide(currentSlideIndex + 1);
+}
+
+// 요소 추가
+function addTextElement() {
+    const textElement = {
+        type: 'text',
+        id: Date.now(),
+        content: '텍스트를 입력하세요',
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 100,
+        fontSize: 16,
+        fontFamily: 'Pretendard',
+        color: '#000000',
+        backgroundColor: 'transparent',
+        opacity: 1
+    };
+    
+    addElementToCurrentSlide(textElement);
+}
+
+function addShapeElement(shape) {
+    const shapeElement = {
         type: 'shape',
-        id: 'shape_' + Date.now(),
-        content: shapeType,
-        x: 150,
-        y: 150,
+        id: Date.now(),
+        shape: shape,
+        x: 100,
+        y: 100,
         width: 100,
         height: 100,
-        style: {
-            color: getRandomColor(),
-            borderColor: '#000000',
-            borderWidth: '1px',
-            borderStyle: 'solid',
-            textColor: '#000000',
-            fontSize: '16px',
-            textAlign: 'center'
-        },
-        hasText: false,
-        opacity: 1,
-        rotation: 0
+        color: '#000000',
+        backgroundColor: '#ffffff',
+        opacity: 1
     };
     
-    // 도형 유형에 따라 크기와 속성 조정
-    if (shapeType === 'line' || shapeType === 'arrow' || shapeType.includes('arrow')) {
-        newElement.width = 200;
-        newElement.height = 2;
-    } else if (shapeType === 'circle' || shapeType === 'square') {
-        newElement.width = 100;
-        newElement.height = 100;
-    } else if (shapeType === 'star') {
-        newElement.width = 120;
-        newElement.height = 120;
-    }
-    
-    if (!slides[currentSlide].elements) {
-        slides[currentSlide].elements = [];
-    }
-    
-    slides[currentSlide].elements.push(newElement);
-    renderSlideElements();
-    
-    // 새로 추가된 요소 선택
-    selectElement(newElement);
+    addElementToCurrentSlide(shapeElement);
 }
 
-// 텍스트 요소 추가
-function addTextElement(initialText = '텍스트를 입력하세요', x = 150, y = 150, width = 200, height = 50, fontSize = '16px', isTitle = false) {
-    if (slides.length === 0) return;
-    
-    const newElement = {
-        type: 'text',
-        id: 'text_' + Date.now(),
-        content: initialText,
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-        style: {
-            color: 'transparent',
-            borderColor: 'transparent',
-            borderWidth: '1px',
-            borderStyle: 'solid',
-            textColor: isTitle ? '#000000' : '#333333',
-            fontSize: fontSize,
-            textAlign: 'center'
-        },
-        opacity: 1,
-        rotation: 0
+function addImageElement(imageUrl) {
+    const imageElement = {
+        type: 'image',
+        id: Date.now(),
+        url: imageUrl,
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 150,
+        opacity: 1
     };
     
-    if (!slides[currentSlide].elements) {
-        slides[currentSlide].elements = [];
-    }
-    
-    slides[currentSlide].elements.push(newElement);
-    renderSlideElements();
-    
-    // 새로 추가된 요소 선택
-    selectElement(newElement);
+    addElementToCurrentSlide(imageElement);
 }
 
-// 선택된 요소 삭제
-function deleteSelectedElement() {
-    if (!selectedElement) return;
-    
-    // DOM에서 요소 제거
-    const el = document.getElementById(selectedElement.id);
-    if (el) {
-        el.remove();
-    }
-    
-    // 데이터에서 요소 제거
-    if (slides[currentSlide].elements) {
-        slides[currentSlide].elements = slides[currentSlide].elements.filter(e => e.id !== selectedElement.id);
-    }
-    
-    // 선택 해제
-    selectedElement = null;
-    
-    // 삭제 버튼 비활성화
-    const deleteBtn = document.getElementById('deleteElementBtn');
-    if (deleteBtn) {
-        deleteBtn.disabled = true;
-    }
-    
-    // 스타일 패널 업데이트
-    updateStylePanel();
-}
-
-// 요소 선택
-function selectElement(element) {
-    // 이전 선택 해제
-    selectedElement = null;
-    document.querySelectorAll('.slide-element').forEach(el => {
-        el.classList.remove('selected');
-    });
-    
-    // 새 요소 선택
-    selectedElement = element;
-    const el = document.getElementById(element.id);
-    if (el) {
-        el.classList.add('selected');
-    }
-    
-    // 스타일 패널 업데이트
-    updateStylePanel();
-    
-    // 삭제 버튼 활성화
-    const deleteBtn = document.getElementById('deleteElementBtn');
-    if (deleteBtn) {
-        deleteBtn.disabled = false;
-    }
-}
-
-// 스타일 패널 업데이트
-function updateStylePanel() {
-    if (!selectedElement) {
-        // 선택된 요소가 없으면 기본값으로 설정
-        resetStylePanel();
+// 요소 관리
+function addElementToCurrentSlide(element) {
+    if (!slides || !slides[currentSlideIndex]) {
+        console.error('Cannot add element - no current slide');
         return;
     }
     
-    // 채우기 탭
-    const fillColor = document.getElementById('fillColor');
-    const fillOpacity = document.getElementById('fillOpacity');
-    const fillOpacityValue = document.getElementById('fillOpacityValue');
-    
-    if (fillColor) fillColor.value = selectedElement.style.color || '#3498db';
-    if (fillOpacity) {
-        const opacity = selectedElement.style.opacity || 1;
-        fillOpacity.value = opacity * 100;
-        if (fillOpacityValue) fillOpacityValue.textContent = Math.round(opacity * 100) + '%';
+    if (!slides[currentSlideIndex].elements) {
+        slides[currentSlideIndex].elements = [];
     }
     
-    // 테두리 탭
-    const borderColor = document.getElementById('borderColor');
-    const borderWidth = document.getElementById('borderWidth');
-    const borderWidthValue = document.getElementById('borderWidthValue');
-    const borderStyle = document.getElementById('borderStyle');
-    
-    if (borderColor) borderColor.value = selectedElement.style.borderColor || '#000000';
-    if (borderWidth) {
-        const width = parseInt(selectedElement.style.borderWidth) || 1;
-        borderWidth.value = width;
-        if (borderWidthValue) borderWidthValue.textContent = width + 'px';
-    }
-    if (borderStyle) borderStyle.value = selectedElement.style.borderStyle || 'solid';
-    
-    // 텍스트 탭
-    const textColor = document.getElementById('textColor');
-    const fontSize = document.getElementById('fontSize');
-    const textAlignBtns = document.querySelectorAll('.align-btn');
-    const textInput = document.getElementById('elementText');
-    const textInputContainer = document.getElementById('textInputContainer');
-    
-    // 텍스트 관련 옵션은 텍스트 요소나 텍스트가 있는 도형에서만 표시
-    if (selectedElement.type === 'text' || selectedElement.hasText) {
-        if (textColor) textColor.value = selectedElement.style.textColor || '#000000';
-        if (fontSize) fontSize.value = selectedElement.style.fontSize || '16px';
-        
-        // 텍스트 정렬 버튼 상태 업데이트
-        if (textAlignBtns) {
-            const align = selectedElement.style.textAlign || 'center';
-            textAlignBtns.forEach(btn => {
-                btn.classList.remove('active');
-                if ((btn.id === 'alignLeft' && align === 'left') ||
-                    (btn.id === 'alignCenter' && align === 'center') ||
-                    (btn.id === 'alignRight' && align === 'right')) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-        
-        // 텍스트 입력 필드 표시 및 값 설정
-        if (textInput && textInputContainer) {
-            textInputContainer.style.display = 'block';
-            textInput.value = selectedElement.content || '';
-        }
-    } else {
-        // 텍스트가 없는 요소에서는 텍스트 입력 필드 숨기기
-        if (textInputContainer) {
-            textInputContainer.style.display = 'none';
-        }
-    }
-    
-    // 효과 탭
-    const elementOpacity = document.getElementById('elementOpacity');
-    const elementOpacityValue = document.getElementById('elementOpacityValue');
-    const elementRotation = document.getElementById('elementRotation');
-    const elementRotationValue = document.getElementById('elementRotationValue');
-    
-    if (elementOpacity) {
-        const opacity = selectedElement.opacity || 1;
-        elementOpacity.value = opacity * 100;
-        if (elementOpacityValue) elementOpacityValue.textContent = Math.round(opacity * 100) + '%';
-    }
-    
-    if (elementRotation) {
-        const rotation = selectedElement.rotation || 0;
-        elementRotation.value = rotation;
-        if (elementRotationValue) elementRotationValue.textContent = rotation + '°';
+    slides[currentSlideIndex].elements.push(element);
+    saveSlides();
+    renderCurrentSlide();
+    console.log('Element added:', element);
+}
+
+function selectElement(elementId) {
+    selectedElement = slides[currentSlideIndex].elements.find(el => el.id === elementId);
+    if (selectedElement) {
+        updatePropertiesPanel();
     }
 }
 
-// 스타일 패널 초기화
-function resetStylePanel() {
-    // 채우기 탭
-    const fillColor = document.getElementById('fillColor');
-    const fillOpacity = document.getElementById('fillOpacity');
-    const fillOpacityValue = document.getElementById('fillOpacityValue');
-    
-    if (fillColor) fillColor.value = '#3498db';
-    if (fillOpacity) {
-        fillOpacity.value = 100;
-        if (fillOpacityValue) fillOpacityValue.textContent = '100%';
-    }
-    
-    // 나머지 탭들도 초기화
-    // ... (생략) ...
-    
-    // 텍스트 입력 필드 숨기기
-    const textInputContainer = document.getElementById('textInputContainer');
-    if (textInputContainer) {
-        textInputContainer.style.display = 'none';
-    }
+function deleteElement(elementId) {
+    slides[currentSlideIndex].elements = slides[currentSlideIndex].elements.filter(el => el.id !== elementId);
+    saveSlides();
+    renderCurrentSlide();
 }
 
-// 선택된 요소의 스타일 업데이트
-function updateSelectedElementStyle() {
+// 드래그 앤 드롭
+function startDragging(e) {
     if (!selectedElement) return;
     
-    const el = document.getElementById(selectedElement.id);
-    if (!el) return;
+    isDragging = true;
+    startX = e.clientX - selectedElement.x;
+    startY = e.clientY - selectedElement.y;
     
-    // 기본 스타일 적용
-    if (selectedElement.style.color) {
-        el.style.backgroundColor = selectedElement.style.color;
-    }
-    
-    // 테두리 스타일 적용
-    if (selectedElement.style.borderColor) {
-        el.style.borderColor = selectedElement.style.borderColor;
-    }
-    
-    if (selectedElement.style.borderWidth) {
-        el.style.borderWidth = selectedElement.style.borderWidth;
-    }
-    
-    if (selectedElement.style.borderStyle) {
-        el.style.borderStyle = selectedElement.style.borderStyle;
-    }
-    
-    // 텍스트 스타일 적용
-    if (selectedElement.type === 'text' || selectedElement.hasText) {
-        if (selectedElement.style.textColor) {
-            el.style.color = selectedElement.style.textColor;
-        }
-        
-        if (selectedElement.style.fontSize) {
-            el.style.fontSize = selectedElement.style.fontSize;
-        }
-        
-        if (selectedElement.style.textAlign) {
-            el.style.textAlign = selectedElement.style.textAlign;
-        }
-        
-        if (selectedElement.content) {
-            el.textContent = selectedElement.content;
-        }
-    }
-    
-    // 투명도 적용
-    if (selectedElement.opacity !== undefined) {
-        el.style.opacity = selectedElement.opacity;
-    }
-    
-    // 회전 적용
-    if (selectedElement.rotation !== undefined) {
-        el.style.transform = `rotate(${selectedElement.rotation}deg)`;
-    }
-    
-    // 특별한 도형 스타일 적용 (이전 코드 유지)
-    applySpecialShapeStyles(selectedElement, el);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', stopDragging);
 }
 
-// 특별한 도형 스타일 적용
-function applySpecialShapeStyles(element, el) {
-    if (element.type !== 'shape') return;
+function drag(e) {
+    if (!isDragging || !selectedElement) return;
     
-    // 도형 타입에 따라 스타일 적용
-    if (element.content === 'circle') {
-        el.style.borderRadius = '50%';
-    } else if (element.content === 'star') {
-        el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
-    } else if (element.content === 'triangle') {
-        el.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-    } else if (element.content === 'hexagon') {
-        el.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
-    } else if (element.content === 'arrow') {
-        el.style.height = '2px';
-        
-        // 화살표 헤드 추가
-        let arrowHead = el.querySelector('.arrow-head');
-        if (!arrowHead) {
-            arrowHead = document.createElement('div');
-            arrowHead.className = 'arrow-head';
-            arrowHead.style.position = 'absolute';
-            arrowHead.style.right = '-8px';
-            arrowHead.style.top = '-4px';
-            arrowHead.style.width = '0';
-            arrowHead.style.height = '0';
-            arrowHead.style.borderTop = '5px solid transparent';
-            arrowHead.style.borderBottom = '5px solid transparent';
-            
-            el.appendChild(arrowHead);
-        }
-        
-        arrowHead.style.borderLeft = `10px solid ${element.style.color || '#000'}`;
+    selectedElement.x = e.clientX - startX;
+    selectedElement.y = e.clientY - startY;
+    
+    renderCurrentSlide();
+}
+
+function stopDragging() {
+    isDragging = false;
+    document.removeEventListener('mousemove', drag);
+    document.removeEventListener('mouseup', stopDragging);
+    saveSlides();
+}
+
+// 속성 업데이트
+function updateTheme() {
+    const theme = document.getElementById('themeSelect').value;
+    slides[currentSlideIndex].theme = theme;
+    saveSlides();
+    renderCurrentSlide();
+}
+
+function updateColorPalette() {
+    const palette = document.getElementById('colorPaletteSelect').value;
+    slides[currentSlideIndex].colorPalette = palette;
+    saveSlides();
+    renderCurrentSlide();
+}
+
+function updateFont() {
+    const font = document.getElementById('fontSelect').value;
+    slides[currentSlideIndex].fontFamily = font;
+    saveSlides();
+    renderCurrentSlide();
+}
+
+function updateBackgroundColor() {
+    const color = document.getElementById('backgroundColorPicker').value;
+    slides[currentSlideIndex].background = color;
+    saveSlides();
+    renderCurrentSlide();
+}
+
+function updateOpacity() {
+    const opacity = document.getElementById('opacitySlider').value / 100;
+    if (selectedElement) {
+        selectedElement.opacity = opacity;
+        saveSlides();
+        renderCurrentSlide();
     }
 }
 
-// 데모 슬라이드 생성 함수 (자유 텍스트 방식으로 변경)
-function createDemoSlides(topic, count, theme = 'default') {
-    slides = [];
+function updateAnimation() {
+    const animation = document.getElementById('animationSelect').value;
+    slides[currentSlideIndex].animation = animation;
+    saveSlides();
+    renderCurrentSlide();
+}
+
+function updateTransition() {
+    const transition = document.getElementById('transitionSelect').value;
+    slides[currentSlideIndex].transition = transition;
+    saveSlides();
+    renderCurrentSlide();
+}
+
+// 렌더링
+function renderCurrentSlide() {
+    const slideContainer = document.getElementById('currentSlide');
+    if (!slideContainer) {
+        console.error('Slide container not found!');
+        return;
+    }
     
-    // 타이틀 슬라이드
-    slides.push({
-        elements: [
-            // 제목 텍스트 상자
-            {
-                type: 'text',
-                id: 'text_title_1',
-                content: topic,
-                x: 100,
-                y: 100,
-                width: 600,
-                height: 80,
-                style: {
-                    color: 'transparent',
-                    borderColor: 'transparent',
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                    textColor: '#000000',
-                    fontSize: '32px',
-                    textAlign: 'center'
-                },
-                opacity: 1,
-                rotation: 0
-            },
-            // 부제목 텍스트 상자
-            {
-                type: 'text',
-                id: 'text_subtitle_1',
-                content: '프레젠테이션 소개',
-                x: 100,
-                y: 200,
-                width: 600,
-                height: 50,
-                style: {
-                    color: 'transparent',
-                    borderColor: 'transparent',
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                    textColor: '#666666',
-                    fontSize: '20px',
-                    textAlign: 'center'
-                },
-                opacity: 1,
-                rotation: 0
-            },
-            // 장식 선
-            {
-                type: 'shape',
-                id: 'shape_line_1',
-                content: 'rectangle',
-                x: 100,
-                y: 280,
-                width: 600,
-                height: 3,
-                style: {
-                    color: '#3498db',
-                    borderColor: 'transparent',
-                    borderWidth: '0px',
-                    borderStyle: 'none'
-                },
-                opacity: 1,
-                rotation: 0
-            }
-        ]
+    slideContainer.innerHTML = '';
+    
+    if (!slides || slides.length === 0 || currentSlideIndex >= slides.length) {
+        console.log('No slides available or invalid index');
+        return;
+    }
+    
+    const slide = slides[currentSlideIndex];
+    slideContainer.style.backgroundColor = slide.background || '#ffffff';
+    
+    if (slide.elements && Array.isArray(slide.elements)) {
+        slide.elements.forEach(element => {
+            const elementEl = createElementElement(element);
+            slideContainer.appendChild(elementEl);
+        });
+    } else {
+        console.log('No elements in current slide or invalid structure', slide);
+    }
+}
+
+function createElementElement(element) {
+    const el = document.createElement('div');
+    el.className = `slide-element ${element.type}`;
+    el.dataset.id = element.id;
+    
+    el.style.left = `${element.x}px`;
+    el.style.top = `${element.y}px`;
+    el.style.width = `${element.width}px`;
+    el.style.height = `${element.height}px`;
+    el.style.opacity = element.opacity;
+    
+    switch (element.type) {
+        case 'text':
+            el.innerHTML = `<div class="text-content" contenteditable="true">${element.content}</div>`;
+            break;
+        case 'shape':
+            el.innerHTML = `<div class="shape-content ${element.shape}"></div>`;
+            break;
+        case 'image':
+            el.innerHTML = `<img src="${element.url}" alt="이미지">`;
+            break;
+    }
+    
+    el.addEventListener('mousedown', (e) => {
+        selectElement(element.id);
+        startDragging(e);
     });
     
-    // 내용 슬라이드
-    for (let i = 1; i < count; i++) {
-        const slide = {
-            elements: [
-                // 제목 텍스트 상자
-                {
-                    type: 'text',
-                    id: `text_title_${i+1}`,
-                    content: `슬라이드 ${i+1}`,
-                    x: 50,
-                    y: 30,
-                    width: 700,
-                    height: 50,
-                    style: {
-                        color: 'transparent',
-                        borderColor: 'transparent',
-                        borderWidth: '1px',
-                        borderStyle: 'solid',
-                        textColor: '#000000',
-                        fontSize: '24px',
-                        textAlign: 'left'
-                    },
-                    opacity: 1,
-                    rotation: 0
-                },
-                // 내용 텍스트 상자
-                {
-                    type: 'text',
-                    id: `text_content_${i+1}`,
-                    content: `이 슬라이드는 ${topic}에 대한 내용을 담고 있습니다.`,
-                    x: 50,
-                    y: 100,
-                    width: 400,
-                    height: 200,
-                    style: {
-                        color: 'transparent',
-                        borderColor: 'transparent',
-                        borderWidth: '1px',
-                        borderStyle: 'solid',
-                        textColor: '#333333',
-                        fontSize: '16px',
-                        textAlign: 'left'
-                    },
-                    opacity: 1,
-                    rotation: 0
+    return el;
+}
+
+// 저장 및 로드
+function saveSlides() {
+    console.log('Saving slides:', slides);
+    undoStack.push(JSON.stringify(slides));
+    redoStack = [];
+    
+    fetch('/save_slides', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            slides: slides // 전체 슬라이드 배열 전송
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Save response:', data);
+    })
+    .catch(error => {
+        console.error('Error saving slides:', error);
+    });
+}
+
+function loadSlides() {
+    console.log('Loading slides');
+    fetch('/get_slides')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Loaded data:', data);
+            if (data.success) {
+                slides = data.slides || [];
+                if (slides.length === 0) {
+                    // 슬라이드가 없으면 기본 슬라이드 추가
+                    addNewSlide();
+                } else {
+                    updateSlideList();
+                    switchToSlide(0);
+                    console.log('Slides loaded:', slides.length);
                 }
-            ]
-        };
+            } else {
+                console.error('Failed to load slides:', data.error);
+                // 기본 슬라이드 추가
+                slides = [];
+                addNewSlide();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading slides:', error);
+            // 오류 발생 시 기본 슬라이드 추가
+            slides = [];
+            addNewSlide();
+        });
+}
+
+// 실행 취소/다시 실행
+function undo() {
+    if (undoStack.length === 0) return;
+    
+    redoStack.push(JSON.stringify(slides));
+    slides = JSON.parse(undoStack.pop());
+    renderCurrentSlide();
+}
+
+function redo() {
+    if (redoStack.length === 0) return;
+    
+    undoStack.push(JSON.stringify(slides));
+    slides = JSON.parse(redoStack.pop());
+    renderCurrentSlide();
+}
+
+// 내보내기
+function exportPresentation() {
+    fetch('/download_ppt')
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'presentation.pptx';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+}
+
+// 유틸리티 함수
+function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.getElementById(`${tab}Tab`).classList.add('active');
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+}
+
+function updateSlideList() {
+    const slideList = document.getElementById('slideList');
+    slideList.innerHTML = '';
+    
+    slides.forEach((slide, index) => {
+        const slideThumb = document.createElement('div');
+        slideThumb.className = 'slide-thumbnail';
+        if (index === currentSlideIndex) {
+            slideThumb.classList.add('active');
+        }
         
-        // 장식용 도형 추가
-        const shapeTypes = ['circle', 'rectangle', 'star', 'triangle', 'hexagon'];
-        const shapeType = shapeTypes[i % shapeTypes.length];
+        slideThumb.innerHTML = `
+            <div class="slide-number">${index + 1}</div>
+            <div class="slide-preview"></div>
+        `;
         
-        slide.elements.push({
-            type: 'shape',
-            id: `shape_${i+1}`,
-            content: shapeType,
-            x: 500,
-            y: 150,
-            width: 150,
-            height: 150,
-            style: {
-                color: getRandomColor(0.7),  // 약간 투명하게
-                borderColor: '#000000',
-                borderWidth: '1px',
-                borderStyle: 'solid'
+        slideThumb.addEventListener('click', () => switchToSlide(index));
+        slideList.appendChild(slideThumb);
+    });
+}
+
+function switchToSlide(index) {
+    if (index < 0 || index >= slides.length) return;
+    
+    currentSlideIndex = index;
+    updateSlideList();
+    renderCurrentSlide();
+}
+
+function showShapeModal() {
+    document.getElementById('shapeModal').style.display = 'block';
+}
+
+function showImageModal() {
+    document.getElementById('imageModal').style.display = 'block';
+}
+
+function uploadImage() {
+    const fileInput = document.getElementById('imageInput');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    fetch('/upload_image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addImageElement(data.image_url);
+            document.getElementById('imageModal').style.display = 'none';
+        }
+    });
+}
+
+// AI 에이전트 기능 초기화
+function initializeAIAgent() {
+    // AI 모델 선택 UI
+    const modelSelector = document.createElement('select');
+    modelSelector.id = 'aiModel';
+    modelSelector.innerHTML = `
+        <option value="gpt-4">GPT-4</option>
+        <option value="claude">Claude</option>
+        <option value="gemini">Gemini</option>
+    `;
+    modelSelector.addEventListener('change', (e) => {
+        currentModel = e.target.value;
+    });
+    
+    // AI 도구 모음 추가
+    const aiToolbar = document.createElement('div');
+    aiToolbar.className = 'ai-toolbar';
+    aiToolbar.innerHTML = `
+        <button id="analyzeBtn" class="ai-btn">
+            <i class="fas fa-chart-line"></i> 분석
+        </button>
+        <button id="generateImageBtn" class="ai-btn">
+            <i class="fas fa-image"></i> 이미지 생성
+        </button>
+        <button id="improveDesignBtn" class="ai-btn">
+            <i class="fas fa-paint-brush"></i> 디자인 개선
+        </button>
+        <button id="collaborateBtn" class="ai-btn">
+            <i class="fas fa-users"></i> 협업
+        </button>
+        <button id="versionControlBtn" class="ai-btn">
+            <i class="fas fa-history"></i> 버전 관리
+        </button>
+    `;
+    
+    // AI 패널 추가
+    const aiPanel = document.createElement('div');
+    aiPanel.className = 'ai-panel';
+    aiPanel.innerHTML = `
+        <div class="ai-panel-header">
+            <h3>AI 에이전트</h3>
+            <button class="close-panel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ai-panel-content">
+            <div class="ai-suggestions"></div>
+            <div class="ai-chat">
+                <div class="chat-messages"></div>
+                <div class="chat-input">
+                    <textarea placeholder="AI에게 질문하세요..."></textarea>
+                    <button class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // UI 요소 추가
+    document.querySelector('.toolbar').appendChild(modelSelector);
+    document.querySelector('.toolbar').appendChild(aiToolbar);
+    document.querySelector('.app-container').appendChild(aiPanel);
+    
+    // 이벤트 리스너 등록
+    setupAIEventListeners();
+}
+
+// AI 이벤트 리스너 설정
+function setupAIEventListeners() {
+    // 분석 버튼
+    document.getElementById('analyzeBtn').addEventListener('click', async () => {
+        const currentSlide = getCurrentSlide();
+        if (!currentSlide) return;
+        
+        showLoading('슬라이드 분석 중...');
+        try {
+            const response = await fetch('/analyze_slide', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    slide_index: currentSlideIndex,
+                    content: currentSlide.innerHTML,
+                    model: currentModel
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAISuggestion(data.analysis);
+            }
+        } catch (error) {
+            showError('분석 중 오류가 발생했습니다.');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // 이미지 생성 버튼
+    document.getElementById('generateImageBtn').addEventListener('click', async () => {
+        const prompt = prompt('이미지 생성을 위한 설명을 입력하세요:');
+        if (!prompt) return;
+        
+        showLoading('이미지 생성 중...');
+        try {
+            const response = await fetch('/generate_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    style: 'realistic'
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                addImageToSlide(data.image_url);
+            }
+        } catch (error) {
+            showError('이미지 생성 중 오류가 발생했습니다.');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // 디자인 개선 버튼
+    document.getElementById('improveDesignBtn').addEventListener('click', async () => {
+        const currentSlide = getCurrentSlide();
+        if (!currentSlide) return;
+        
+        showLoading('디자인 개선 중...');
+        try {
+            const response = await fetch('/improve_design', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    slide_data: {
+                        content: currentSlide.innerHTML,
+                        style: getCurrentSlideStyle()
+                    }
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAISuggestion(data.suggestions);
+            }
+        } catch (error) {
+            showError('디자인 개선 중 오류가 발생했습니다.');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // 협업 버튼
+    document.getElementById('collaborateBtn').addEventListener('click', () => {
+        showCollaborationModal();
+    });
+    
+    // 버전 관리 버튼
+    document.getElementById('versionControlBtn').addEventListener('click', () => {
+        showVersionControlModal();
+    });
+}
+
+// AI 제안 표시
+function showAISuggestion(suggestion) {
+    const suggestionsDiv = document.querySelector('.ai-suggestions');
+    const suggestionElement = document.createElement('div');
+    suggestionElement.className = 'ai-suggestion';
+    suggestionElement.innerHTML = `
+        <div class="suggestion-header">
+            <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+            <button class="apply-btn">적용</button>
+        </div>
+        <div class="suggestion-content">${suggestion}</div>
+    `;
+    
+    suggestionElement.querySelector('.apply-btn').addEventListener('click', () => {
+        applyAISuggestion(suggestion);
+    });
+    
+    suggestionsDiv.appendChild(suggestionElement);
+    suggestionsDiv.scrollTop = suggestionsDiv.scrollHeight;
+}
+
+// AI 제안 적용
+function applyAISuggestion(suggestion) {
+    const currentSlide = getCurrentSlide();
+    if (!currentSlide) return;
+    
+    // 제안된 변경사항을 슬라이드에 적용
+    // (실제 구현에서는 suggestion의 내용을 파싱하여 적절한 변경사항을 적용)
+    currentSlide.innerHTML += `<div class="ai-improvement">${suggestion}</div>`;
+}
+
+// 협업 모달 표시
+function showCollaborationModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>협업 설정</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="collaborators-list">
+                    ${collaborators.map(collaborator => `
+                        <div class="collaborator">
+                            <span>${collaborator}</span>
+                            <button class="remove-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="add-collaborator">
+                    <input type="email" placeholder="이메일 주소 입력">
+                    <button class="add-btn">추가</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setupCollaborationEventListeners(modal);
+}
+
+// 버전 관리 모달 표시
+function showVersionControlModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>버전 관리</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="version-list">
+                    ${versionHistory.map((version, index) => `
+                        <div class="version-item">
+                            <span>버전 ${index + 1}</span>
+                            <span class="timestamp">${new Date(version.timestamp).toLocaleString()}</span>
+                            <button class="restore-btn" data-index="${index}">복원</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="save-version-btn">현재 버전 저장</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setupVersionControlEventListeners(modal);
+}
+
+// 로딩 표시
+function showLoading(message) {
+    const loading = document.createElement('div');
+    loading.className = 'loading-overlay';
+    loading.innerHTML = `
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-message">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(loading);
+}
+
+// 로딩 숨기기
+function hideLoading() {
+    const loading = document.querySelector('.loading-overlay');
+    if (loading) {
+        loading.remove();
+    }
+}
+
+// 에러 메시지 표시
+function showError(message) {
+    const error = document.createElement('div');
+    error.className = 'error-message';
+    error.textContent = message;
+    document.body.appendChild(error);
+    
+    setTimeout(() => {
+        error.remove();
+    }, 3000);
+}
+
+// AI 확장 기능 초기화
+function initializeAIExtension() {
+    const aiPanel = document.getElementById('aiPanel');
+    const toggleAIBtn = document.getElementById('toggleAIBtn');
+    
+    // AI 도구 토글 버튼 이벤트
+    toggleAIBtn.addEventListener('click', () => {
+        aiEnabled = !aiEnabled;
+        toggleAIBtn.classList.toggle('active', aiEnabled);
+        aiPanel.style.display = aiEnabled ? 'block' : 'none';
+        
+        // 서버에 AI 확장 기능 상태 업데이트
+        fetch('/toggle_extension', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             },
-            opacity: 0.8,
-            rotation: i * 15  // 조금씩 회전
+            body: JSON.stringify({
+                extension: 'ai',
+                enabled: aiEnabled
+            })
         });
-        
-        slides.push(slide);
-    }
+    });
     
-    // 프레젠테이션 생성 완료 알림
-    console.log('Demo slides created:', slides);
-    
-    // UI 업데이트
-    document.getElementById('initialSetup').style.display = 'none';
-    document.getElementById('promptContainer').style.display = 'none';
-    document.getElementById('slideWorkspace').style.display = 'block';
-    
-    // 슬라이드 목록 및 현재 슬라이드 표시
-    renderSlidesList();
-    selectSlide(0);
-    
-    alert(`"${topic}" 주제로 ${count}장의 슬라이드가 생성되었습니다!`);
+    // AI 도구 버튼 이벤트
+    document.getElementById('analyzeBtn').addEventListener('click', analyzeCurrentSlide);
+    document.getElementById('generateImageBtn').addEventListener('click', generateImage);
+    document.getElementById('improveDesignBtn').addEventListener('click', improveDesign);
 }
 
-// 슬라이드 요소 렌더링
-function renderSlideElements() {
-    const elementsContainer = document.getElementById('slideElements');
-    if (!elementsContainer) return;
+// 현재 슬라이드 분석
+async function analyzeCurrentSlide() {
+    const currentSlide = getCurrentSlideData();
+    if (!currentSlide) return;
     
-    elementsContainer.innerHTML = '';
+    showLoading('분석 중...');
     
-    const slide = slides[currentSlide];
-    if (!slide.elements || slide.elements.length === 0) return;
-    
-    slide.elements.forEach(element => {
-        const el = document.createElement('div');
-        el.className = `slide-element ${element.type}`;
-        el.id = element.id;
-        el.style.position = 'absolute';
-        el.style.left = `${element.x}px`;
-        el.style.top = `${element.y}px`;
-        el.style.width = `${element.width}px`;
-        el.style.height = `${element.height}px`;
-        
-        // 요소 유형에 따라 다르게 렌더링
-        if (element.type === 'shape') {
-            el.style.backgroundColor = element.style.color || '#3498db';
-            el.style.borderColor = element.style.borderColor || 'transparent';
-            el.style.borderWidth = element.style.borderWidth || '1px';
-            el.style.borderStyle = element.style.borderStyle || 'solid';
-            
-            // 도형에 텍스트가 있는 경우
-            if (element.hasText && element.content) {
-                el.innerHTML = element.content;
-                el.style.color = element.style.textColor || '#000000';
-                el.style.fontSize = element.style.fontSize || '16px';
-                el.style.textAlign = element.style.textAlign || 'center';
-                el.style.display = 'flex';
-                el.style.alignItems = 'center';
-                el.style.justifyContent = 'center';
-            }
-            
-            // 특별한 도형 스타일 적용
-            applySpecialShapeStyles(element, el);
-        } else if (element.type === 'text') {
-            el.innerHTML = element.content || '텍스트를 입력하세요';
-            el.style.color = element.style.textColor || '#000000';
-            el.style.backgroundColor = element.style.color || 'transparent';
-            el.style.borderColor = element.style.borderColor || 'transparent';
-            el.style.borderWidth = element.style.borderWidth || '1px';
-            el.style.borderStyle = element.style.borderStyle || 'solid';
-            el.style.fontSize = element.style.fontSize || '16px';
-            el.style.textAlign = element.style.textAlign || 'center';
-            el.style.display = 'flex';
-            el.style.alignItems = 'center';
-            el.style.justifyContent = 'center';
-            el.style.wordWrap = 'break-word';
-            el.style.overflowWrap = 'break-word';
-        }
-        
-        // 투명도 적용
-        if (element.opacity !== undefined) {
-            el.style.opacity = element.opacity;
-        }
-        
-        // 회전 적용
-        if (element.rotation !== undefined) {
-            el.style.transform = `rotate(${element.rotation}deg)`;
-        }
-        
-        // 요소 클릭 이벤트 (선택)
-        el.addEventListener('click', function(e) {
-            selectElement(element);
-            e.stopPropagation();
+    try {
+        const response = await fetch('/analyze_slide', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                slide_index: currentSlideIndex,
+                content: currentSlide
+            })
         });
         
-        // 배경 클릭 시 선택 해제
-        elementsContainer.addEventListener('click', function(e) {
-            if (e.target === elementsContainer) {
-                unselectElements();
-            }
+        const data = await response.json();
+        if (data.success) {
+            addAISuggestion('분석 결과', data.analysis);
+        } else {
+            showError(data.error);
+        }
+    } catch (error) {
+        showError('분석 중 오류가 발생했습니다.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// 이미지 생성
+async function generateImage() {
+    const prompt = prompt('이미지 생성을 위한 설명을 입력하세요:');
+    if (!prompt) return;
+    
+    showLoading('이미지 생성 중...');
+    
+    try {
+        const response = await fetch('/generate_image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt
+            })
         });
         
-        // 드래그 기능 (간단 구현)
-        setupDragElement(el, element);
+        const data = await response.json();
+        if (data.success) {
+            addImageToSlide(data.image_url);
+        } else {
+            showError(data.error);
+        }
+    } catch (error) {
+        showError('이미지 생성 중 오류가 발생했습니다.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// 디자인 개선
+async function improveDesign() {
+    const currentSlide = getCurrentSlideData();
+    if (!currentSlide) return;
+    
+    showLoading('디자인 개선 중...');
+    
+    try {
+        const response = await fetch('/improve_design', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                slide_data: currentSlide
+            })
+        });
         
-        elementsContainer.appendChild(el);
+        const data = await response.json();
+        if (data.success) {
+            addAISuggestion('디자인 제안', data.suggestions);
+        } else {
+            showError(data.error);
+        }
+    } catch (error) {
+        showError('디자인 개선 중 오류가 발생했습니다.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// AI 제안 추가
+function addAISuggestion(title, content) {
+    const suggestionsContainer = document.getElementById('aiSuggestions');
+    const suggestion = document.createElement('div');
+    suggestion.className = 'ai-suggestion';
+    suggestion.innerHTML = `
+        <h4>${title}</h4>
+        <p>${content}</p>
+        <button class="apply-btn">적용</button>
+    `;
+    
+    suggestion.querySelector('.apply-btn').addEventListener('click', () => {
+        applyAISuggestion(content);
+    });
+    
+    suggestionsContainer.insertBefore(suggestion, suggestionsContainer.firstChild);
+}
+
+// 버전 히스토리 업데이트
+function updateVersionHistory() {
+    const historyContainer = document.getElementById('versionHistory');
+    historyContainer.innerHTML = '';
+    
+    versionHistory.forEach((version, index) => {
+        const versionItem = document.createElement('div');
+        versionItem.className = 'version-item';
+        versionItem.innerHTML = `
+            <div>버전 ${index + 1}</div>
+            <div>${new Date(version.timestamp * 1000).toLocaleString()}</div>
+        `;
+        
+        versionItem.addEventListener('click', () => {
+            restoreVersion(index);
+        });
+        
+        historyContainer.appendChild(versionItem);
     });
 }
 
-// 모든 요소 선택 해제
-function unselectElements() {
-    selectedElement = null;
-    document.querySelectorAll('.slide-element').forEach(el => {
-        el.classList.remove('selected');
-    });
+// 버전 복원
+async function restoreVersion(index) {
+    if (!confirm('이 버전으로 복원하시겠습니까?')) return;
     
-    // 삭제 버튼 비활성화
-    const deleteBtn = document.getElementById('deleteElementBtn');
-    if (deleteBtn) {
-        deleteBtn.disabled = true;
+    showLoading('버전 복원 중...');
+    
+    try {
+        const response = await fetch('/version_control', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'restore',
+                version_index: index
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            loadSlides();
+        } else {
+            showError(data.error);
+        }
+    } catch (error) {
+        showError('버전 복원 중 오류가 발생했습니다.');
+    } finally {
+        hideLoading();
     }
-    
-    // 스타일 패널 초기화
-    resetStylePanel();
 }
 
-// 랜덤 색상 생성 (투명도 지정 가능)
-function getRandomColor(alpha = 1) {
-    const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6', '#1abc9c', '#34495e', '#e67e22'];
-    let color = colors[Math.floor(Math.random() * colors.length)];
-    
-    // 투명도 적용
-    if (alpha < 1) {
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        color = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-    
-    return color;
-}
+// 페이지 로드 시 AI 확장 기능 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    initializeAIExtension();
+    // ... 기존 초기화 코드 ...
+});
