@@ -292,7 +292,7 @@ function updatePresenterTimer() {
     timerDisplay.textContent = formattedTime;
 }
 
-// 타이머 초기화
+// Reset and stop presenter timer
 export function resetPresenterTimer() {
     // 타이머 중지
     clearInterval(presenterTimerInterval);
@@ -310,14 +310,6 @@ export function resetPresenterTimer() {
     const icon = startTimerBtn?.querySelector('i');
     if (icon) {
         icon.className = 'fas fa-play';
-    }
-}
-
-// 타이머 중지
-export function stopPresenterTimer() {
-    if (presenterTimerRunning) {
-        clearInterval(presenterTimerInterval);
-        presenterTimerRunning = false;
     }
 }
 
@@ -346,7 +338,7 @@ function handlePresenterKeydown(event) {
         // ESC 키로 발표자 모드 종료
         import('./ui-modals.js').then(modalsModule => {
             modalsModule.closeModal(presenterModal);
-            stopPresenterTimer();
+            resetPresenterTimer();
         });
         event.preventDefault();
     }

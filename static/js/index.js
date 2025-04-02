@@ -449,12 +449,47 @@ export function initApp() {
     // 이벤트 리스너 등록
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
-    // 'DOMContentLoaded' 이벤트가 이미 발생했는지 확인
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
-    } else {
-        onDOMContentLoaded();
-    }
+    // 모듈 초기화
+    initializeModules();
+}
+
+// 모듈 초기화 함수
+function initializeModules() {
+    // 테마 모듈 초기화
+    import('./modules/themes.js')
+        .then(module => {
+            if (typeof module.initThemes === 'function') {
+                module.initThemes();
+                console.log('테마 모듈 초기화 완료');
+            }
+        })
+        .catch(error => {
+            console.error('테마 모듈 로드 실패:', error);
+        });
+    
+    // UI 모듈 초기화
+    import('./modules/ui.js')
+        .then(module => {
+            if (typeof module.initUI === 'function') {
+                module.initUI();
+                console.log('UI 모듈 초기화 완료');
+            }
+        })
+        .catch(error => {
+            console.error('UI 모듈 로드 실패:', error);
+        });
+    
+    // AI 모듈 초기화
+    import('./modules/ai.js')
+        .then(module => {
+            if (typeof module.initAI === 'function') {
+                module.initAI();
+                console.log('AI 모듈 초기화 완료');
+            }
+        })
+        .catch(error => {
+            console.error('AI 모듈 로드 실패:', error);
+        });
 }
 
 // DOM 로드 완료 후 실행

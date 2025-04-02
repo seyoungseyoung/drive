@@ -3,17 +3,18 @@
  * This module imports and initializes all UI sub-modules
  */
 
-import { initCoreUI, showPowerPointUI, updateUIState } from './ui-core.js';
+// Import all UI-related modules
+import { initCoreUI, showPowerPointUI, updateUIState, startSlideshow } from './ui-core.js';
 import { initLayout } from './ui-layout.js';
-import { initModals } from './ui-modals.js';
+import { initModals, openShapeModal, openImageModal, openChartModal, openExportModal, showModal } from './ui-modals.js';
 import { initShortcuts } from './ui-shortcuts.js';
-import { initAnalyzer } from './ui-analyzer.js';
-import { initPresenter } from './ui-presenter.js';
+import { initAnalyzer, showPresentationAnalyzer } from './ui-analyzer.js';
+import { initPresenter, updatePresenterView, initPresenterMode } from './ui-presenter.js';
 import { initElementHandlers } from './elements.js';
 
 // Initialize UI components
 export function initUI() {
-    console.log('PowerPoint 스타일 UI 초기화');
+    console.log('PowerPoint 스타일 UI 초기화 중...');
     
     // Initialize all UI modules in the proper order
     initCoreUI();       // Core UI components
@@ -39,7 +40,8 @@ export function initUI() {
 // Export methods from sub-modules for convenience
 export { 
     showPowerPointUI, 
-    updateUIState 
+    updateUIState,
+    startSlideshow
 } from './ui-core.js';
 
 export {
@@ -58,6 +60,5 @@ export {
     updatePresenterView,
     initPresenterMode,
     togglePresenterTimer,
-    resetPresenterTimer,
-    stopPresenterTimer
+    resetPresenterTimer
 } from './ui-presenter.js';

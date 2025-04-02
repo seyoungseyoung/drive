@@ -3,7 +3,7 @@
  */
 
 import { AppState, addNewSlide, duplicateCurrentSlide, deleteSelectedElement, undo, redo, exportPresentation } from '../index.js';
-import { changeSlideBackground, getCurrentColorPalette, getThemeByName } from './themes.js';
+import { getThemeByName, getCurrentColorPalette, changeSlideBackground } from './themes.js';
 
 // Initialize core UI components
 export function initCoreUI() {
@@ -285,4 +285,16 @@ export function updateSlideList() {
 
 export function updatePropertiesPanelFields() {
     console.log('updatePropertiesPanelFields will be implemented in elements module');
+}
+
+// Start slideshow function
+export function startSlideshow() {
+    // Import and use presenter module for slideshow
+    import('./ui-presenter.js').then(module => {
+        // Open the presenter mode which serves as the slideshow
+        document.getElementById('presenterViewBtn')?.click();
+    }).catch(error => {
+        console.error('Error starting slideshow:', error);
+        alert('슬라이드쇼를 시작하는 중 오류가 발생했습니다.');
+    });
 } 

@@ -538,45 +538,6 @@ input[type="color"] {
 .handle-w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
 .handle-nw { top: -6px; left: -6px; cursor: nw-resize; }
 
-.handle-rotate {
-    top: -20px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background-color: #106ebe; 
-    border-radius: 50%; 
-    width: 10px; 
-    height: 10px; 
-    cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7klEQVR4nO2UvU7DMBSGP1q4hY5kZGGGHYnXQKrEFB6IDVigz8AGILG3EjyABEgsXQAJOkJVncCWgIlIkDiWj9WJMvhIJ1v+zpdzfuQE/isiWVUGWkAHuAJGwLuJETACLoEDYD+SVZnZMaDpNCBRNwRSB+9OZVUCboBF04Be1j8zxxiwQG8B3Aag3YFo+DnvHDx1YG65Jw7YrJU9cL3d+wDo+gx4tEjSsv6mz4DeHDBHBvwPQXTRFNBzDDjPAlbWE8uKDp5NBXhC0LPa0cC9I8AnwXbkbBHIjO9dAXqBNfzNuPgv+yZI9tnmgSngG3uXbavgMUNAAAAAAElFTkSuQmCC'), auto;
-}
-
-.handle-skew-x {
-    top: -12px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background-color: #ff7f00; 
-    border-radius: 2px; 
-    width: 12px; 
-    height: 8px; 
-    cursor: ns-resize;
-    z-index: 99;
-}
-
-.handle-skew-y {
-    top: 50%; 
-    left: -12px; 
-    transform: translateY(-50%); 
-    background-color: #ff7f00; 
-    border-radius: 2px; 
-    width: 8px; 
-    height: 12px; 
-    cursor: ew-resize;
-    z-index: 99;
-}
-
-.handle-skew-x:hover, .handle-skew-y:hover {
-    background-color: #ff5500;
-}
-
 /* 요소 드래그 중 스타일 */
 .slide-element.dragging {
     opacity: 0.7;
@@ -759,22 +720,29 @@ input[type="color"] {
 /* =======================================================
    13. 버튼 스타일
    ======================================================= */
-.btn-primary {
-    background-color: #106ebe;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s, transform 0.1s;
+/* 공통 버튼 스타일 */
+.btn-primary, .btn-secondary, .ribbon-button, 
+.format-btn, .presenter-controls button, .timer-btn, 
+.ai-btn, .close-btn, .toggle-btn {
     aspect-ratio: 1;
-    min-width: 40px;
-    min-height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-primary, .btn-secondary {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 10px 16px;
+}
+
+.btn-primary {
+    background-color: #106ebe;
+    color: white;
+    border: none;
 }
 
 .btn-primary:hover {
@@ -789,17 +757,6 @@ input[type="color"] {
     background-color: #f8f9fa;
     color: #333;
     border: 1px solid #ddd;
-    padding: 10px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    aspect-ratio: 1;
-    min-width: 40px;
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
 }
 
 .btn-secondary:hover {
@@ -808,6 +765,40 @@ input[type="color"] {
 
 .btn-secondary:active {
     transform: translateY(1px);
+}
+
+.ribbon-button {
+    min-width: 52px;
+    min-height: 52px;
+    flex-direction: column;
+    padding: 4px 6px;
+}
+
+.format-btn {
+    min-width: 30px;
+    min-height: 30px;
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+
+.format-btn.active {
+    background-color: rgba(43, 87, 154, 0.2);
+    border-color: rgba(43, 87, 154, 0.4);
+    color: #2b579a;
+}
+
+.close-btn, .toggle-btn {
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0;
+    margin: 0;
+}
+
+.close-btn:hover {
+    color: #333;
 }
 
 /* =======================================================

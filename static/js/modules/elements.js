@@ -5,6 +5,8 @@
 // Track currently selected element
 let selectedElement = null;
 
+import { rgbToHex } from './ui-core.js';
+
 // Initialize elements module
 export function initElements() {
     console.log('Initializing elements module');
@@ -208,18 +210,38 @@ function setupDragAndResize() {
         }
     });
     
-    // For dragging (simplified implementation)
+    // For dragging (improved implementation)
     let isDragging = false;
     let dragStartX, dragStartY;
     let elementStartX, elementStartY;
+    let dragThrottle = false;
+    const throttleDelay = 10; // milliseconds
+    let draggedElement = null;
+    let dragGhost = null;
     
     // Mouse down on element - start drag
     canvas.addEventListener('mousedown', function(e) {
         const element = e.target.closest('.slide-element');
         if (!element) return;
         
-        // Select the element
-        selectElement(element);
+        // Check if we're clicking on a handle (don't start drag in that case)
+        if (e.target.closest('.selection-handle')) return;
+        
+        // Select the element if not already selected or if not holding shift
+        if (!element.classList.contains('selected') || !e.shiftKey) {
+            if (!e.shiftKey) {
+                deselectAllElements();
+            }
+            selectElement(element);
+        }
+        
+        // Start drag if not a text element being edited
+        if (element.getAttribute('data-type') === 'text' && 
+            document.activeElement === element) {
+            return; // Don't start drag if editing text
+        }
+        
+        draggedElement = element;
         
         // Start drag
         isDragging = true;
@@ -228,31 +250,136 @@ function setupDragAndResize() {
         elementStartX = parseInt(element.style.left) || 0;
         elementStartY = parseInt(element.style.top) || 0;
         
+        // Create a ghost for visual feedback
+        createDragGhost(element);
+        
+        // Add dragging class for visual feedback
+        element.classList.add('dragging');
+        
         // Prevent default to avoid text selection
         e.preventDefault();
     });
     
-    // Mouse move - drag element
+    // Mouse move - drag element with throttling for smoothness
     document.addEventListener('mousemove', function(e) {
-        if (!isDragging || !selectedElement) return;
+        if (!isDragging || !draggedElement) return;
         
-        const dx = e.clientX - dragStartX;
-        const dy = e.clientY - dragStartY;
-        
-        selectedElement.style.left = `${elementStartX + dx}px`;
-        selectedElement.style.top = `${elementStartY + dy}px`;
+        // Throttle the movement updates for better performance
+        if (!dragThrottle) {
+            dragThrottle = true;
+            
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            
+            // Update both the element and its ghost
+            draggedElement.style.left = `${elementStartX + dx}px`;
+            draggedElement.style.top = `${elementStartY + dy}px`;
+            
+            if (dragGhost) {
+                dragGhost.style.left = `${elementStartX + dx}px`;
+                dragGhost.style.top = `${elementStartY + dy}px`;
+            }
+            
+            // If this is a grouped element, move all elements in the group
+            if (draggedElement.getAttribute('data-group-id')) {
+                const groupId = draggedElement.getAttribute('data-group-id');
+                const groupElements = document.querySelectorAll(`.slide-element[data-group-id="${groupId}"]`);
+                
+                groupElements.forEach(groupElement => {
+                    if (groupElement !== draggedElement) {
+                        const elStartX = parseInt(groupElement.getAttribute('data-start-x')) || 0;
+                        const elStartY = parseInt(groupElement.getAttribute('data-start-y')) || 0;
+                        groupElement.style.left = `${elStartX + dx}px`;
+                        groupElement.style.top = `${elStartY + dy}px`;
+                    }
+                });
+            }
+            
+            // Reset throttle after delay
+            setTimeout(() => {
+                dragThrottle = false;
+            }, throttleDelay);
+        }
     });
     
     // Mouse up - end drag
     document.addEventListener('mouseup', function() {
-        if (isDragging && selectedElement) {
+        if (isDragging && draggedElement) {
             // Save the new position to the element data
-            // This would need to be implemented in a real app
-            // to update the slide data structure
-            console.log('Element moved to:', selectedElement.style.left, selectedElement.style.top);
+            const newX = parseInt(draggedElement.style.left) || 0;
+            const newY = parseInt(draggedElement.style.top) || 0;
+            
+            // Update the data attributes for future reference
+            draggedElement.setAttribute('data-x', newX);
+            draggedElement.setAttribute('data-y', newY);
+            
+            // If this is a grouped element, update all elements in the group
+            if (draggedElement.getAttribute('data-group-id')) {
+                const groupId = draggedElement.getAttribute('data-group-id');
+                const groupElements = document.querySelectorAll(`.slide-element[data-group-id="${groupId}"]`);
+                
+                groupElements.forEach(groupElement => {
+                    const elementX = parseInt(groupElement.style.left) || 0;
+                    const elementY = parseInt(groupElement.style.top) || 0;
+                    groupElement.setAttribute('data-start-x', elementX);
+                    groupElement.setAttribute('data-start-y', elementY);
+                });
+            }
+            
+            // Remove dragging class and ghost
+            draggedElement.classList.remove('dragging');
+            removeDragGhost();
         }
         
         isDragging = false;
+        draggedElement = null;
+    });
+    
+    // Create a drag ghost for visual feedback
+    function createDragGhost(element) {
+        removeDragGhost(); // Remove any existing ghost
+        
+        // Create ghost element
+        dragGhost = document.createElement('div');
+        dragGhost.className = 'drag-ghost';
+        dragGhost.style.position = 'absolute';
+        dragGhost.style.left = element.style.left;
+        dragGhost.style.top = element.style.top;
+        dragGhost.style.width = `${element.offsetWidth}px`;
+        dragGhost.style.height = `${element.offsetHeight}px`;
+        dragGhost.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        dragGhost.style.border = '1px dashed #2b579a';
+        dragGhost.style.pointerEvents = 'none';
+        dragGhost.style.zIndex = '1000';
+        
+        // Add to canvas
+        canvas.appendChild(dragGhost);
+    }
+    
+    // Remove drag ghost
+    function removeDragGhost() {
+        if (dragGhost) {
+            dragGhost.remove();
+            dragGhost = null;
+        }
+    }
+    
+    // Add multi-selection with shift key
+    canvas.addEventListener('mousedown', function(e) {
+        // Only handle shift + click for multi-selection
+        if (!e.shiftKey) return;
+        
+        const element = e.target.closest('.slide-element');
+        if (!element) return;
+        
+        // Toggle selection on this element
+        if (element.classList.contains('selected')) {
+            deselectElement(element);
+        } else {
+            selectElement(element, true); // true = add to selection
+        }
+        
+        e.preventDefault();
     });
 }
 
@@ -414,25 +541,22 @@ export function addImage(imageUrl) {
 // Export alias for compatibility with ui-modals.js
 export const addImageElement = addImage;
 
-// Select an element for editing
-export function selectElement(element) {
+// Deselect a specific element
+function deselectElement(element) {
     if (!element) return;
     
-    // Deselect all elements first
-    deselectAllElements();
+    element.classList.remove('selected');
     
-    // Select this element
-    selectedElement = element;
-    element.classList.add('selected');
+    // Remove selection handles
+    const handles = element.querySelectorAll('.selection-handle');
+    handles.forEach(handle => handle.remove());
     
-    // Add selection handles (simplified)
-    addSelectionHandles(element);
-    
-    // Enable delete and other buttons
-    enableElementButtons();
-    
-    // Update format panel with element properties
-    updateFormatPanel(element);
+    // Check if it was the only selected element
+    const selectedElements = document.querySelectorAll('.slide-element.selected');
+    if (selectedElements.length === 0) {
+        selectedElement = null;
+        disableElementButtons();
+    }
 }
 
 // Deselect all elements
@@ -452,15 +576,272 @@ function deselectAllElements() {
     disableElementButtons();
 }
 
+// Select an element for editing
+export function selectElement(element, addToSelection = false) {
+    if (!element) return;
+    
+    // If not adding to selection, deselect all first
+    if (!addToSelection) {
+        deselectAllElements();
+    }
+    
+    // Select this element
+    selectedElement = element;
+    element.classList.add('selected');
+    
+    // Add selection handles if not part of a group
+    if (!element.getAttribute('data-group-id')) {
+        addSelectionHandles(element);
+    }
+    
+    // If multiple elements are selected, show group controls
+    const selectedElements = document.querySelectorAll('.slide-element.selected');
+    if (selectedElements.length > 1) {
+        showGroupControls(selectedElements);
+    }
+    
+    // Enable delete and other buttons
+    enableElementButtons();
+    
+    // Update format panel with element properties
+    updateFormatPanel(element);
+}
+
+// Show grouping controls for multiple selected elements
+function showGroupControls(elements) {
+    // First check if all elements are already in the same group
+    const firstGroupId = elements[0].getAttribute('data-group-id');
+    const allSameGroup = Array.from(elements).every(el => 
+        el.getAttribute('data-group-id') === firstGroupId && firstGroupId !== null
+    );
+    
+    // Show the group button in the format panel
+    const formatPanel = document.querySelector('.panel-content[data-panel="format"]');
+    if (!formatPanel) return;
+    
+    // Check if group controls section exists
+    let groupSection = document.getElementById('groupControlsSection');
+    if (!groupSection) {
+        groupSection = document.createElement('div');
+        groupSection.id = 'groupControlsSection';
+        groupSection.className = 'panel-section';
+        groupSection.innerHTML = `
+            <h4>그룹 컨트롤</h4>
+            <div class="button-group">
+                <button id="groupElementsBtn" class="btn-secondary">
+                    <i class="fas fa-object-group"></i> 그룹화
+                </button>
+                <button id="ungroupElementsBtn" class="btn-secondary" style="display: none;">
+                    <i class="fas fa-object-ungroup"></i> 그룹 해제
+                </button>
+            </div>
+        `;
+        formatPanel.prepend(groupSection);
+        
+        // Add event listeners
+        const groupBtn = document.getElementById('groupElementsBtn');
+        const ungroupBtn = document.getElementById('ungroupElementsBtn');
+        
+        if (groupBtn) {
+            groupBtn.addEventListener('click', () => {
+                groupElements(document.querySelectorAll('.slide-element.selected'));
+            });
+        }
+        
+        if (ungroupBtn) {
+            ungroupBtn.addEventListener('click', () => {
+                ungroupElements(document.querySelectorAll('.slide-element.selected'));
+            });
+        }
+    }
+    
+    // Show/hide appropriate buttons based on grouping state
+    const groupBtn = document.getElementById('groupElementsBtn');
+    const ungroupBtn = document.getElementById('ungroupElementsBtn');
+    
+    if (groupBtn && ungroupBtn) {
+        if (allSameGroup && firstGroupId) {
+            groupBtn.style.display = 'none';
+            ungroupBtn.style.display = 'inline-flex';
+        } else {
+            groupBtn.style.display = 'inline-flex';
+            ungroupBtn.style.display = 'none';
+        }
+    }
+    
+    // Show the section
+    groupSection.style.display = 'block';
+}
+
+// Group selected elements
+export function groupElements(elements) {
+    if (!elements || elements.length < 2) return;
+    
+    // Generate a unique group ID
+    const groupId = 'group-' + Date.now();
+    
+    // Store initial positions for dragging
+    Array.from(elements).forEach(element => {
+        element.setAttribute('data-group-id', groupId);
+        element.setAttribute('data-start-x', parseInt(element.style.left) || 0);
+        element.setAttribute('data-start-y', parseInt(element.style.top) || 0);
+        
+        // Remove individual selection handles
+        const handles = element.querySelectorAll('.selection-handle');
+        handles.forEach(handle => handle.remove());
+    });
+    
+    // Create a group selection box
+    createGroupSelectionBox(elements, groupId);
+    
+    // Update UI
+    showGroupControls(Array.from(elements));
+}
+
+// Ungroup elements
+export function ungroupElements(elements) {
+    if (!elements || elements.length === 0) return;
+    
+    // Get the group ID from the first element
+    const groupId = elements[0].getAttribute('data-group-id');
+    if (!groupId) return;
+    
+    // Get all elements with this group ID
+    const groupElements = document.querySelectorAll(`.slide-element[data-group-id="${groupId}"]`);
+    
+    // Remove group ID and start positions
+    Array.from(groupElements).forEach(element => {
+        element.removeAttribute('data-group-id');
+        element.removeAttribute('data-start-x');
+        element.removeAttribute('data-start-y');
+        
+        // Add selection handles back to selected elements
+        if (element.classList.contains('selected')) {
+            addSelectionHandles(element);
+        }
+    });
+    
+    // Remove group selection box
+    const groupBox = document.querySelector(`.group-selection-box[data-group-id="${groupId}"]`);
+    if (groupBox) groupBox.remove();
+    
+    // Update UI
+    const groupSection = document.getElementById('groupControlsSection');
+    if (groupSection) {
+        groupSection.style.display = 'none';
+    }
+}
+
+// Create a visual box around grouped elements
+function createGroupSelectionBox(elements, groupId) {
+    // Find the bounding box that contains all elements
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    Array.from(elements).forEach(element => {
+        const left = parseInt(element.style.left) || 0;
+        const top = parseInt(element.style.top) || 0;
+        const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        
+        minX = Math.min(minX, left);
+        minY = Math.min(minY, top);
+        maxX = Math.max(maxX, left + width);
+        maxY = Math.max(maxY, top + height);
+    });
+    
+    // Create a group selection box
+    const canvas = document.getElementById('slide-canvas');
+    if (!canvas) return;
+    
+    const groupBox = document.createElement('div');
+    groupBox.className = 'group-selection-box';
+    groupBox.setAttribute('data-group-id', groupId);
+    groupBox.style.position = 'absolute';
+    groupBox.style.left = `${minX}px`;
+    groupBox.style.top = `${minY}px`;
+    groupBox.style.width = `${maxX - minX}px`;
+    groupBox.style.height = `${maxY - minY}px`;
+    groupBox.style.border = '2px dashed #106ebe';
+    groupBox.style.backgroundColor = 'rgba(16, 110, 190, 0.05)';
+    groupBox.style.pointerEvents = 'none';
+    groupBox.style.zIndex = '5';
+    
+    canvas.appendChild(groupBox);
+}
+
 // Add selection handles to element
 function addSelectionHandles(element) {
-    // Simplified - just add corner handles
-    const positions = ['nw', 'ne', 'se', 'sw'];
+    // Add corner handles for resize
+    const positions = ['nw', 'ne', 'se', 'sw', 'n', 'e', 's', 'w'];
     
     positions.forEach(pos => {
         const handle = document.createElement('div');
         handle.className = `selection-handle handle-${pos}`;
         element.appendChild(handle);
+    });
+    
+    // Setup resize functionality for handles
+    setupResizeHandles(element);
+}
+
+// Setup resize functionality for handles
+function setupResizeHandles(element) {
+    const handles = element.querySelectorAll('.selection-handle');
+    
+    handles.forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startWidth = element.offsetWidth;
+            const startHeight = element.offsetHeight;
+            const startLeft = parseInt(element.style.left) || 0;
+            const startTop = parseInt(element.style.top) || 0;
+            const handleClass = handle.className;
+            
+            const onMouseMove = (moveEvent) => {
+                moveEvent.preventDefault();
+                
+                const dx = moveEvent.clientX - startX;
+                const dy = moveEvent.clientY - startY;
+                
+                // Handle different resize directions
+                if (handleClass.includes('handle-e') || handleClass.includes('handle-ne') || handleClass.includes('handle-se')) {
+                    // Right side handles
+                    element.style.width = `${Math.max(20, startWidth + dx)}px`;
+                }
+                
+                if (handleClass.includes('handle-w') || handleClass.includes('handle-nw') || handleClass.includes('handle-sw')) {
+                    // Left side handles
+                    element.style.width = `${Math.max(20, startWidth - dx)}px`;
+                    element.style.left = `${startLeft + startWidth - parseInt(element.style.width)}px`;
+                }
+                
+                if (handleClass.includes('handle-n') || handleClass.includes('handle-nw') || handleClass.includes('handle-ne')) {
+                    // Top handles
+                    element.style.height = `${Math.max(20, startHeight - dy)}px`;
+                    element.style.top = `${startTop + startHeight - parseInt(element.style.height)}px`;
+                }
+                
+                if (handleClass.includes('handle-s') || handleClass.includes('handle-sw') || handleClass.includes('handle-se')) {
+                    // Bottom handles
+                    element.style.height = `${Math.max(20, startHeight + dy)}px`;
+                }
+            };
+            
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                
+                // Update format panel
+                updateFormatPanel(element);
+            };
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
     });
 }
 
@@ -632,65 +1013,6 @@ function updateFormatPanel(element) {
             }
         }
     }
-}
-
-// Helper function to convert RGB to HEX
-function rgbToHex(rgb) {
-    // If already in hex format, return it
-    if (rgb.startsWith('#')) return rgb;
-    
-    // Handle rgb(r, g, b) format
-    const rgbMatch = rgb.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
-    if (rgbMatch) {
-        return "#" + 
-            ("0" + parseInt(rgbMatch[1], 10).toString(16)).slice(-2) +
-            ("0" + parseInt(rgbMatch[2], 10).toString(16)).slice(-2) +
-            ("0" + parseInt(rgbMatch[3], 10).toString(16)).slice(-2);
-    }
-    
-    return rgb; // Return as-is if not in expected format
-}
-
-// 선택 핸들 생성
-function createSelectionHandles(element, container) {
-    // 기존 핸들 제거
-    clearSelectionHandles(container);
-    
-    // 각 모서리 및 중간 지점에 핸들 추가
-    const handlePositions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
-    
-    // 핸들 생성
-    handlePositions.forEach(position => {
-        const handle = document.createElement('div');
-        handle.className = `selection-handle handle-${position}`;
-        handle.setAttribute('data-handle', position);
-        container.appendChild(handle);
-    });
-    
-    // 회전 핸들 추가
-    const rotateHandle = document.createElement('div');
-    rotateHandle.className = 'selection-handle handle-rotate';
-    container.appendChild(rotateHandle);
-    
-    // 기울이기 핸들 추가
-    const skewXHandle = document.createElement('div');
-    skewXHandle.className = 'selection-handle handle-skew-x';
-    skewXHandle.setAttribute('data-handle', 'skew-x');
-    skewXHandle.style.left = '50%';
-    skewXHandle.style.top = '-20px';
-    skewXHandle.style.transform = 'translateX(-50%) translateY(-100%)';
-    container.appendChild(skewXHandle);
-    
-    const skewYHandle = document.createElement('div');
-    skewYHandle.className = 'selection-handle handle-skew-y';
-    skewYHandle.setAttribute('data-handle', 'skew-y');
-    skewYHandle.style.left = '-20px';
-    skewYHandle.style.top = '50%';
-    skewYHandle.style.transform = 'translateX(-100%) translateY(-50%)';
-    container.appendChild(skewYHandle);
-    
-    // 핸들 드래그 이벤트 설정
-    setupHandleDragEvents(container, element);
 }
 
 // Add text to shape
