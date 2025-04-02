@@ -3,757 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presentation AI Tool</title>
+    <title>PPT Editor - PowerPoint 스타일 프레젠테이션 에디터</title>
+    
+    <!-- CSS 스타일시트 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/charts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shape-editor.css') }}">
+    
+    <!-- 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 아이콘 라이브러리 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- 좌측 사이드바 -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>Presentation AI</h1>
+        <!-- 상단 리본 메뉴 바 -->
+        <div class="ribbon-menu">
+            <div class="ribbon-tabs">
+                <div class="ribbon-tab active" data-tab="home">홈</div>
+                <div class="ribbon-tab" data-tab="insert">삽입</div>
+                <div class="ribbon-tab" data-tab="design">디자인</div>
+                <div class="ribbon-tab" data-tab="animations">애니메이션</div>
+                <div class="ribbon-tab" data-tab="view">보기</div>
             </div>
-            <div class="sidebar-content">
-                <div class="slide-list" id="slideList">
-                    <!-- 슬라이드 썸네일이 여기에 표시됩니다 -->
-                </div>
-                <button id="addSlideBtn" class="action-btn">
-                    <i class="fas fa-plus"></i> 새 슬라이드
-                </button>
-            </div>
-        </div>
-
-        <!-- 메인 편집 영역 -->
-        <div class="main-content">
-            <!-- 상단 도구 모음 -->
-            <div class="toolbar">
-                <div class="tool-group">
-                    <button id="newSlideBtn" class="tool-btn" title="새 슬라이드">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button id="deleteSlideBtn" class="tool-btn" title="슬라이드 삭제">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <button id="duplicateSlideBtn" class="tool-btn" title="슬라이드 복제">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-                <div class="tool-group">
-                    <button id="addTextBtn" class="tool-btn" title="텍스트 추가">
-                        <i class="fas fa-font"></i>
-                    </button>
-                    <button id="addShapeBtn" class="tool-btn" title="도형 추가">
-                        <i class="fas fa-shapes"></i>
-                    </button>
-                    <button id="addImageBtn" class="tool-btn" title="이미지 추가">
-                        <i class="fas fa-image"></i>
-                    </button>
-                    <button id="addChartBtn" class="tool-btn" title="차트 추가">
-                        <i class="fas fa-chart-bar"></i>
-                    </button>
-                </div>
-                <div class="tool-group">
-                    <button id="undoBtn" class="tool-btn" title="실행 취소">
-                        <i class="fas fa-undo"></i>
-                    </button>
-                    <button id="redoBtn" class="tool-btn" title="다시 실행">
-                        <i class="fas fa-redo"></i>
-                    </button>
-                </div>
-                <div class="tool-group">
-                    <button id="toggleAIBtn" class="tool-btn" title="AI 도구">
-                        <i class="fas fa-robot"></i>
-                    </button>
-                    <button id="exportBtn" class="tool-btn" title="내보내기">
-                        <i class="fas fa-file-export"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 편집 영역 -->
-            <div class="editor-container">
-                <div class="slide-preview">
-                    <div id="currentSlide" class="slide-canvas">
-                        <!-- 현재 슬라이드 내용이 여기에 표시됩니다 -->
+            
+            <!-- 리본 콘텐츠 영역 -->
+            <div class="ribbon-content active" id="home-ribbon">
+                <div class="ribbon-group">
+                    <div class="ribbon-title">클립보드</div>
+                    <div class="ribbon-buttons">
+                        <button id="cutBtn" class="ribbon-button">
+                            <i class="fas fa-cut"></i>
+                            <span>잘라내기</span>
+                        </button>
+                        <button id="copyBtn" class="ribbon-button">
+                            <i class="fas fa-copy"></i>
+                            <span>복사</span>
+                        </button>
+                        <button id="pasteBtn" class="ribbon-button">
+                            <i class="fas fa-paste"></i>
+                            <span>붙여넣기</span>
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- 우측 속성 패널 -->
-        <div class="properties-panel">
-            <div class="panel-tabs">
-                <button class="tab-btn active" data-tab="style">스타일</button>
-                <button class="tab-btn" data-tab="position">위치/크기</button>
-                <button class="tab-btn" data-tab="format">서식</button>
-                <button class="tab-btn" data-tab="animation">애니메이션</button>
-                <button class="tab-btn" data-tab="transition">전환</button>
-            </div>
-            <div class="panel-content">
-                <!-- 스타일 탭 -->
-                <div class="tab-content active" id="styleTab">
-                    <!-- 슬라이드 배경 -->
-                    <div class="style-group">
-                        <h4>슬라이드 배경</h4>
-                        <div class="color-controls">
-                            <label>색상</label>
-                            <input type="color" id="backgroundColorPicker">
-                            <div class="preset-colors">
-                                <div class="color-preset" style="background-color: #ffffff"></div>
-                                <div class="color-preset" style="background-color: #f0f0f0"></div>
-                                <div class="color-preset" style="background-color: #000000"></div>
-                                <div class="color-preset" style="background-color: #3498db"></div>
-                                <div class="color-preset" style="background-color: #e74c3c"></div>
-                                <div class="color-preset" style="background-color: #2ecc71"></div>
-                            </div>
-                        </div>
-                        <div class="input-row">
-                            <label>불투명도</label>
-                            <input type="range" id="backgroundOpacitySlider" min="0" max="100" value="100">
-                            <span id="backgroundOpacityValue">100%</span>
-                        </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">슬라이드</div>
+                    <div class="ribbon-buttons">
+                        <button id="newSlideBtn" class="ribbon-button">
+                            <i class="fas fa-plus"></i>
+                            <span>새 슬라이드</span>
+                        </button>
+                        <button id="duplicateSlideBtn" class="ribbon-button">
+                            <i class="fas fa-copy"></i>
+                            <span>슬라이드 복제</span>
+                        </button>
+                        <button id="deleteSlideBtn" class="ribbon-button">
+                            <i class="fas fa-trash"></i>
+                            <span>슬라이드 삭제</span>
+                        </button>
                     </div>
-
-                    <!-- 테마 선택 -->
-                    <div class="style-group">
-                        <h4>테마</h4>
-                        <select id="themeSelect">
-                            <option value="modern">모던</option>
-                            <option value="classic">클래식</option>
-                            <option value="minimal">미니멀</option>
-                            <option value="corporate">기업형</option>
-                            <option value="creative">창의적</option>
-                        </select>
-                    </div>
-
-                    <!-- 색상 팔레트 -->
-                    <div class="style-group">
-                        <h4>색상 팔레트</h4>
-                        <select id="colorPaletteSelect">
-                            <option value="blue">파란색</option>
-                            <option value="green">초록색</option>
-                            <option value="purple">보라색</option>
-                            <option value="orange">주황색</option>
-                            <option value="monochrome">흑백</option>
-                            <option value="custom">사용자 정의</option>
-                        </select>
-                    </div>
-
-                    <!-- 글꼴 -->
-                    <div class="style-group">
-                        <h4>글꼴</h4>
-                        <select id="fontSelect">
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">글꼴</div>
+                    <div class="ribbon-controls">
+                        <select id="fontFamilySelect" class="ribbon-select">
                             <option value="Pretendard">Pretendard</option>
                             <option value="Arial">Arial</option>
-                            <option value="Times New Roman">Times New Roman</option>
                             <option value="Helvetica">Helvetica</option>
-                            <option value="Roboto">Roboto</option>
-                            <option value="Open Sans">Open Sans</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                        </select>
+                        <div class="ribbon-number-group">
+                            <input type="number" id="fontSizeInput" value="16" min="8" max="96">
+                            <div class="ribbon-number-buttons">
+                                <button id="increaseFontBtn"><i class="fas fa-chevron-up"></i></button>
+                                <button id="decreaseFontBtn"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ribbon-buttons font-style-buttons">
+                        <button id="boldBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button id="italicBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button id="underlineBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">단락</div>
+                    <div class="ribbon-buttons">
+                        <button id="alignLeftBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button id="alignCenterBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-align-center"></i>
+                        </button>
+                        <button id="alignRightBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-align-right"></i>
+                        </button>
+                        <button id="alignJustifyBtn" class="ribbon-button format-btn">
+                            <i class="fas fa-align-justify"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">정렬</div>
+                    <div class="ribbon-buttons">
+                        <button id="bringForwardBtn" class="ribbon-button">
+                            <i class="fas fa-bring-forward"></i>
+                            <span>앞으로</span>
+                        </button>
+                        <button id="sendBackwardBtn" class="ribbon-button">
+                            <i class="fas fa-send-backward"></i>
+                            <span>뒤로</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ribbon-content" id="insert-ribbon">
+                <div class="ribbon-group">
+                    <div class="ribbon-title">요소</div>
+                    <div class="ribbon-buttons">
+                        <button id="addTextBtn" class="ribbon-button">
+                            <i class="fas fa-font"></i>
+                            <span>텍스트</span>
+                        </button>
+                        <button id="addShapeBtn" class="ribbon-button">
+                            <i class="fas fa-shapes"></i>
+                            <span>도형</span>
+                        </button>
+                        <button id="addImageBtn" class="ribbon-button">
+                            <i class="fas fa-image"></i>
+                            <span>이미지</span>
+                        </button>
+                        <button id="addChartBtn" class="ribbon-button">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>차트</span>
+                        </button>
+                        <button id="addTableBtn" class="ribbon-button">
+                            <i class="fas fa-table"></i>
+                            <span>표</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">미디어</div>
+                    <div class="ribbon-buttons">
+                        <button id="addVideoBtn" class="ribbon-button">
+                            <i class="fas fa-video"></i>
+                            <span>비디오</span>
+                        </button>
+                        <button id="addAudioBtn" class="ribbon-button">
+                            <i class="fas fa-music"></i>
+                            <span>오디오</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">링크</div>
+                    <div class="ribbon-buttons">
+                        <button id="addLinkBtn" class="ribbon-button">
+                            <i class="fas fa-link"></i>
+                            <span>하이퍼링크</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ribbon-content" id="design-ribbon">
+                <div class="ribbon-group">
+                    <div class="ribbon-title">테마</div>
+                    <div class="ribbon-buttons theme-btns">
+                        <button class="theme-btn" data-theme="modern">
+                            <div class="theme-preview modern"></div>
+                            <span>모던</span>
+                        </button>
+                        <button class="theme-btn" data-theme="minimal">
+                            <div class="theme-preview minimal"></div>
+                            <span>미니멀</span>
+                        </button>
+                        <button class="theme-btn" data-theme="classic">
+                            <div class="theme-preview classic"></div>
+                            <span>클래식</span>
+                        </button>
+                        <button class="theme-btn" data-theme="corporate">
+                            <div class="theme-preview corporate"></div>
+                            <span>기업형</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">색상 팔레트</div>
+                    <div class="ribbon-buttons color-btns">
+                        <button class="color-btn" data-palette="blue">
+                            <div class="color-preview blue"></div>
+                        </button>
+                        <button class="color-btn" data-palette="green">
+                            <div class="color-preview green"></div>
+                        </button>
+                        <button class="color-btn" data-palette="red">
+                            <div class="color-preview red"></div>
+                        </button>
+                        <button class="color-btn" data-palette="purple">
+                            <div class="color-preview purple"></div>
+                        </button>
+                        <button class="color-btn" data-palette="orange">
+                            <div class="color-preview orange"></div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">배경</div>
+                    <div class="ribbon-buttons">
+                        <button id="bgColorBtn" class="ribbon-button">
+                            <i class="fas fa-fill-drip"></i>
+                            <span>색상</span>
+                        </button>
+                        <button id="bgImageBtn" class="ribbon-button">
+                            <i class="fas fa-image"></i>
+                            <span>이미지</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ribbon-content" id="animations-ribbon">
+                <div class="ribbon-group">
+                    <div class="ribbon-title">애니메이션</div>
+                    <div class="ribbon-buttons animation-btns">
+                        <button class="animation-btn" data-animation="fade">
+                            <div class="animation-preview fade"></div>
+                            <span>페이드</span>
+                        </button>
+                        <button class="animation-btn" data-animation="slide">
+                            <div class="animation-preview slide"></div>
+                            <span>슬라이드</span>
+                        </button>
+                        <button class="animation-btn" data-animation="zoom">
+                            <div class="animation-preview zoom"></div>
+                            <span>확대</span>
+                        </button>
+                        <button class="animation-btn" data-animation="flip">
+                            <div class="animation-preview flip"></div>
+                            <span>뒤집기</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">전환</div>
+                    <div class="ribbon-buttons transition-btns">
+                        <button class="transition-btn" data-transition="none">
+                            <div class="transition-preview none"></div>
+                            <span>없음</span>
+                        </button>
+                        <button class="transition-btn" data-transition="fade">
+                            <div class="transition-preview fade"></div>
+                            <span>페이드</span>
+                        </button>
+                        <button class="transition-btn" data-transition="slide">
+                            <div class="transition-preview slide"></div>
+                            <span>슬라이드</span>
+                        </button>
+                        <button class="transition-btn" data-transition="push">
+                            <div class="transition-preview push"></div>
+                            <span>푸시</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ribbon-content" id="view-ribbon">
+                <div class="ribbon-group">
+                    <div class="ribbon-title">보기</div>
+                    <div class="ribbon-buttons">
+                        <button id="normalViewBtn" class="ribbon-button">
+                            <i class="fas fa-edit"></i>
+                            <span>편집</span>
+                        </button>
+                        <button id="slideShowBtn" class="ribbon-button">
+                            <i class="fas fa-play"></i>
+                            <span>슬라이드 쇼</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">확대/축소</div>
+                    <div class="ribbon-controls">
+                        <select id="zoomSelect" class="ribbon-select">
+                            <option value="0.5">50%</option>
+                            <option value="0.75">75%</option>
+                            <option value="1" selected>100%</option>
+                            <option value="1.25">125%</option>
+                            <option value="1.5">150%</option>
+                            <option value="2">200%</option>
                         </select>
                     </div>
                 </div>
-
-                <!-- 위치/크기 탭 -->
-                <div class="tab-content" id="positionTab">
-                    <div class="style-group">
-                        <h4>위치</h4>
-                        <div class="input-row">
-                            <label>X</label>
-                            <input type="number" id="positionX" min="0" step="1">
-                            <span>px</span>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-title">AI 확장</div>
+                    <div class="ribbon-buttons">
+                        <button id="toggleAIBtn" class="ribbon-button">
+                            <i class="fas fa-robot"></i>
+                            <span>AI 도구</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 메인 작업 영역 -->
+        <div class="workspace">
+            <!-- 왼쪽 슬라이드 탐색기 -->
+            <div class="slide-explorer">
+                <div class="slides-header">
+                    <h3>슬라이드</h3>
+                    <div class="slide-controls">
+                        <button id="addSlideBtn" title="슬라이드 추가">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button id="duplicateSlideBtn2" title="슬라이드 복제">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button id="deleteSlideBtn2" title="슬라이드 삭제">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- 슬라이드 목록 -->
+                <div id="slideList" class="slide-list"></div>
+            </div>
+            
+            <!-- 중앙 편집 영역 -->
+            <div class="editor-area">
+                <div class="editor-toolbar">
+                    <div class="toolbar-left">
+                        <button id="undoBtn" title="실행 취소">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button id="redoBtn" title="다시 실행">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <span class="toolbar-separator"></span>
+                        <select id="slideLayoutSelect">
+                            <option value="blank">빈 슬라이드</option>
+                            <option value="title">제목 슬라이드</option>
+                            <option value="title-content">제목 및 내용</option>
+                            <option value="two-column">두 열 레이아웃</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-right">
+                        <button id="exportBtn" title="내보내기">
+                            <i class="fas fa-download"></i>
+                            <span>내보내기</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 슬라이드 편집 영역 -->
+                <div class="slide-editor">
+                    <div class="slide-canvas-container">
+                        <div id="currentSlide" class="slide-canvas"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 오른쪽 속성 패널 -->
+            <div class="properties-panel">
+                <div class="panel-header">
+                    <h3>속성</h3>
+                    <button id="closePropertiesBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="panel-tabs">
+                    <button class="panel-tab active" data-panel="style">스타일</button>
+                    <button class="panel-tab" data-panel="text">텍스트</button>
+                    <button class="panel-tab" data-panel="arrange">정렬</button>
+                    <button class="panel-tab" data-panel="animation">애니메이션</button>
+                </div>
+                
+                <!-- 스타일 패널 -->
+                <div class="panel-content active" id="style-panel">
+                    <div class="panel-section">
+                        <h4>색상 및 채우기</h4>
+                        <div class="color-picker-group">
+                            <label>배경색</label>
+                            <input type="color" id="elementBgColor">
                         </div>
-                        <div class="input-row">
-                            <label>Y</label>
-                            <input type="number" id="positionY" min="0" step="1">
-                            <span>px</span>
+                        <div class="color-picker-group">
+                            <label>테두리 색상</label>
+                            <input type="color" id="elementBorderColor">
+                        </div>
+                        <div class="slider-group">
+                            <label>투명도 <span id="opacityValue">100%</span></label>
+                            <input type="range" id="elementOpacity" min="0" max="100" value="100">
                         </div>
                     </div>
-
-                    <div class="style-group">
-                        <h4>크기</h4>
-                        <div class="input-row">
-                            <label>너비</label>
-                            <input type="number" id="elementWidth" min="1" step="1">
-                            <span>px</span>
+                    
+                    <div class="panel-section">
+                        <h4>테두리</h4>
+                        <div class="input-group">
+                            <label>두께</label>
+                            <input type="number" id="borderWidth" min="0" max="20" value="1">
                         </div>
-                        <div class="input-row">
-                            <label>높이</label>
-                            <input type="number" id="elementHeight" min="1" step="1">
-                            <span>px</span>
-                        </div>
-                        <div class="checkbox-row">
-                            <input type="checkbox" id="lockAspectRatio">
-                            <label for="lockAspectRatio">가로 세로 비율 유지</label>
+                        <div class="select-group">
+                            <label>스타일</label>
+                            <select id="borderStyle">
+                                <option value="solid">실선</option>
+                                <option value="dashed">파선</option>
+                                <option value="dotted">점선</option>
+                                <option value="double">이중선</option>
+                                <option value="none">없음</option>
+                            </select>
                         </div>
                     </div>
-
-                    <div class="style-group">
-                        <h4>회전</h4>
-                        <div class="input-row">
-                            <label>각도</label>
-                            <input type="number" id="rotationAngle" min="0" max="360" step="1" value="0">
-                            <span>°</span>
+                    
+                    <div class="panel-section">
+                        <h4>효과</h4>
+                        <div class="select-group">
+                            <label>그림자</label>
+                            <select id="shadowStyle">
+                                <option value="none">없음</option>
+                                <option value="light">약함</option>
+                                <option value="medium">중간</option>
+                                <option value="strong">강함</option>
+                            </select>
                         </div>
-                        <input type="range" id="rotationSlider" min="0" max="360" value="0">
                     </div>
-
-                    <div class="style-group">
+                </div>
+                
+                <!-- 텍스트 패널 -->
+                <div class="panel-content" id="text-panel">
+                    <div class="panel-section">
+                        <h4>글꼴</h4>
+                        <div class="select-group">
+                            <label>글꼴</label>
+                            <select id="textFontFamily">
+                                <option value="Pretendard">Pretendard</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>크기</label>
+                            <input type="number" id="textFontSize" min="8" max="96" value="16">
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h4>스타일</h4>
+                        <div class="button-group">
+                            <button id="textBoldBtn" class="format-btn">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button id="textItalicBtn" class="format-btn">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button id="textUnderlineBtn" class="format-btn">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                        </div>
+                        <div class="color-picker-group">
+                            <label>텍스트 색상</label>
+                            <input type="color" id="textColor">
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
                         <h4>정렬</h4>
-                        <div class="align-buttons">
-                            <button id="alignLeft" title="왼쪽 정렬"><i class="fas fa-align-left"></i></button>
-                            <button id="alignCenter" title="가운데 정렬"><i class="fas fa-align-center"></i></button>
-                            <button id="alignRight" title="오른쪽 정렬"><i class="fas fa-align-right"></i></button>
-                            <button id="alignTop" title="위쪽 정렬"><i class="fas fa-align-left fa-rotate-90"></i></button>
-                            <button id="alignMiddle" title="중앙 정렬"><i class="fas fa-align-center fa-rotate-90"></i></button>
-                            <button id="alignBottom" title="아래쪽 정렬"><i class="fas fa-align-right fa-rotate-90"></i></button>
+                        <div class="button-group">
+                            <button id="textAlignLeftBtn" class="format-btn">
+                                <i class="fas fa-align-left"></i>
+                            </button>
+                            <button id="textAlignCenterBtn" class="format-btn">
+                                <i class="fas fa-align-center"></i>
+                            </button>
+                            <button id="textAlignRightBtn" class="format-btn">
+                                <i class="fas fa-align-right"></i>
+                            </button>
+                            <button id="textAlignJustifyBtn" class="format-btn">
+                                <i class="fas fa-align-justify"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <!-- 서식 탭 -->
-                <div class="tab-content" id="formatTab">
-                    <!-- 도형 서식 (도형 선택 시) -->
-                    <div class="element-specific-controls" id="shapeFormatControls">
-                        <div class="style-group">
-                            <h4>채우기</h4>
-                            <div class="input-row">
-                                <label>색상</label>
-                                <input type="color" id="shapeFillColor">
+                
+                <!-- 정렬 패널 -->
+                <div class="panel-content" id="arrange-panel">
+                    <div class="panel-section">
+                        <h4>위치</h4>
+                        <div class="position-controls">
+                            <div class="input-group">
+                                <label>X</label>
+                                <input type="number" id="elementX" step="1">
                             </div>
-                            <div class="input-row">
-                                <label>불투명도</label>
-                                <input type="range" id="shapeFillOpacity" min="0" max="100" value="100">
-                                <span id="shapeFillOpacityValue">100%</span>
-                            </div>
-                        </div>
-
-                        <div class="style-group">
-                            <h4>테두리</h4>
-                            <div class="input-row">
-                                <label>색상</label>
-                                <input type="color" id="shapeStrokeColor">
-                            </div>
-                            <div class="input-row">
-                                <label>두께</label>
-                                <input type="range" id="shapeStrokeWidth" min="0" max="20" value="1">
-                                <span id="shapeStrokeWidthValue">1px</span>
-                            </div>
-                            <div class="input-row">
-                                <label>스타일</label>
-                                <select id="shapeStrokeStyle">
-                                    <option value="solid">실선</option>
-                                    <option value="dashed">파선</option>
-                                    <option value="dotted">점선</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="style-group">
-                            <h4>효과</h4>
-                            <div class="input-row">
-                                <label>그림자</label>
-                                <input type="checkbox" id="shapeShadow">
-                            </div>
-                            <div class="input-row shadow-controls">
-                                <label>크기</label>
-                                <input type="range" id="shapeShadowSize" min="0" max="20" value="5">
-                            </div>
-                            <div class="input-row shadow-controls">
-                                <label>색상</label>
-                                <input type="color" id="shapeShadowColor" value="#000000">
+                            <div class="input-group">
+                                <label>Y</label>
+                                <input type="number" id="elementY" step="1">
                             </div>
                         </div>
                     </div>
-
-                    <!-- 텍스트 서식 (텍스트 선택 시) -->
-                    <div class="element-specific-controls" id="textFormatControls">
-                        <div class="style-group">
-                            <h4>텍스트</h4>
-                            <div class="text-format-buttons">
-                                <button id="textBold" title="굵게"><i class="fas fa-bold"></i></button>
-                                <button id="textItalic" title="기울임"><i class="fas fa-italic"></i></button>
-                                <button id="textUnderline" title="밑줄"><i class="fas fa-underline"></i></button>
-                                <button id="textStrike" title="취소선"><i class="fas fa-strikethrough"></i></button>
+                    
+                    <div class="panel-section">
+                        <h4>크기</h4>
+                        <div class="size-controls">
+                            <div class="input-group">
+                                <label>너비</label>
+                                <input type="number" id="elementWidth" min="5" step="1">
                             </div>
-                            <div class="input-row">
-                                <label>색상</label>
-                                <input type="color" id="textColor">
+                            <div class="input-group">
+                                <label>높이</label>
+                                <input type="number" id="elementHeight" min="5" step="1">
                             </div>
-                            <div class="input-row">
-                                <label>크기</label>
-                                <input type="number" id="fontSize" min="8" max="96" step="1" value="16">
-                                <span>pt</span>
-                            </div>
-                            <div class="input-row">
-                                <label>줄 간격</label>
-                                <input type="number" id="lineHeight" min="0.5" max="3" step="0.1" value="1.2">
-                            </div>
-                            <div class="text-align-buttons">
-                                <button id="textAlignLeft" title="왼쪽 정렬"><i class="fas fa-align-left"></i></button>
-                                <button id="textAlignCenter" title="가운데 정렬"><i class="fas fa-align-center"></i></button>
-                                <button id="textAlignRight" title="오른쪽 정렬"><i class="fas fa-align-right"></i></button>
-                                <button id="textAlignJustify" title="양쪽 정렬"><i class="fas fa-align-justify"></i></button>
-                            </div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="lockAspectRatio">
+                            <label for="lockAspectRatio">비율 고정</label>
                         </div>
                     </div>
-
-                    <!-- 이미지 서식 (이미지 선택 시) -->
-                    <div class="element-specific-controls" id="imageFormatControls">
-                        <div class="style-group">
-                            <h4>이미지</h4>
-                            <div class="input-row">
-                                <label>불투명도</label>
-                                <input type="range" id="imageOpacity" min="0" max="100" value="100">
-                                <span id="imageOpacityValue">100%</span>
-                            </div>
-                            <div class="input-row">
-                                <label>테두리</label>
-                                <input type="checkbox" id="imageBorder">
-                            </div>
-                            <div class="input-row border-controls">
-                                <label>색상</label>
-                                <input type="color" id="imageBorderColor">
-                            </div>
-                            <div class="input-row border-controls">
-                                <label>두께</label>
-                                <input type="range" id="imageBorderWidth" min="1" max="10" value="1">
-                                <span id="imageBorderWidthValue">1px</span>
-                            </div>
-                        </div>
-
-                        <div class="style-group">
-                            <h4>효과</h4>
-                            <div class="input-row">
-                                <label>필터</label>
-                                <select id="imageFilter">
-                                    <option value="none">없음</option>
-                                    <option value="grayscale">흑백</option>
-                                    <option value="sepia">세피아</option>
-                                    <option value="blur">흐림</option>
-                                    <option value="brightness">밝게</option>
-                                    <option value="contrast">대비</option>
-                                </select>
-                            </div>
-                            <div class="input-row filter-intensity">
-                                <label>강도</label>
-                                <input type="range" id="imageFilterIntensity" min="0" max="100" value="50">
-                                <span id="imageFilterIntensityValue">50%</span>
-                            </div>
+                    
+                    <div class="panel-section">
+                        <h4>회전</h4>
+                        <div class="slider-group">
+                            <label>각도 <span id="rotationValue">0°</span></label>
+                            <input type="range" id="elementRotation" min="0" max="359" value="0">
                         </div>
                     </div>
-
-                    <!-- 차트 서식 (차트 선택 시) -->
-                    <div class="element-specific-controls" id="chartFormatControls">
-                        <div class="style-group">
-                            <h4>차트 유형</h4>
-                            <div class="chart-type-buttons">
-                                <button class="chart-type-btn" data-chart-type="bar" title="막대 차트"><i class="fas fa-chart-bar"></i></button>
-                                <button class="chart-type-btn" data-chart-type="line" title="선 차트"><i class="fas fa-chart-line"></i></button>
-                                <button class="chart-type-btn" data-chart-type="pie" title="원형 차트"><i class="fas fa-chart-pie"></i></button>
-                                <button class="chart-type-btn" data-chart-type="area" title="영역 차트"><i class="fas fa-chart-area"></i></button>
-                            </div>
-                        </div>
-
-                        <div class="style-group">
-                            <h4>데이터</h4>
-                            <button id="editChartDataBtn" class="edit-btn">차트 데이터 편집</button>
-                        </div>
-
-                        <div class="style-group">
-                            <h4>스타일</h4>
-                            <div class="input-row">
-                                <label>색상 팔레트</label>
-                                <select id="chartColorPalette">
-                                    <option value="default">기본</option>
-                                    <option value="pastel">파스텔</option>
-                                    <option value="monochrome">단색</option>
-                                    <option value="vivid">선명한</option>
-                                </select>
-                            </div>
-                            <div class="checkbox-row">
-                                <input type="checkbox" id="chartShowLegend" checked>
-                                <label for="chartShowLegend">범례 표시</label>
-                            </div>
-                            <div class="checkbox-row">
-                                <input type="checkbox" id="chartShowLabels" checked>
-                                <label for="chartShowLabels">레이블 표시</label>
-                            </div>
+                    
+                    <div class="panel-section">
+                        <h4>순서</h4>
+                        <div class="button-group">
+                            <button id="bringToFrontBtn">맨 앞으로</button>
+                            <button id="sendToBackBtn">맨 뒤로</button>
                         </div>
                     </div>
                 </div>
-
-                <!-- 애니메이션 탭 -->
-                <div class="tab-content" id="animationTab">
-                    <div class="style-group">
+                
+                <!-- 애니메이션 패널 -->
+                <div class="panel-content" id="animation-panel">
+                    <div class="panel-section">
                         <h4>애니메이션</h4>
-                        <select id="animationSelect">
-                            <option value="none">없음</option>
-                            <option value="fade">페이드</option>
-                            <option value="slide">슬라이드</option>
-                            <option value="bounce">바운스</option>
-                            <option value="zoom">확대/축소</option>
-                            <option value="flip">뒤집기</option>
-                            <option value="rotate">회전</option>
-                        </select>
-                    </div>
-
-                    <div class="style-group animation-controls">
-                        <h4>설정</h4>
-                        <div class="input-row">
-                            <label>지속 시간</label>
-                            <input type="range" id="animationDuration" min="0.1" max="5" step="0.1" value="1">
-                            <span id="animationDurationValue">1s</span>
-                        </div>
-                        <div class="input-row">
-                            <label>지연 시간</label>
-                            <input type="range" id="animationDelay" min="0" max="5" step="0.1" value="0">
-                            <span id="animationDelayValue">0s</span>
-                        </div>
-                        <div class="input-row">
-                            <label>시작 방법</label>
-                            <select id="animationTrigger">
-                                <option value="withPrevious">이전 요소와 함께</option>
-                                <option value="afterPrevious">이전 요소 이후</option>
-                                <option value="onClick">클릭 시</option>
+                        <div class="select-group">
+                            <label>유형</label>
+                            <select id="animationType">
+                                <option value="none">없음</option>
+                                <option value="fade">페이드</option>
+                                <option value="slide">슬라이드</option>
+                                <option value="zoom">확대/축소</option>
+                                <option value="flip">뒤집기</option>
                             </select>
                         </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h4>시간</h4>
+                        <div class="input-group">
+                            <label>지속 시간 (초)</label>
+                            <input type="number" id="animationDuration" min="0.1" max="10" step="0.1" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label>지연 시간 (초)</label>
+                            <input type="number" id="animationDelay" min="0" max="10" step="0.1" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h4>미리보기</h4>
+                        <button id="previewAnimationBtn">재생</button>
                     </div>
                 </div>
-
-                <!-- 전환 탭 -->
-                <div class="tab-content" id="transitionTab">
-                    <div class="style-group">
-                        <h4>전환 효과</h4>
-                        <select id="transitionSelect">
-                            <option value="none">없음</option>
-                            <option value="fade">페이드</option>
-                            <option value="slide">슬라이드</option>
-                            <option value="zoom">확대/축소</option>
-                            <option value="flip">뒤집기</option>
-                            <option value="rotate">회전</option>
-                            <option value="push">밀어내기</option>
-                            <option value="reveal">드러내기</option>
-                        </select>
+                
+                <!-- AI 확장 패널 -->
+                <div class="panel-content" id="ai-panel" style="display: none;">
+                    <div class="panel-section">
+                        <h4>AI 도구</h4>
+                        <div class="button-group">
+                            <button id="analyzeBtn">
+                                <i class="fas fa-magic"></i>
+                                <span>콘텐츠 분석</span>
+                            </button>
+                            <button id="generateImageBtn">
+                                <i class="fas fa-image"></i>
+                                <span>이미지 생성</span>
+                            </button>
+                            <button id="improveDesignBtn">
+                                <i class="fas fa-paint-brush"></i>
+                                <span>디자인 개선</span>
+                            </button>
+                        </div>
                     </div>
-
-                    <div class="style-group transition-controls">
-                        <h4>설정</h4>
-                        <div class="input-row">
-                            <label>지속 시간</label>
-                            <input type="range" id="transitionDuration" min="0.1" max="5" step="0.1" value="1">
-                            <span id="transitionDurationValue">1s</span>
-                        </div>
-                        <div class="input-row">
-                            <label>방향</label>
-                            <select id="transitionDirection">
-                                <option value="left">왼쪽에서</option>
-                                <option value="right">오른쪽에서</option>
-                                <option value="top">위에서</option>
-                                <option value="bottom">아래에서</option>
-                            </select>
-                        </div>
+                    
+                    <div class="panel-section">
+                        <h4>AI 제안</h4>
+                        <div id="aiSuggestions" class="ai-suggestions"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- AI 생성 모달 -->
-    <div id="aiModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>AI 프레젠테이션 생성</h2>
-                <span class="close">&times;</span>
+        
+        <!-- 상태 표시줄 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="slideInfo">슬라이드 1/1</span>
             </div>
-            <div class="modal-body">
-                <textarea id="aiPrompt" placeholder="프레젠테이션의 주제와 원하는 내용을 자세히 설명해주세요..."></textarea>
-                <div class="ai-options">
-                    <div class="option-group">
-                        <label>슬라이드 수</label>
-                        <input type="number" id="slideCount" min="1" max="20" value="5">
-                    </div>
-                    <div class="option-group">
-                        <label>스타일</label>
-                        <select id="presentationStyle">
-                            <option value="professional">전문적</option>
-                            <option value="creative">창의적</option>
-                            <option value="minimal">미니멀</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="generateBtn" class="btn-primary">생성하기</button>
+            <div class="status-right">
+                <span id="zoomInfo">100%</span>
             </div>
         </div>
     </div>
-
+    
+    <!-- 모달 대화상자 -->
     <!-- 도형 선택 모달 -->
     <div id="shapeModal" class="modal">
         <div class="modal-content">
-            <h3>도형 선택</h3>
-            <div class="shape-grid">
-                <div class="shape-item" data-shape="rectangle">사각형</div>
-                <div class="shape-item" data-shape="circle">원</div>
-                <div class="shape-item" data-shape="triangle">삼각형</div>
-                <div class="shape-item" data-shape="line">선</div>
-                <div class="shape-item" data-shape="arrow">화살표</div>
-                <div class="shape-item" data-shape="star">별</div>
+            <div class="modal-header">
+                <h3>도형 선택</h3>
+                <button class="close-btn">&times;</button>
             </div>
-            <button class="close-btn">닫기</button>
+            <div class="modal-body">
+                <div class="shape-category">기본 도형</div>
+                <div class="shape-grid">
+                    <div class="shape-item" data-shape="rectangle">
+                        <div class="shape-preview rectangle"></div>
+                        <span>직사각형</span>
+                    </div>
+                    <div class="shape-item" data-shape="circle">
+                        <div class="shape-preview circle"></div>
+                        <span>원</span>
+                    </div>
+                    <div class="shape-item" data-shape="triangle">
+                        <div class="shape-preview triangle"></div>
+                        <span>삼각형</span>
+                    </div>
+                    <div class="shape-item" data-shape="pentagon">
+                        <div class="shape-preview pentagon"></div>
+                        <span>오각형</span>
+                    </div>
+                    <div class="shape-item" data-shape="hexagon">
+                        <div class="shape-preview hexagon"></div>
+                        <span>육각형</span>
+                    </div>
+                    <div class="shape-item" data-shape="star">
+                        <div class="shape-preview star"></div>
+                        <span>별</span>
+                    </div>
+                </div>
+                
+                <div class="shape-category">화살표 및 선</div>
+                <div class="shape-grid">
+                    <div class="shape-item" data-shape="arrow">
+                        <div class="shape-preview arrow"></div>
+                        <span>화살표</span>
+                    </div>
+                    <div class="shape-item" data-shape="arrow-left">
+                        <div class="shape-preview arrow-left"></div>
+                        <span>왼쪽 화살표</span>
+                    </div>
+                    <div class="shape-item" data-shape="double-arrow">
+                        <div class="shape-preview double-arrow"></div>
+                        <span>양방향 화살표</span>
+                    </div>
+                    <div class="shape-item" data-shape="line">
+                        <div class="shape-preview line"></div>
+                        <span>선</span>
+                    </div>
+                    <div class="shape-item" data-shape="dashed-line">
+                        <div class="shape-preview dashed-line"></div>
+                        <span>점선</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
+    
     <!-- 이미지 업로드 모달 -->
     <div id="imageModal" class="modal">
         <div class="modal-content">
-            <h3>이미지 추가</h3>
-            <div class="image-upload">
-                <input type="file" id="imageInput" accept="image/*">
-                <button id="uploadImageBtn">업로드</button>
+            <div class="modal-header">
+                <h3>이미지 추가</h3>
+                <button class="close-btn">&times;</button>
             </div>
-            <button class="close-btn">닫기</button>
+            <div class="modal-body">
+                <div class="upload-area">
+                    <p>이미지 파일을 드래그하거나 클릭하여 업로드하세요</p>
+                    <input type="file" id="imageUploadInput" accept="image/*">
+                    <button id="uploadImageBtn">파일 선택</button>
+                </div>
+                <div class="image-preview-container">
+                    <img id="imagePreview" src="" alt="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelImageBtn" class="btn-secondary">취소</button>
+                <button id="addImageToSlideBtn" class="btn-primary">슬라이드에 추가</button>
+            </div>
         </div>
     </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-
-    <!-- Font Awesome 추가 -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
+    
+    <!-- 내보내기 모달 -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>프레젠테이션 내보내기</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="option-group">
+                        <label>형식</label>
+                        <select id="exportFormat">
+                            <option value="pptx">PowerPoint (PPTX)</option>
+                            <option value="pdf">PDF</option>
+                            <option value="png">이미지 (PNG)</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>품질</label>
+                        <select id="exportQuality">
+                            <option value="high">높음</option>
+                            <option value="medium">중간</option>
+                            <option value="low">낮음</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelExportBtn" class="btn-secondary">취소</button>
+                <button id="confirmExportBtn" class="btn-primary">내보내기</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- 디버그 정보 -->
-    <div id="debug-info" style="position: fixed; bottom: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 5px; font-size: 12px; z-index: 9999; display: none;">
-        <div>Slides: <span id="debug-slide-count">0</span></div>
-        <div>Current: <span id="debug-current-slide">0</span></div>
-        <div>Elements: <span id="debug-elements">0</span></div>
-        <div><button id="toggle-debug">Hide</button></div>
-    </div>
-
-    <!-- 디버그 토글 -->
-    <button id="show-debug" style="position: fixed; bottom: 0; right: 0; z-index: 9998; background: #333; color: white; border: none; padding: 5px;">Debug</button>
-
-    <!-- 차트 데이터 편집 모달 -->
-    <div id="chartDataModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>차트 데이터 편집</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="chart-data-container">
-                    <table id="chartDataTable">
-                        <thead>
-                            <tr>
-                                <th>카테고리</th>
-                                <th>시리즈 1</th>
-                                <th>시리즈 2</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="text" value="카테고리 1"></td>
-                                <td><input type="number" value="10"></td>
-                                <td><input type="number" value="20"></td>
-                                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
-                            </tr>
-                            <tr>
-                                <td><input type="text" value="카테고리 2"></td>
-                                <td><input type="number" value="15"></td>
-                                <td><input type="number" value="25"></td>
-                                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
-                            </tr>
-                            <tr>
-                                <td><input type="text" value="카테고리 3"></td>
-                                <td><input type="number" value="8"></td>
-                                <td><input type="number" value="18"></td>
-                                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <div class="chart-data-buttons">
-                        <button id="addChartRowBtn">행 추가</button>
-                        <button id="addChartColumnBtn">열 추가</button>
-                    </div>
-                    
-                    <div class="chart-labels">
-                        <div class="input-row">
-                            <label>차트 제목</label>
-                            <input type="text" id="chartTitle" placeholder="차트 제목">
-                        </div>
-                        <div class="input-row">
-                            <label>X축 레이블</label>
-                            <input type="text" id="chartXLabel" placeholder="X축 레이블">
-                        </div>
-                        <div class="input-row">
-                            <label>Y축 레이블</label>
-                            <input type="text" id="chartYLabel" placeholder="Y축 레이블">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="applyChartDataBtn" class="btn-primary">적용</button>
-                <button id="cancelChartDataBtn">취소</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 도형 편집 모달 -->
-    <div id="shapeEditorModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>도형 세부 편집</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="shape-editing-container">
-                    <div class="shape-preview">
-                        <div id="shapePreview"></div>
-                    </div>
-
-                    <div class="shape-controls">
-                        <div class="control-section">
-                            <h4>기본 속성</h4>
-                            <div class="input-row">
-                                <label>도형 종류</label>
-                                <select id="shapeTypeSelect">
-                                    <option value="rectangle">사각형</option>
-                                    <option value="ellipse">타원</option>
-                                    <option value="triangle">삼각형</option>
-                                    <option value="pentagon">오각형</option>
-                                    <option value="hexagon">육각형</option>
-                                    <option value="star">별</option>
-                                    <option value="arrow">화살표</option>
-                                    <option value="callout">말풍선</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="control-section">
-                            <h4>모서리 둥글기</h4>
-                            <div class="input-row">
-                                <label>모든 모서리</label>
-                                <input type="range" id="allCornerRadius" min="0" max="50" value="0">
-                                <span id="allCornerRadiusValue">0px</span>
-                            </div>
-                            
-                            <div class="checkbox-row">
-                                <input type="checkbox" id="individualCorners">
-                                <label for="individualCorners">각 모서리 개별 설정</label>
-                            </div>
-                            
-                            <div class="individual-corners">
-                                <div class="input-row">
-                                    <label>좌상단</label>
-                                    <input type="range" id="topLeftRadius" min="0" max="50" value="0">
-                                    <span id="topLeftRadiusValue">0px</span>
-                                </div>
-                                <div class="input-row">
-                                    <label>우상단</label>
-                                    <input type="range" id="topRightRadius" min="0" max="50" value="0">
-                                    <span id="topRightRadiusValue">0px</span>
-                                </div>
-                                <div class="input-row">
-                                    <label>좌하단</label>
-                                    <input type="range" id="bottomLeftRadius" min="0" max="50" value="0">
-                                    <span id="bottomLeftRadiusValue">0px</span>
-                                </div>
-                                <div class="input-row">
-                                    <label>우하단</label>
-                                    <input type="range" id="bottomRightRadius" min="0" max="50" value="0">
-                                    <span id="bottomRightRadiusValue">0px</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="control-section">
-                            <h4>특수 속성</h4>
-                            <div class="input-row star-properties">
-                                <label>별 꼭지점 수</label>
-                                <input type="range" id="starPoints" min="3" max="12" value="5">
-                                <span id="starPointsValue">5</span>
-                            </div>
-                            <div class="input-row star-properties">
-                                <label>별 안쪽 반지름</label>
-                                <input type="range" id="starInnerRadius" min="20" max="90" value="40">
-                                <span id="starInnerRadiusValue">40%</span>
-                            </div>
-                            <div class="input-row arrow-properties">
-                                <label>화살표 머리 크기</label>
-                                <input type="range" id="arrowHeadSize" min="10" max="80" value="30">
-                                <span id="arrowHeadSizeValue">30%</span>
-                            </div>
-                            <div class="input-row polygon-properties">
-                                <label>다각형 각 수</label>
-                                <input type="range" id="polygonSides" min="3" max="12" value="5">
-                                <span id="polygonSidesValue">5</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="applyShapeEditorBtn" class="btn-primary">적용</button>
-                <button id="cancelShapeEditorBtn">취소</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 그리드 및 안내선 설정 모달 -->
-    <div id="gridSettingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>그리드 및 안내선 설정</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="grid-settings">
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="showGrid">
-                        <label for="showGrid">그리드 표시</label>
-                    </div>
-                    <div class="input-row">
-                        <label>그리드 크기</label>
-                        <input type="range" id="gridSize" min="5" max="50" value="20">
-                        <span id="gridSizeValue">20px</span>
-                    </div>
-                    <div class="input-row">
-                        <label>그리드 색상</label>
-                        <input type="color" id="gridColor" value="#cccccc">
-                    </div>
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="snapToGrid">
-                        <label for="snapToGrid">그리드에 맞춤</label>
-                    </div>
-                </div>
-
-                <div class="guides-settings">
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="showGuides">
-                        <label for="showGuides">안내선 표시</label>
-                    </div>
-                    <div class="input-row">
-                        <label>안내선 색상</label>
-                        <input type="color" id="guideColor" value="#3498db">
-                    </div>
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="snapToGuides" checked>
-                        <label for="snapToGuides">안내선에 맞춤</label>
-                    </div>
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="showSmartGuides" checked>
-                        <label for="showSmartGuides">스마트 안내선 표시</label>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="applyGridSettingsBtn" class="btn-primary">적용</button>
-                <button id="cancelGridSettingsBtn">취소</button>
-            </div>
-        </div>
-    </div>
+    <div id="debug-info" style="display: none;"></div>
+    <button id="show-debug" style="display: none;">Debug</button>
+    
+    <!-- 스크립트 -->
+    <!-- Chart.js 필수 스크립트 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 모듈 스크립트 -->
+    <script type="module" src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,415 @@
+/* Shape Editor Styles */
+
+/* 도형 선택 표시 */
+.slide-element.selected {
+    outline: 2px dashed #3498db;
+    outline-offset: 1px;
+    position: relative;
+    z-index: 10;
+}
+
+/* 크기 조절 핸들 */
+.resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border: 1px solid #3498db;
+    z-index: 20;
+}
+
+/* 각 위치별 핸들 스타일 */
+.handle-nw {
+    left: -5px;
+    top: -5px;
+    cursor: nwse-resize;
+}
+
+.handle-n {
+    left: 50%;
+    top: -5px;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.handle-ne {
+    right: -5px;
+    top: -5px;
+    cursor: nesw-resize;
+}
+
+.handle-e {
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.handle-se {
+    right: -5px;
+    bottom: -5px;
+    cursor: nwse-resize;
+}
+
+.handle-s {
+    left: 50%;
+    bottom: -5px;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.handle-sw {
+    left: -5px;
+    bottom: -5px;
+    cursor: nesw-resize;
+}
+
+.handle-w {
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+/* 회전 핸들 */
+.rotation-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #3498db;
+    border: 1px solid white;
+    border-radius: 50%;
+    left: 50%;
+    top: -30px;
+    transform: translateX(-50%);
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 12 A4 4 0 1 1 8 12 A4 4 0 1 1 16 12 M12 8 L12 12 L14 14"/></svg>') 8 8, auto;
+    z-index: 20;
+}
+
+/* 회전 핸들 라인 */
+.rotation-line {
+    position: absolute;
+    width: 1px;
+    height: 20px;
+    background-color: #3498db;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* 정밀 편집 패널 */
+#fine-control-panel {
+    position: absolute;
+    min-width: 250px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* 패널 헤더 */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.panel-header h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.panel-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+}
+
+.panel-header .close-btn:hover {
+    color: #333;
+}
+
+/* 컨트롤 그룹 */
+.fine-control-group {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.fine-control-group label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.fine-control-group input {
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.fine-control-group input[type="number"] {
+    width: 100%;
+}
+
+.fine-control-group input[type="range"] {
+    width: 100%;
+    padding: 0;
+}
+
+.fine-control-group input[type="color"] {
+    width: 40px;
+    height: 25px;
+    padding: 0;
+    border: 1px solid #ddd;
+}
+
+/* 테두리 컨트롤 */
+.border-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.border-controls input[type="number"] {
+    width: 50px;
+}
+
+.border-controls select {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* 비율 고정 컨트롤 */
+.aspect-control {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.aspect-control label {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+}
+
+.aspect-control input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* 도형 메뉴 */
+.shape-dropdown {
+    position: absolute;
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 10px;
+}
+
+.shape-category {
+    font-weight: bold;
+    margin: 5px 0;
+    color: #333;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #eee;
+}
+
+.shape-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.shape-item:hover {
+    background-color: #f5f5f5;
+}
+
+.shape-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    background-color: #3498db;
+}
+
+/* 도형 아이콘 */
+.shape-icon.rectangle {
+    /* 기본 형태 */
+}
+
+.shape-icon.circle {
+    border-radius: 50%;
+}
+
+.shape-icon.triangle {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 20px solid #3498db;
+    background-color: transparent;
+}
+
+.shape-icon.star {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.shape-icon.arrow {
+    clip-path: polygon(0% 30%, 70% 30%, 70% 0%, 100% 50%, 70% 100%, 70% 70%, 0% 70%);
+}
+
+/* 도형 타입별 스타일 */
+.slide-element.shape[data-shape="rectangle"] {
+    /* 기본 직사각형 스타일 */
+}
+
+.slide-element.shape[data-shape="circle"] {
+    border-radius: 50%;
+}
+
+.slide-element.shape[data-shape="triangle"] {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.slide-element.shape[data-shape="star"] {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.slide-element.shape[data-shape="pentagon"] {
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+.slide-element.shape[data-shape="hexagon"] {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.slide-element.shape[data-shape="arrow"] {
+    clip-path: polygon(0% 30%, 70% 30%, 70% 0%, 100% 50%, 70% 100%, 70% 70%, 0% 70%);
+}
+
+.slide-element.shape[data-shape="double-arrow"] {
+    clip-path: polygon(30% 0%, 70% 0%, 70% 30%, 100% 30%, 100% 70%, 70% 70%, 70% 100%, 30% 100%, 30% 70%, 0% 70%, 0% 30%, 30% 30%);
+}
+
+/* 텍스트 요소 스타일 */
+.slide-element.text {
+    min-width: 50px;
+    min-height: 20px;
+    padding: 5px;
+    cursor: text;
+    overflow: hidden;
+}
+
+.slide-element.text[contenteditable="true"] {
+    outline: none;
+    cursor: text;
+}
+
+/* 이미지 요소 스타일 */
+.slide-element.image {
+    overflow: hidden;
+}
+
+.slide-element.image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 다양한 화살표 스타일 */
+.slide-element.shape[data-shape="arrow-right"] {
+    clip-path: polygon(0% 30%, 70% 30%, 70% 0%, 100% 50%, 70% 100%, 70% 70%, 0% 70%);
+}
+
+.slide-element.shape[data-shape="arrow-left"] {
+    clip-path: polygon(100% 30%, 30% 30%, 30% 0%, 0% 50%, 30% 100%, 30% 70%, 100% 70%);
+}
+
+.slide-element.shape[data-shape="arrow-up"] {
+    clip-path: polygon(30% 100%, 30% 30%, 0% 30%, 50% 0%, 100% 30%, 70% 30%, 70% 100%);
+}
+
+.slide-element.shape[data-shape="arrow-down"] {
+    clip-path: polygon(30% 0%, 30% 70%, 0% 70%, 50% 100%, 100% 70%, 70% 70%, 70% 0%);
+}
+
+/* 선 스타일 */
+.slide-element.shape[data-shape="line"] {
+    height: 2px !important;
+    background-color: black;
+    transform-origin: center left;
+}
+
+.slide-element.shape[data-shape="dashed-line"] {
+    height: 2px !important;
+    background: repeating-linear-gradient(to right, black 0, black 5px, transparent 5px, transparent 10px);
+    transform-origin: center left;
+}
+
+.slide-element.shape[data-shape="dotted-line"] {
+    height: 2px !important;
+    background: repeating-linear-gradient(to right, black 0, black 2px, transparent 2px, transparent 6px);
+    transform-origin: center left;
+}
+
+/* 스타일 및 애니메이션 효과 */
+.resize-handle:hover {
+    background-color: #3498db;
+    transform: scale(1.2);
+}
+
+.rotation-handle:hover {
+    background-color: #2980b9;
+    transform: translateX(-50%) scale(1.2);
+}
+
+/* 도형 그림자 */
+.slide-element.with-shadow {
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+    #fine-control-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        width: 100%;
+        max-height: 50vh;
+        overflow-y: auto;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .resize-handle {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .rotation-handle {
+        width: 14px;
+        height: 14px;
+    }
+} 

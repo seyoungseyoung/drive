@@ -1,0 +1,97 @@
+/* reset.css */
+/* 모든 브라우저에서 일관된 스타일링을 위한 CSS 리셋 */
+
+/* 기본 여백 제거 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* HTML 요소 기본 설정 */
+html, body {
+    height: 100%;
+    width: 100%;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* 기본 글꼴 및 색상 */
+body {
+    font-family: var(--font-family, 'Pretendard, sans-serif');
+    color: var(--text-color, #333333);
+    background-color: var(--bg-color, #f8f9fa);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 인라인 요소 기본 설정 */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 목록 스타일 제거 */
+ul, ol {
+    list-style: none;
+}
+
+/* 테이블 기본 설정 */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* 이미지, 미디어, 캔버스 요소 기본 설정 */
+img, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* 입력 요소 기본 설정 */
+input, button, textarea, select {
+    font: inherit;
+    color: inherit;
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* 텍스트 선택 스타일 */
+::selection {
+    background-color: var(--primary-color, #3498db);
+    color: white;
+}
+
+/* 포커스 스타일 */
+:focus {
+    outline: 2px solid var(--primary-color, #3498db);
+    outline-offset: 1px;
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* 기본 애니메이션 속도 설정 */
+* {
+    transition: all 0.2s ease-in-out;
+} 

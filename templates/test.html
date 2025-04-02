@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT 에디터 모듈 테스트</title>
+    
+    <!-- CSS 스타일시트 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/charts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shape-editor.css') }}">
+    
+    <!-- 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 아이콘 라이브러리 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="test-container">
+        <header class="test-header">
+            <h1>PPT 에디터 모듈 테스트</h1>
+            <p>콘솔을 열어 테스트 결과를 확인하세요.</p>
+        </header>
+        
+        <div class="test-content">
+            <div class="test-sidebar">
+                <h2>테스트 항목</h2>
+                <ul class="test-list">
+                    <li class="test-item" data-test="app">앱 초기화</li>
+                    <li class="test-item" data-test="slides">슬라이드 생성</li>
+                    <li class="test-item" data-test="themes">테마</li>
+                    <li class="test-item" data-test="elements">요소</li>
+                    <li class="test-item" data-test="charts">차트</li>
+                    <li class="test-item" data-test="shapes">도형 편집기</li>
+                </ul>
+            </div>
+            
+            <div class="test-main">
+                <div class="test-controls">
+                    <button id="runAllTestsBtn" class="btn-primary">모든 테스트 실행</button>
+                    <button id="clearConsoleBtn" class="btn-secondary">콘솔 지우기</button>
+                </div>
+                
+                <div class="test-preview">
+                    <h2>미리보기</h2>
+                    <div class="slide-canvas-container">
+                        <div id="currentSlide" class="slide-canvas">
+                            <!-- 테스트 슬라이드 내용 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="test-results">
+                    <h2>테스트 결과</h2>
+                    <div id="testLog" class="test-log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 리소스 로드 -->
+    <div id="resource-container" style="display: none;">
+        <!-- 테마 버튼 (테스트용) -->
+        <div class="theme-buttons-test">
+            <button class="theme-btn" data-theme="modern">모던</button>
+            <button class="theme-btn" data-theme="minimal">미니멀</button>
+            <button class="theme-btn" data-theme="classic">클래식</button>
+            <button class="theme-btn" data-theme="corporate">기업형</button>
+        </div>
+        
+        <!-- 테스트용 버튼 -->
+        <button id="addTextBtn">텍스트 추가</button>
+        <button id="addShapeBtn">도형 추가</button>
+        <button id="addChartBtn">차트 추가</button>
+    </div>
+    
+    <!-- 스타일 -->
+    <style>
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .test-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .test-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+        }
+        
+        .test-sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .test-sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .test-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .test-item {
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .test-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .test-item.active {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+        
+        .test-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .test-preview {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .test-preview h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .slide-canvas-container {
+            padding: 20px;
+            background-color: #eee;
+            border-radius: 8px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .slide-canvas {
+            width: 640px;
+            height: 360px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .test-results {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .test-results h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .test-log {
+            background-color: #212529;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+    
+    <!-- 스크립트 -->
+    <script type="module" src="{{ url_for('static', filename='js/test.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 콘솔 로그 캡처
+            const originalConsoleLog = console.log;
+            const testLog = document.getElementById('testLog');
+            
+            console.log = function(...args) {
+                originalConsoleLog.apply(console, args);
+                
+                // 로그 추가
+                const logLine = document.createElement('div');
+                logLine.textContent = args.map(arg => {
+                    if (typeof arg === 'object') {
+                        return JSON.stringify(arg);
+                    }
+                    return String(arg);
+                }).join(' ');
+                
+                testLog.appendChild(logLine);
+                testLog.scrollTop = testLog.scrollHeight;
+            };
+            
+            // 콘솔 지우기
+            document.getElementById('clearConsoleBtn').addEventListener('click', () => {
+                testLog.innerHTML = '';
+            });
+            
+            // 테스트 항목 선택
+            document.querySelectorAll('.test-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.test-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // 여기에 개별 테스트 실행 코드 추가 가능
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
