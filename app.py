@@ -14,14 +14,21 @@ load_dotenv()
 DEEPSEAK_API_KEY = os.getenv('DEEPSEAK_API_KEY')
 
 # 로깅 설정
-logging.basicConfig(level=logging.INFO,
-                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                   filename='server.log',
-                   filemode='a')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('server.log'),
+        logging.StreamHandler()  # 콘솔에도 로그 출력
+    ]
+)
 logger = logging.getLogger('ppt_agent')
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-limit
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['ALLOWED_EXTENSIONS'] = {'pptx', 'pdf', 'jpg', 'jpeg', 'png'}
 
 # 세션 데이터 저장
 ppt_sessions = {}
@@ -98,6 +105,61 @@ def generate_from_topic():
             slide_count = 1
         elif slide_count > 20:
             slide_count = 20
+        
+        # API 키가 없는 경우 기본 슬라이드 생성 (테스트용)
+        if not DEEPSEAK_API_KEY:
+            logger.warning("DeepSeek API 키가 없어 기본 슬라이드를 생성합니다.")
+            
+            slides_data = []
+            
+            # 타이틀 슬라이드
+            slides_data.append({
+                "title": f"{topic}",
+                "content": "프레젠테이션 소개",
+                "elements": [
+                    {
+                        "type": "shape",
+                        "content": "rectangle",
+                        "x": 100,
+                        "y": 300,
+                        "width": 600,
+                        "height": 5,
+                        "style": {
+                            "color": "#3498db",
+                            "borderStyle": "solid"
+                        }
+                    }
+                ]
+            })
+            
+            # 내용 슬라이드
+            for i in range(1, slide_count):
+                slides_data.append({
+                    "title": f"{topic} - 슬라이드 {i+1}",
+                    "content": f"이 슬라이드는 {topic}에 관한 내용을 담고 있습니다.",
+                    "elements": [
+                        {
+                            "type": "shape",
+                            "content": "circle" if i % 3 == 0 else "rectangle" if i % 3 == 1 else "triangle",
+                            "x": 500,
+                            "y": 150,
+                            "width": 100,
+                            "height": 100,
+                            "style": {
+                                "color": "#2ecc71" if i % 3 == 0 else "#e74c3c" if i % 3 == 1 else "#f1c40f",
+                                "borderStyle": "solid"
+                            }
+                        }
+                    ]
+                })
+            
+            # 슬라이드 데이터 저장
+            ppt_sessions[session_id]['slides'] = slides_data
+            
+            return jsonify({
+                'success': True,
+                'slides': slides_data
+            })
             
         # 슬라이드 구조 생성 요청 메시지
         messages = [
@@ -286,6 +348,40 @@ def analyze_slides():
         
         slides = ppt_sessions[session_id]['slides']
         
+        # API 키가 없는 경우 테스트용 분석 결과 생성
+        if not DEEPSEAK_API_KEY:
+            logger.warning("DeepSeek API 키가 없어 테스트용 분석 결과를 생성합니다.")
+            
+            analysis_data = {
+                "overall_feedback": "전체적으로 프레젠테이션의 구조는 양호하나, 슬라이드별 내용의 깊이와 시각적 요소의 다양성을 개선하면 더 효과적인 발표가 될 것입니다.",
+                "improvement_suggestions": [
+                    {
+                        "slide_index": 0,
+                        "suggestion": "타이틀 슬라이드에 부제목을 추가하여 프레젠테이션의 목적을 명확히 하세요.",
+                        "priority": "high",
+                        "auto_applicable": True,
+                        "changes": {
+                            "content": "프레젠테이션 소개 - 핵심 내용과 주요 논점"
+                        }
+                    }
+                ]
+            }
+            
+            # 각 슬라이드에 대한 제안 추가
+            for i in range(1, len(slides)):
+                suggestion = {
+                    "slide_index": i,
+                    "suggestion": f"슬라이드 {i+1}의 내용을 더 구체적으로 작성하고 관련 이미지를 추가하세요.",
+                    "priority": "medium" if i % 2 == 0 else "low",
+                    "auto_applicable": False
+                }
+                analysis_data["improvement_suggestions"].append(suggestion)
+            
+            return jsonify({
+                'success': True,
+                'analysis': analysis_data
+            })
+        
         # 슬라이드 정보 추출
         slides_info = []
         for i, slide in enumerate(slides):
@@ -436,5 +532,13 @@ def apply_suggestion():
 if __name__ == '__main__':
     # 디렉토리 확인
     os.makedirs('uploads', exist_ok=True)
-    app.run(host='0.0.0.0', port=8081, debug=True)
+    os.makedirs('static', exist_ok=True)
+    
+    # 서버 설정
+    host = '0.0.0.0'  # 모든 IP에서 접근 가능
+    port = 5000
+    debug = True
+    
+    logger.info(f"Starting server on {host}:{port}")
+    app.run(host=host, port=port, debug=debug)
 
