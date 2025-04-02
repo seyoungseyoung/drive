@@ -7,12 +7,27 @@ let selectedElement = null;
 
 import { rgbToHex } from './ui-core.js';
 
+// Font options for text elements
+const availableFonts = [
+    { name: 'Arial', value: 'Arial, sans-serif' },
+    { name: 'Times New Roman', value: 'Times New Roman, serif' },
+    { name: 'Courier New', value: 'Courier New, monospace' },
+    { name: 'Georgia', value: 'Georgia, serif' },
+    { name: 'Verdana', value: 'Verdana, sans-serif' },
+    { name: 'Tahoma', value: 'Tahoma, sans-serif' },
+    { name: 'Trebuchet MS', value: 'Trebuchet MS, sans-serif' },
+    { name: 'Impact', value: 'Impact, sans-serif' },
+    { name: 'Comic Sans MS', value: 'Comic Sans MS, cursive' },
+    { name: 'Helvetica', value: 'Helvetica, Arial, sans-serif' }
+];
+
 // Initialize elements module
 export function initElements() {
     console.log('Initializing elements module');
     setupElementButtons();
     setupShapeMenu();
     setupDragAndResize();
+    setupTextFormatting();
 }
 
 // Initialization function for ui.js to call
@@ -155,6 +170,84 @@ function setupFormatControlButtons() {
     if (alignLeft) alignLeft.addEventListener('click', () => applyTextAlignChange('left'));
     if (alignCenter) alignCenter.addEventListener('click', () => applyTextAlignChange('center'));
     if (alignRight) alignRight.addEventListener('click', () => applyTextAlignChange('right'));
+}
+
+// Setup text formatting controls
+function setupTextFormatting() {
+    // Font family selector
+    const fontFamilySelect = document.getElementById('fontFamily');
+    if (fontFamilySelect) {
+        // Populate font options
+        availableFonts.forEach(font => {
+            const option = document.createElement('option');
+            option.value = font.value;
+            option.textContent = font.name;
+            option.style.fontFamily = font.value;
+            fontFamilySelect.appendChild(option);
+        });
+        
+        // Add change event
+        fontFamilySelect.addEventListener('change', (e) => {
+            applyFontFamily(e.target.value);
+        });
+    }
+    
+    // Font size input
+    const fontSize = document.getElementById('fontSize');
+    if (fontSize) {
+        fontSize.addEventListener('change', (e) => {
+            applyTextSizeChange(e.target.value);
+        });
+    }
+    
+    // Bold button
+    const boldBtn = document.getElementById('boldTextBtn');
+    if (boldBtn) {
+        boldBtn.addEventListener('click', () => {
+            toggleTextStyle('bold');
+        });
+    }
+    
+    // Italic button
+    const italicBtn = document.getElementById('italicTextBtn');
+    if (italicBtn) {
+        italicBtn.addEventListener('click', () => {
+            toggleTextStyle('italic');
+        });
+    }
+    
+    // Underline button
+    const underlineBtn = document.getElementById('underlineTextBtn');
+    if (underlineBtn) {
+        underlineBtn.addEventListener('click', () => {
+            toggleTextStyle('underline');
+        });
+    }
+    
+    // Text alignment buttons
+    const alignLeft = document.getElementById('alignLeft');
+    const alignCenter = document.getElementById('alignCenter');
+    const alignRight = document.getElementById('alignRight');
+    
+    if (alignLeft) alignLeft.addEventListener('click', () => applyTextAlignChange('left'));
+    if (alignCenter) alignCenter.addEventListener('click', () => applyTextAlignChange('center'));
+    if (alignRight) alignRight.addEventListener('click', () => applyTextAlignChange('right'));
+    
+    // Bullet list button
+    const bulletListBtn = document.getElementById('bulletListBtn');
+    if (bulletListBtn) {
+        bulletListBtn.addEventListener('click', () => {
+            applyBulletList();
+        });
+    }
+    
+    // Numbered list button
+    const numberedListBtn = document.getElementById('numberedListBtn');
+    if (numberedListBtn) {
+        numberedListBtn.addEventListener('click', () => {
+            applyNumberedList();
+        });
+    }
 }
 
 // Show the shape dropdown menu
@@ -454,6 +547,7 @@ export function addTextBox() {
     element.className = 'slide-element text';
     element.id = `text-${Date.now()}`;
     element.setAttribute('data-type', 'text');
+    element.contentEditable = true;
     
     // Set default position and size
     element.style.position = 'absolute';
@@ -461,20 +555,26 @@ export function addTextBox() {
     element.style.top = '50%';
     element.style.transform = 'translate(-50%, -50%)';
     element.style.width = '200px';
-    element.style.height = 'auto';
     element.style.minHeight = '40px';
-    element.style.backgroundColor = 'transparent';
-    element.style.color = '#000000';
-    element.style.fontSize = '16px';
-    element.style.textAlign = 'center';
     element.style.padding = '10px';
     
-    // Make editable
-    element.contentEditable = true;
-    element.textContent = '텍스트를 입력하세요';
+    // Set default styling
+    element.style.backgroundColor = 'transparent';
+    element.style.border = '1px dashed #ccc';
+    element.style.fontFamily = 'Arial, sans-serif';
+    element.style.fontSize = '16px';
+    element.style.color = '#000000';
+    element.style.textAlign = 'center';
+    element.style.cursor = 'text';
+    
+    // Set default content
+    element.innerHTML = 'Click to edit text';
     
     // Add to canvas
     canvas.appendChild(element);
+    
+    // Make interactive
+    makeElementInteractive(element);
     
     // Select the new element
     selectElement(element);
@@ -482,7 +582,6 @@ export function addTextBox() {
     // Focus to start editing
     setTimeout(() => {
         element.focus();
-        
         // Select all text
         const range = document.createRange();
         range.selectNodeContents(element);
@@ -491,7 +590,156 @@ export function addTextBox() {
         sel.addRange(range);
     }, 10);
     
+    // Return the element
     return element;
+}
+
+// Apply font family to selected text element
+function applyFontFamily(fontFamily) {
+    if (!selectedElement || !isTextElement(selectedElement)) return;
+    
+    // Check if there's selected text within the element
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0 && selection.toString().length > 0 && selectedElement.contains(selection.anchorNode)) {
+        // Apply to selected text only
+        document.execCommand('fontName', false, fontFamily);
+    } else {
+        // Apply to entire element
+        selectedElement.style.fontFamily = fontFamily;
+    }
+}
+
+// Toggle text style (bold, italic, underline)
+function toggleTextStyle(style) {
+    if (!selectedElement || !isTextElement(selectedElement)) return;
+    
+    // Get current element to store state
+    const element = selectedElement;
+    
+    // Check if there's a selection
+    const selection = window.getSelection();
+    const hasSelection = selection.rangeCount > 0 && 
+                        selection.toString().length > 0 && 
+                        element.contains(selection.anchorNode);
+    
+    if (hasSelection) {
+        // Apply style to selection only
+        switch (style) {
+            case 'bold':
+                document.execCommand('bold', false, null);
+                break;
+            case 'italic':
+                document.execCommand('italic', false, null);
+                break;
+            case 'underline':
+                document.execCommand('underline', false, null);
+                break;
+        }
+    } else {
+        // Apply style to entire element
+        switch (style) {
+            case 'bold':
+                if (element.style.fontWeight === 'bold') {
+                    element.style.fontWeight = 'normal';
+                } else {
+                    element.style.fontWeight = 'bold';
+                }
+                break;
+            case 'italic':
+                if (element.style.fontStyle === 'italic') {
+                    element.style.fontStyle = 'normal';
+                } else {
+                    element.style.fontStyle = 'italic';
+                }
+                break;
+            case 'underline':
+                if (element.style.textDecoration === 'underline') {
+                    element.style.textDecoration = 'none';
+                } else {
+                    element.style.textDecoration = 'underline';
+                }
+                break;
+        }
+    }
+    
+    // Update the formatting buttons to reflect current state
+    updateTextFormattingButtons();
+}
+
+// Apply bullet list formatting
+function applyBulletList() {
+    if (!selectedElement || !isTextElement(selectedElement)) return;
+    
+    document.execCommand('insertUnorderedList', false, null);
+}
+
+// Apply numbered list formatting
+function applyNumberedList() {
+    if (!selectedElement || !isTextElement(selectedElement)) return;
+    
+    document.execCommand('insertOrderedList', false, null);
+}
+
+// Update the text formatting buttons to reflect current state
+function updateTextFormattingButtons() {
+    if (!selectedElement || !isTextElement(selectedElement)) return;
+    
+    // Check current state
+    const computedStyle = window.getComputedStyle(selectedElement);
+    
+    // Update bold button
+    const boldBtn = document.getElementById('boldTextBtn');
+    if (boldBtn) {
+        boldBtn.classList.toggle('active', computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700);
+    }
+    
+    // Update italic button
+    const italicBtn = document.getElementById('italicTextBtn');
+    if (italicBtn) {
+        italicBtn.classList.toggle('active', computedStyle.fontStyle === 'italic');
+    }
+    
+    // Update underline button
+    const underlineBtn = document.getElementById('underlineTextBtn');
+    if (underlineBtn) {
+        underlineBtn.classList.toggle('active', computedStyle.textDecoration.includes('underline'));
+    }
+    
+    // Update font family selector
+    const fontFamilySelect = document.getElementById('fontFamily');
+    if (fontFamilySelect) {
+        const currentFont = computedStyle.fontFamily;
+        
+        // Find the best match
+        for (let i = 0; i < fontFamilySelect.options.length; i++) {
+            const option = fontFamilySelect.options[i];
+            if (currentFont.includes(option.text)) {
+                fontFamilySelect.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    // Update font size
+    const fontSize = document.getElementById('fontSize');
+    if (fontSize) {
+        // Extract the size value (remove 'px')
+        const size = parseInt(computedStyle.fontSize);
+        if (!isNaN(size)) {
+            fontSize.value = size;
+        }
+    }
+    
+    // Update alignment buttons
+    const textAlign = computedStyle.textAlign;
+    
+    const alignLeft = document.getElementById('alignLeft');
+    const alignCenter = document.getElementById('alignCenter');
+    const alignRight = document.getElementById('alignRight');
+    
+    if (alignLeft) alignLeft.classList.toggle('active', textAlign === 'left');
+    if (alignCenter) alignCenter.classList.toggle('active', textAlign === 'center');
+    if (alignRight) alignRight.classList.toggle('active', textAlign === 'right');
 }
 
 // Handle image upload
@@ -541,6 +789,11 @@ export function addImage(imageUrl) {
 // Export alias for compatibility with ui-modals.js
 export const addImageElement = addImage;
 
+// Check if an element is a text element
+function isTextElement(element) {
+    return element && element.getAttribute('data-type') === 'text';
+}
+
 // Deselect a specific element
 function deselectElement(element) {
     if (!element) return;
@@ -580,34 +833,39 @@ function deselectAllElements() {
 export function selectElement(element, addToSelection = false) {
     if (!element) return;
     
-    // If not adding to selection, deselect all first
+    // If not adding to selection, deselect all elements first
     if (!addToSelection) {
         deselectAllElements();
     }
     
-    // Select this element
-    selectedElement = element;
+    // Add selected class
     element.classList.add('selected');
     
-    // Add selection handles if not part of a group
-    if (!element.getAttribute('data-group-id')) {
-        addSelectionHandles(element);
-    }
+    // Store as selected element
+    selectedElement = element;
     
-    // If multiple elements are selected, show group controls
-    const selectedElements = document.querySelectorAll('.slide-element.selected');
-    if (selectedElements.length > 1) {
-        showGroupControls(selectedElements);
-    }
+    // Show selection handles
+    addSelectionHandles(element);
     
-    // Enable delete and other buttons
+    // Enable buttons
     enableElementButtons();
     
-    // Update format panel with element properties
+    // Update formatting panel
     updateFormatPanel(element);
+    
+    // If this is a text element, update text formatting buttons
+    if (isTextElement(element)) {
+        updateTextFormattingButtons();
+    }
+    
+    // Check if we have multiple elements selected
+    const selectedElements = document.querySelectorAll('.slide-element.selected');
+    if (selectedElements.length > 1) {
+        showGroupControls(Array.from(selectedElements));
+    }
 }
 
-// Show grouping controls for multiple selected elements
+// Show controls for grouped elements
 function showGroupControls(elements) {
     // First check if all elements are already in the same group
     const firstGroupId = elements[0].getAttribute('data-group-id');
@@ -732,7 +990,7 @@ export function ungroupElements(elements) {
     }
 }
 
-// Create a visual box around grouped elements
+// Create a box around grouped elements
 function createGroupSelectionBox(elements, groupId) {
     // Find the bounding box that contains all elements
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -769,7 +1027,7 @@ function createGroupSelectionBox(elements, groupId) {
     canvas.appendChild(groupBox);
 }
 
-// Add selection handles to element
+// Add selection handles to an element
 function addSelectionHandles(element) {
     // Add corner handles for resize
     const positions = ['nw', 'ne', 'se', 'sw', 'n', 'e', 's', 'w'];
@@ -784,7 +1042,7 @@ function addSelectionHandles(element) {
     setupResizeHandles(element);
 }
 
-// Setup resize functionality for handles
+// Setup resize handles for an element
 function setupResizeHandles(element) {
     const handles = element.querySelectorAll('.selection-handle');
     
@@ -845,7 +1103,7 @@ function setupResizeHandles(element) {
     });
 }
 
-// Enable element control buttons
+// Enable element-related buttons
 function enableElementButtons() {
     const deleteBtn = document.getElementById('deleteBtn');
     if (deleteBtn) deleteBtn.disabled = false;
@@ -860,7 +1118,7 @@ function enableElementButtons() {
     if (sendBackwardBtn) sendBackwardBtn.disabled = false;
 }
 
-// Disable element control buttons
+// Disable element-related buttons
 function disableElementButtons() {
     const deleteBtn = document.getElementById('deleteBtn');
     if (deleteBtn) deleteBtn.disabled = true;
@@ -910,7 +1168,7 @@ function duplicateSelectedElement() {
     selectElement(clone);
 }
 
-// Bring the selected element forward
+// Bring selected element forward
 function bringElementForward() {
     if (!selectedElement) return;
     
@@ -918,7 +1176,7 @@ function bringElementForward() {
     parent.appendChild(selectedElement);
 }
 
-// Send the selected element backward
+// Send selected element backward
 function sendElementBackward() {
     if (!selectedElement) return;
     
@@ -930,92 +1188,69 @@ function sendElementBackward() {
 function updateFormatPanel(element) {
     if (!element) return;
     
-    const type = element.getAttribute('data-type');
+    // Show/hide appropriate controls based on element type
+    const textControls = document.getElementById('text-formatting-controls');
+    const shapeControls = document.getElementById('shape-formatting-controls');
     
-    // Show/hide text-specific controls
-    const textInputContainer = document.getElementById('textInputContainer');
-    if (textInputContainer) {
-        textInputContainer.style.display = (type === 'text' || element.getAttribute('data-has-text') === 'true') ? 'block' : 'none';
+    if (element.getAttribute('data-type') === 'text') {
+        // Show text controls, hide shape controls
+        if (textControls) textControls.style.display = 'block';
+        if (shapeControls) shapeControls.style.display = 'none';
+        
+        // Update text formatting controls
+        updateTextFormattingButtons();
+    } else {
+        // Show shape controls, hide text controls
+        if (textControls) textControls.style.display = 'none';
+        if (shapeControls) shapeControls.style.display = 'block';
     }
     
-    // Show/hide shape-specific controls
-    const shapeInputContainer = document.getElementById('shapeInputContainer');
-    if (shapeInputContainer) {
-        shapeInputContainer.style.display = type === 'shape' ? 'block' : 'none';
-    }
-    
-    // Update color inputs based on data attributes for more reliable values
+    // Common properties
     const fillColor = document.getElementById('fillColor');
-    if (fillColor) {
-        fillColor.value = element.getAttribute('data-fill-color') || rgbToHex(element.style.backgroundColor || '#ffffff');
-    }
-    
-    // Update fill opacity slider
-    const fillOpacity = document.getElementById('fillOpacity');
-    const fillOpacityValue = document.getElementById('fillOpacityValue');
-    if (fillOpacity && fillOpacityValue) {
-        const opacity = element.getAttribute('data-fill-opacity') || (parseFloat(element.style.opacity || 1) * 100);
-        fillOpacity.value = opacity;
-        fillOpacityValue.textContent = `${opacity}%`;
-    }
-    
-    // Update border controls
     const borderColor = document.getElementById('borderColor');
-    if (borderColor) {
-        borderColor.value = element.getAttribute('data-border-color') || rgbToHex(element.style.borderColor || '#000000');
-    }
-    
+    const fillOpacity = document.getElementById('fillOpacity');
     const borderWidth = document.getElementById('borderWidth');
-    const borderWidthValue = document.getElementById('borderWidthValue');
-    if (borderWidth && borderWidthValue) {
-        const width = element.getAttribute('data-border-width') || parseInt(element.style.borderWidth) || 1;
-        borderWidth.value = width;
-        borderWidthValue.textContent = `${width}px`;
+    
+    // Get computed style
+    const computedStyle = window.getComputedStyle(element);
+    
+    // Set fill color
+    if (fillColor) {
+        const bgColor = computedStyle.backgroundColor;
+        if (bgColor && bgColor !== 'transparent' && bgColor !== 'rgba(0, 0, 0, 0)') {
+            // Convert to hex and set value
+            fillColor.value = rgbToHex(bgColor);
+        } else {
+            fillColor.value = '#ffffff';
+        }
     }
     
-    // Update text controls for text elements or shapes with text
-    if (type === 'text' || element.getAttribute('data-has-text') === 'true') {
-        const textColor = document.getElementById('textColor');
-        if (textColor) {
-            const color = element.getAttribute('data-text-color') || rgbToHex(element.style.color || '#000000');
-            textColor.value = color;
+    // Set border color
+    if (borderColor) {
+        const bColor = computedStyle.borderColor;
+        if (bColor) {
+            borderColor.value = rgbToHex(bColor);
         }
-        
-        const fontSize = document.getElementById('fontSize');
-        if (fontSize) {
-            const size = element.getAttribute('data-text-size') || element.style.fontSize || '16px';
-            fontSize.value = size;
-        }
-        
-        const elementText = document.getElementById('elementText');
-        if (elementText) {
-            const textContent = element.querySelector('.shape-text') ? 
-                element.querySelector('.shape-text').textContent : 
-                element.textContent;
-            elementText.value = textContent;
-        }
-        
-        // Update text alignment buttons
-        const textAlign = element.getAttribute('data-text-align') || element.style.textAlign || 'center';
-        const alignButtons = {
-            'left': document.getElementById('alignLeft'),
-            'center': document.getElementById('alignCenter'),
-            'right': document.getElementById('alignRight')
-        };
-        
-        for (const [align, button] of Object.entries(alignButtons)) {
-            if (button) {
-                if (align === textAlign) {
-                    button.classList.add('active');
-                } else {
-                    button.classList.remove('active');
-                }
-            }
+    }
+    
+    // Set opacity
+    if (fillOpacity) {
+        const opacity = computedStyle.opacity;
+        fillOpacity.value = opacity !== '' ? opacity * 100 : 100;
+    }
+    
+    // Set border width
+    if (borderWidth) {
+        const bWidth = parseInt(computedStyle.borderWidth);
+        if (!isNaN(bWidth)) {
+            borderWidth.value = bWidth;
+        } else {
+            borderWidth.value = 1;
         }
     }
 }
 
-// Add text to shape
+// Add text to a shape
 export function addTextToShape(shapeElement) {
     if (!shapeElement || !shapeElement.classList.contains('shape')) return;
     
@@ -1062,7 +1297,7 @@ export function addTextToShape(shapeElement) {
     return textElement;
 }
 
-// Apply color change to selected element
+// Apply color change to element
 export function applyColorChange(property, value) {
     if (!selectedElement) return;
     
@@ -1087,7 +1322,7 @@ export function applyColorChange(property, value) {
     }
 }
 
-// Apply opacity change to selected element
+// Apply opacity change to element
 export function applyOpacityChange(value) {
     if (!selectedElement) return;
     
@@ -1096,7 +1331,7 @@ export function applyOpacityChange(value) {
     selectedElement.setAttribute('data-fill-opacity', value);
 }
 
-// Apply border width change to selected element
+// Apply border width change to element
 export function applyBorderWidthChange(value) {
     if (!selectedElement) return;
     
@@ -1104,20 +1339,23 @@ export function applyBorderWidthChange(value) {
     selectedElement.setAttribute('data-border-width', value);
 }
 
-// Apply text size change to selected element
+// Apply text size change to element
 export function applyTextSizeChange(value) {
     if (!selectedElement) return;
     
-    if (selectedElement.getAttribute('data-type') === 'text') {
-        selectedElement.style.fontSize = value;
-        selectedElement.setAttribute('data-text-size', value);
-    } else if (selectedElement.querySelector('.shape-text')) {
-        selectedElement.querySelector('.shape-text').style.fontSize = value;
-        selectedElement.setAttribute('data-text-size', value);
+    // Check if we have selected text
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0 && selection.toString().length > 0 && 
+        selectedElement.contains(selection.anchorNode)) {
+        // Apply to selected text
+        document.execCommand('fontSize', false, value / 16); // fontSize command uses 1-7 scale
+    } else {
+        // Apply to entire element
+        selectedElement.style.fontSize = `${value}px`;
     }
 }
 
-// Apply text alignment change to selected element
+// Apply text alignment change to element
 export function applyTextAlignChange(value) {
     if (!selectedElement) return;
     
@@ -1127,5 +1365,28 @@ export function applyTextAlignChange(value) {
     } else if (selectedElement.querySelector('.shape-text')) {
         selectedElement.querySelector('.shape-text').style.textAlign = value;
         selectedElement.setAttribute('data-text-align', value);
+    }
+}
+
+// Get available fonts
+export function getAvailableFonts() {
+    return availableFonts;
+}
+
+// Check if an element has a specified format
+export function hasTextFormat(element, format) {
+    if (!element || !isTextElement(element)) return false;
+    
+    const computedStyle = window.getComputedStyle(element);
+    
+    switch (format) {
+        case 'bold':
+            return computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700;
+        case 'italic':
+            return computedStyle.fontStyle === 'italic';
+        case 'underline':
+            return computedStyle.textDecoration.includes('underline');
+        default:
+            return false;
     }
 } 

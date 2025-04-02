@@ -33,6 +33,352 @@
     font-size: 16px;
 }
 
+/* PowerPoint Ribbon Enhancements */
+.ribbon-menu {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #d0d0d0;
+}
+
+.ribbon-tabs {
+    display: flex;
+    background-color: #f3f3f3;
+    border-bottom: 1px solid #d6d6d6;
+}
+
+.ribbon-tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #444;
+    transition: all 0.2s ease;
+}
+
+.ribbon-tab:hover {
+    background-color: #e9e9e9;
+}
+
+.ribbon-tab.active {
+    background-color: #fff;
+    color: #106ebe;
+    border-bottom: 2px solid #106ebe;
+}
+
+.ribbon-content {
+    display: none;
+    padding: 5px;
+    background-color: #fff;
+}
+
+.ribbon-content.active {
+    display: flex;
+    align-items: flex-start;
+}
+
+.ribbon-group {
+    border-right: 1px solid #e6e6e6;
+    padding: 5px 10px;
+    margin-right: 5px;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ribbon-group:last-child {
+    border-right: none;
+}
+
+.ribbon-title {
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+    margin-top: 5px;
+    white-space: nowrap;
+}
+
+.ribbon-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 3px;
+}
+
+.ribbon-button {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    margin: 2px;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 60px;
+}
+
+.ribbon-button i {
+    font-size: 18px;
+    margin-bottom: 3px;
+    color: #444;
+}
+
+.ribbon-button span {
+    font-size: 11px;
+    color: #444;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.ribbon-button:hover {
+    background-color: #f0f0f0;
+}
+
+.ribbon-button:active {
+    background-color: #e6e6e6;
+}
+
+.ribbon-select {
+    background-color: #fff;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    padding: 4px;
+    font-size: 12px;
+    min-width: 100px;
+    margin: 2px;
+}
+
+/* Font controls */
+.font-controls {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+}
+
+.font-style-buttons, 
+.font-align-buttons,
+.line-spacing-buttons {
+    display: flex;
+    margin-top: 5px;
+}
+
+.format-btn {
+    background: none;
+    border: 1px solid #d6d6d6;
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 2px;
+    cursor: pointer;
+}
+
+.format-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.format-btn.active {
+    background-color: #e5effa;
+    color: #106ebe;
+}
+
+/* Color controls */
+.color-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.color-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 5px;
+    margin: 2px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.color-btn i {
+    font-size: 16px;
+    margin-bottom: 3px;
+}
+
+.color-indicator {
+    width: 24px;
+    height: 3px;
+    background-color: #333;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Theme gallery */
+.theme-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 5px;
+}
+
+.theme-preview {
+    width: 60px;
+    height: 40px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+.theme-modern {
+    background: linear-gradient(135deg, #106ebe 0%, #0078d4 100%);
+}
+
+.theme-classic {
+    background: linear-gradient(135deg, #4b6584 0%, #2c3e50 100%);
+}
+
+.theme-colorful {
+    background: linear-gradient(135deg, #fd9644 0%, #eb3b5a 100%);
+}
+
+.theme-minimal {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    border: 1px solid #ccc;
+}
+
+.theme-corporate {
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+}
+
+.theme-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.theme-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.theme-btn.active {
+    background-color: #e5effa;
+}
+
+.theme-btn span {
+    font-size: 11px;
+    color: #444;
+    white-space: nowrap;
+}
+
+/* Color scheme gallery */
+.color-scheme-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 5px;
+}
+
+.color-preview {
+    width: 40px;
+    height: 20px;
+    border-radius: 3px;
+    margin-bottom: 3px;
+}
+
+.color-blue {
+    background-color: #0078d4;
+}
+
+.color-red {
+    background-color: #e74c3c;
+}
+
+.color-green {
+    background-color: #27ae60;
+}
+
+.color-purple {
+    background-color: #8e44ad;
+}
+
+.color-orange {
+    background-color: #e67e22;
+}
+
+/* AI Assistant Tab */
+#ai-assist-ribbon {
+    padding: 10px;
+}
+
+.ai-tools-container {
+    display: flex;
+    width: 100%;
+}
+
+.ai-tools-section {
+    flex: 1;
+    padding: 0 15px;
+}
+
+.ai-tools-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #106ebe;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 5px;
+}
+
+.ai-tool-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: 1px solid #d6d6d6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-tool-btn:hover {
+    background-color: #f0f7ff;
+    border-color: #106ebe;
+}
+
+.ai-tool-icon {
+    font-size: 18px;
+    margin-right: 10px;
+    color: #106ebe;
+}
+
+.ai-tool-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.ai-tool-title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.ai-tool-desc {
+    font-size: 12px;
+    color: #666;
+}
+
 /* Workspace Layout */
 .layout-toggle-container {
     position: fixed;
@@ -179,4 +525,267 @@
 .shortcuts-footer {
     margin-top: 20px;
     text-align: right;
+}
+
+/* PowerPoint style slide navigator */
+.slide-explorer {
+    border-right: 1px solid #e0e0e0;
+    background-color: #f8f8f8;
+    overflow-y: auto;
+}
+
+.slides-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f0f0f0;
+}
+
+.slides-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.slide-controls {
+    display: flex;
+}
+
+.slide-controls button {
+    background: none;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #555;
+    margin-left: 2px;
+}
+
+.slide-controls button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.slide-list {
+    padding: 10px;
+}
+
+.slide-thumbnail {
+    position: relative;
+    margin-bottom: 10px;
+    border: 1px solid #d6d6d6;
+    border-radius: 2px;
+    overflow: hidden;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.slide-thumbnail:hover {
+    border-color: #106ebe;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.slide-thumbnail.active {
+    border: 2px solid #106ebe;
+    box-shadow: 0 0 0 1px #106ebe;
+}
+
+.slide-number {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    font-size: 11px;
+    color: #666;
+}
+
+.slide-thumbnail-content {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+    padding: 5px;
+    background-color: white;
+}
+
+/* Slide editor enhancements */
+.slide-editor {
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: auto;
+}
+
+.slide-canvas {
+    background-color: white;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+/* Element styles */
+.slide-element {
+    position: absolute;
+    cursor: move;
+    border: 1px solid transparent;
+}
+
+.slide-element:hover {
+    border: 1px dashed #106ebe;
+}
+
+.slide-element.selected {
+    border: 1px solid #106ebe;
+}
+
+.resize-handle {
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border: 1px solid #106ebe;
+    position: absolute;
+}
+
+.resize-handle-nw {
+    top: -4px;
+    left: -4px;
+    cursor: nwse-resize;
+}
+
+.resize-handle-ne {
+    top: -4px;
+    right: -4px;
+    cursor: nesw-resize;
+}
+
+.resize-handle-sw {
+    bottom: -4px;
+    left: -4px;
+    cursor: nesw-resize;
+}
+
+.resize-handle-se {
+    bottom: -4px;
+    right: -4px;
+    cursor: nwse-resize;
+}
+
+.resize-handle-n {
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.resize-handle-s {
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.resize-handle-e {
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.resize-handle-w {
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+/* Properties panel */
+.properties-panel {
+    background-color: #f8f8f8;
+    border-left: 1px solid #e0e0e0;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.panel-section {
+    margin-bottom: 20px;
+}
+
+.panel-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.property-group {
+    margin-bottom: 15px;
+}
+
+.property-row {
+    display: flex;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.property-label {
+    flex: 0 0 80px;
+    font-size: 12px;
+    color: #666;
+}
+
+.property-control {
+    flex: 1;
+}
+
+.property-control input,
+.property-control select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.property-control input[type="color"] {
+    height: 24px;
+}
+
+/* Notes panel */
+.notes-panel {
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.notes-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.notes-header h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.notes-editor {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    padding: 8px;
+    font-size: 13px;
+    resize: vertical;
 } 

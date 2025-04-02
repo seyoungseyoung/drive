@@ -12,6 +12,11 @@ import { initThemes } from './modules/themes.js';
 import { initCharts } from './modules/charts.js';
 import { initShapeEditor } from './modules/shape-editor.js';
 import { initAI } from './modules/ai.js';
+import { initAIIntegration } from './modules/ai-integration.js';
+import { initTables } from './modules/tables.js';
+import { initAnimations } from './modules/animations.js';
+import { initDrawing } from './modules/drawing.js';
+import { initPresenter } from './modules/presenter.js';
 
 // 애플리케이션 초기화 상태 추적
 const AppInit = {
@@ -74,8 +79,21 @@ async function initializeModules() {
         // 차트 초기화
         await initializeModule('charts', initCharts);
         
+        // 테이블 초기화
+        await initializeModule('tables', initTables);
+        
+        // 애니메이션 초기화
+        await initializeModule('animations', initAnimations);
+        
+        // 드로잉 도구 초기화
+        await initializeModule('drawing', initDrawing);
+        
+        // 프레젠테이션 모드 초기화
+        await initializeModule('presenter', initPresenter);
+        
         // AI 기능 초기화 (선택적)
         await initializeModule('AI', initAI);
+        await initializeModule('AI Integration', initAIIntegration);
         
         // 메인 앱 초기화
         await initializeModule('app', initApp);

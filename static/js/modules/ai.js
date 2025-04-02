@@ -679,71 +679,96 @@ function suggestImprovements() {
 // 콘텐츠 생성
 function generateContent(prompt, type = 'text') {
     return new Promise((resolve, reject) => {
-        if (!prompt) {
-            reject(new Error('프롬프트가 필요합니다.'));
-            return;
+        console.log(`AI Content Generation: ${prompt} (${type})`);
+        
+        // Content templates based on common slide types
+        const templates = {
+            title_slide: {
+                title: "Compelling Presentation Title",
+                subtitle: "Supporting information or presenter name"
+            },
+            agenda: {
+                title: "Today's Agenda",
+                items: [
+                    "Introduction and Background",
+                    "Key Points and Analysis",
+                    "Findings and Insights",
+                    "Recommendations",
+                    "Next Steps and Timeline"
+                ]
+            },
+            bullet_points: {
+                title: "Key Points",
+                bullets: [
+                    "First important point with supporting details",
+                    "Second key consideration for the audience",
+                    "Third critical element to remember",
+                    "Final takeaway that reinforces the message"
+                ]
+            },
+            comparison: {
+                title: "Comparison",
+                columns: [
+                    {
+                        title: "Option A",
+                        points: ["Benefit 1", "Benefit 2", "Consideration 1"]
+                    },
+                    {
+                        title: "Option B",
+                        points: ["Benefit 1", "Benefit 2", "Consideration 1"]
+                    }
+                ]
+            },
+            timeline: {
+                title: "Project Timeline",
+                events: [
+                    { date: "January 2023", description: "Project Initiation" },
+                    { date: "March 2023", description: "Research Phase" },
+                    { date: "June 2023", description: "Development" },
+                    { date: "September 2023", description: "Testing" },
+                    { date: "December 2023", description: "Launch" }
+                ]
+            },
+            conclusion: {
+                title: "Thank You",
+                content: "Questions and Discussion",
+                contact: "Contact information"
+            }
+        };
+
+        // Process the prompt to determine which template to use
+        let result;
+        if (prompt.toLowerCase().includes('title') || type === 'title') {
+            result = templates.title_slide;
+        } else if (prompt.toLowerCase().includes('agenda') || type === 'agenda') {
+            result = templates.agenda;
+        } else if (prompt.toLowerCase().includes('bullet') || type === 'bullets') {
+            result = templates.bullet_points;
+        } else if (prompt.toLowerCase().includes('compar') || type === 'comparison') {
+            result = templates.comparison;
+        } else if (prompt.toLowerCase().includes('timeline') || type === 'timeline') {
+            result = templates.timeline;
+        } else if (prompt.toLowerCase().includes('conclusion') || prompt.toLowerCase().includes('thank') || type === 'conclusion') {
+            result = templates.conclusion;
+        } else {
+            // Generate custom content based on the prompt
+            result = {
+                title: `${prompt}`,
+                content: "AI will generate content based on your prompt here."
+            };
         }
         
-        // 현재 슬라이드 컨텍스트 가져오기
-        const slideContext = getCurrentSlideContent();
+        // Add recommended slide layout
+        result.recommendedLayout = type === 'title' ? 'title' : 
+                                  type === 'bullets' ? 'title-content' :
+                                  type === 'comparison' ? 'two-column' : 'blank';
         
-        // API 요청 시뮬레이션 (실제로는 서버 API 호출)
         setTimeout(() => {
-            let content;
-            
-            switch (type) {
-                case 'title':
-                    // 제목 생성
-                    const titleOptions = [
-                        "효과적인 프레젠테이션을 위한 핵심 전략",
-                        "비즈니스 성장 전략: 디지털 혁신",
-                        "데이터 기반 의사결정의 미래",
-                        "고객 중심 접근법의 핵심 원칙",
-                        "지속 가능한 성장을 위한 프레임워크"
-                    ];
-                    content = titleOptions[Math.floor(Math.random() * titleOptions.length)];
-                    break;
-                    
-                case 'bullet_points':
-                    // 글머리 기호 생성
-                    content = [
-                        "핵심 포인트를 명확히 정의하세요",
-                        "시각적 자료를 효과적으로 활용하세요",
-                        "청중과의 상호작용을 증대하세요",
-                        "간결하고 명확한 메시지를 전달하세요",
-                        "중요한 정보를 반복하여 강조하세요"
-                    ];
-                    break;
-                    
-                case 'paragraph':
-                    // 단락 텍스트 생성
-                    content = "효과적인 프레젠테이션은 명확한 메시지와 적절한 시각 자료가 조화를 이룰 때 가능합니다. " +
-                              "청중의 관심을 끌기 위해서는 첫 30초가 중요하며, 핵심 메시지를 반복적으로 강조하는 것이 좋습니다. " +
-                              "또한, 너무 많은 정보보다는 중요한 포인트를 집중적으로 전달하는 것이 효과적입니다.";
-                    break;
-                    
-                case 'speaker_notes':
-                    // 발표자 노트 생성
-                    content = "이 슬라이드에서는 다음 세 가지 핵심 포인트를 강조하세요:\n\n" +
-                              "1. 첫 번째 포인트를 설명할 때 실제 사례를 언급하세요\n" +
-                              "2. 두 번째 포인트는 데이터를 기반으로 설명하세요\n" +
-                              "3. 마지막 포인트에서는 청중에게 질문을 던져보세요\n\n" +
-                              "발표 시간: 약 2분";
-                    break;
-                    
-                default:
-                    // 기본 텍스트 생성
-                    content = "이 슬라이드의 주요 목적은 핵심 개념을 소개하고 중요한 인사이트를 공유하는 것입니다. " +
-                              "청중의 이해를 돕기 위해 구체적인 예시와 데이터를 함께 제시하세요.";
-            }
-            
             resolve({
                 success: true,
-                content: content,
-                type: type,
-                prompt: prompt
+                data: result
             });
-        }, 800);
+        }, 300);
     });
 }
 
@@ -1235,6 +1260,197 @@ function addUsageTips(element, analysis) {
             action: 'add_supporting_elements'
         });
     }
+}
+
+// Add a new function for full presentation analysis
+export function analyzePresentationStructure() {
+    return new Promise((resolve) => {
+        const presentationContent = getPresentationContent();
+        if (!presentationContent || presentationContent.slides.length === 0) {
+            resolve({
+                success: false,
+                message: "No presentation content to analyze"
+            });
+            return;
+        }
+        
+        // Analyze overall structure
+        const slideCount = presentationContent.slides.length;
+        const hasTitleSlide = presentationContent.slides[0]?.textContent?.toLowerCase().includes('title') || 
+                             presentationContent.slides[0]?.textContent?.length < 50;
+        
+        const hasAgendaSlide = presentationContent.slides.some(slide => 
+            slide.textContent.toLowerCase().includes('agenda') || 
+            slide.textContent.toLowerCase().includes('contents') ||
+            slide.textContent.toLowerCase().includes('overview')
+        );
+        
+        const hasConclusionSlide = presentationContent.slides.some(slide => 
+            slide.textContent.toLowerCase().includes('conclusion') || 
+            slide.textContent.toLowerCase().includes('thank you') ||
+            slide.textContent.toLowerCase().includes('questions')
+        );
+        
+        // Analyze content consistency
+        const textLengths = presentationContent.slides.map(slide => slide.textContent.length);
+        const avgTextLength = textLengths.reduce((sum, len) => sum + len, 0) / slideCount;
+        
+        const isConsistentLength = textLengths.every(len => len < avgTextLength * 2 && len > avgTextLength * 0.5);
+        
+        // Calculate estimated presentation time (assuming 1-2 minutes per content slide)
+        const estimatedTime = Math.round(slideCount * 1.5);
+        
+        // Find missing elements in the presentation structure
+        const missingElements = [];
+        if (!hasTitleSlide) missingElements.push("Title slide");
+        if (!hasAgendaSlide) missingElements.push("Agenda slide");
+        if (!hasConclusionSlide) missingElements.push("Conclusion slide");
+        
+        // Generate improvement suggestions
+        const suggestions = [];
+        
+        if (missingElements.length > 0) {
+            suggestions.push({
+                type: "structure",
+                title: "Complete Your Presentation Structure",
+                description: `Add these missing elements: ${missingElements.join(', ')}`,
+                importance: "high"
+            });
+        }
+        
+        if (!isConsistentLength) {
+            suggestions.push({
+                type: "content",
+                title: "Balance Content Across Slides",
+                description: "Some slides have significantly more content than others. Consider redistributing text for better balance.",
+                importance: "medium"
+            });
+        }
+        
+        if (slideCount < 5) {
+            suggestions.push({
+                type: "content",
+                title: "Expand Your Presentation",
+                description: "Your presentation is quite short. Consider adding more slides to fully develop your message.",
+                importance: "medium"
+            });
+        } else if (slideCount > 20) {
+            suggestions.push({
+                type: "content",
+                title: "Consider Condensing",
+                description: `Your presentation has ${slideCount} slides which may be too long for your audience's attention span.`,
+                importance: "medium"
+            });
+        }
+        
+        // Check for speaker notes
+        const slidesWithNotes = presentationContent.slides.filter(slide => slide.notes && slide.notes.length > 0).length;
+        const percentageWithNotes = (slidesWithNotes / slideCount) * 100;
+        
+        if (percentageWithNotes < 50) {
+            suggestions.push({
+                type: "presentation",
+                title: "Add Speaker Notes",
+                description: "Only " + Math.round(percentageWithNotes) + "% of your slides have speaker notes. Add notes to help during delivery.",
+                importance: "medium"
+            });
+        }
+        
+        resolve({
+            success: true,
+            analysis: {
+                slideCount,
+                structure: {
+                    hasTitleSlide,
+                    hasAgendaSlide,
+                    hasConclusionSlide,
+                    isBalanced: isConsistentLength,
+                    missingElements
+                },
+                estimatedTime: {
+                    minutes: estimatedTime,
+                    appropriate: estimatedTime >= 5 && estimatedTime <= 30
+                },
+                contentBalance: {
+                    balanced: isConsistentLength,
+                    averageTextLength: Math.round(avgTextLength)
+                },
+                notes: {
+                    slidesWithNotes,
+                    percentageWithNotes,
+                    sufficient: percentageWithNotes >= 50
+                }
+            },
+            suggestions
+        });
+    });
+}
+
+// Add a function to generate complete presentation templates
+export function generatePresentationTemplate(topic, style = 'business') {
+    return new Promise((resolve) => {
+        console.log(`Generating ${style} presentation template for: ${topic}`);
+        
+        // Different templates based on presentation style
+        const templates = {
+            business: [
+                { title: topic, subtitle: "Company Name | Date", layout: "title" },
+                { title: "Agenda", bullets: ["Introduction", "Current Situation", "Analysis", "Recommendations", "Next Steps"], layout: "title-content" },
+                { title: "Introduction", bullets: ["Background", "Project Scope", "Objectives"], layout: "title-content" },
+                { title: "Current Situation", bullets: ["Market Analysis", "Challenges", "Opportunities"], layout: "title-content" },
+                { title: "Analysis", bullets: ["Key Findings", "Data Insights", "Trends"], layout: "title-content" },
+                { title: "Recommendations", bullets: ["Strategic Options", "Proposed Solution", "Benefits"], layout: "title-content" },
+                { title: "Implementation Plan", bullets: ["Timeline", "Resources", "Budget"], layout: "title-content" },
+                { title: "Next Steps", bullets: ["Immediate Actions", "Responsibilities", "Follow-up"], layout: "title-content" },
+                { title: "Thank You", subtitle: "Questions & Discussion", layout: "title" }
+            ],
+            educational: [
+                { title: topic, subtitle: "Educational Module", layout: "title" },
+                { title: "Learning Objectives", bullets: ["What we'll learn", "Why it matters", "How we'll apply it"], layout: "title-content" },
+                { title: "Key Concept 1", content: "Explanation of the first key concept", layout: "title-content" },
+                { title: "Key Concept 2", content: "Explanation of the second key concept", layout: "title-content" },
+                { title: "Key Concept 3", content: "Explanation of the third key concept", layout: "title-content" },
+                { title: "Practical Application", bullets: ["Example 1", "Example 2", "Example 3"], layout: "title-content" },
+                { title: "Group Activity", bullets: ["Instructions", "Objectives", "Time allowed"], layout: "title-content" },
+                { title: "Summary", bullets: ["What we learned", "Key takeaways", "Further reading"], layout: "title-content" }
+            ],
+            creative: [
+                { title: topic, subtitle: "A Creative Presentation", layout: "title" },
+                { title: "The Big Idea", content: "One powerful statement about the concept", layout: "title-content" },
+                { title: "Inspiration", bullets: ["Source 1", "Source 2", "Source 3"], layout: "title-content" },
+                { title: "Visual Concept", image: true, description: "Visual representation will go here", layout: "blank" },
+                { title: "The Process", timeline: ["Ideation", "Exploration", "Refinement", "Final Concept"], layout: "title-content" },
+                { title: "Applications", bullets: ["Application 1", "Application 2", "Application 3"], layout: "two-column" },
+                { title: "Next Steps", bullets: ["Development", "Testing", "Launch"], layout: "title-content" },
+                { title: "Thank You", subtitle: "Questions & Feedback", layout: "title" }
+            ]
+        };
+        
+        // Select the appropriate template
+        const selectedTemplate = templates[style] || templates.business;
+        
+        // Process the template to include the topic
+        const processedTemplate = selectedTemplate.map(slide => {
+            // Create a copy to avoid modifying the original
+            const processedSlide = {...slide};
+            
+            // Replace placeholders with the actual topic
+            if (processedSlide.title && processedSlide.title.includes('topic')) {
+                processedSlide.title = processedSlide.title.replace('topic', topic);
+            }
+            
+            return processedSlide;
+        });
+        
+        setTimeout(() => {
+            resolve({
+                success: true,
+                template: processedTemplate,
+                slideCount: processedTemplate.length,
+                style: style
+            });
+        }, 500);
+    });
 }
 
 // AI 모듈 내보내기

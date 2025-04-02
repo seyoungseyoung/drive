@@ -3,76 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPT Editor - PowerPoint 스타일 프레젠테이션 에디터</title>
+    <title>PPT Editor - PowerPoint-like Presentation Editor</title>
     
-    <!-- CSS 스타일시트 -->
+    <!-- CSS stylesheets -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/charts.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/shape-editor.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     
-    <!-- 폰트 -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 아이콘 라이브러리 -->
+    <!-- Icon library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart.js 라이브러리 -->
+    <!-- Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- 상단 리본 메뉴 바 -->
+        <!-- Top ribbon menu bar -->
         <div class="ribbon-menu">
             <div class="ribbon-tabs">
-                <div class="ribbon-tab active" data-tab="home">홈</div>
-                <div class="ribbon-tab" data-tab="insert">삽입</div>
-                <div class="ribbon-tab" data-tab="design">디자인</div>
-                <div class="ribbon-tab" data-tab="transitions">전환</div>
-                <div class="ribbon-tab" data-tab="animations">애니메이션</div>
-                <div class="ribbon-tab" data-tab="view">보기</div>
+                <div class="ribbon-tab active" data-tab="file">File</div>
+                <div class="ribbon-tab" data-tab="home">Home</div>
+                <div class="ribbon-tab" data-tab="insert">Insert</div>
+                <div class="ribbon-tab" data-tab="design">Design</div>
+                <div class="ribbon-tab" data-tab="transitions">Transitions</div>
+                <div class="ribbon-tab" data-tab="animations">Animations</div>
+                <div class="ribbon-tab" data-tab="view">View</div>
+                <div class="ribbon-tab" data-tab="ai-assist">AI Assistant</div>
             </div>
             
-            <!-- 리본 콘텐츠 영역 -->
-            <div id="home-ribbon" class="ribbon-content active">
+            <!-- Ribbon content area -->
+            <div id="file-ribbon" class="ribbon-content active">
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="newPresentationBtn" class="ribbon-button">
+                            <i class="fas fa-file"></i>
+                            <span>New</span>
+                        </button>
+                        <button id="openPresentationBtn" class="ribbon-button">
+                            <i class="fas fa-folder-open"></i>
+                            <span>Open</span>
+                        </button>
+                        <button id="savePresentationBtn" class="ribbon-button">
+                            <i class="fas fa-save"></i>
+                            <span>Save</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Presentation</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="exportPptxBtn" class="ribbon-button">
+                            <i class="fas fa-file-powerpoint"></i>
+                            <span>Export as PPTX</span>
+                        </button>
+                        <button id="exportPdfBtn" class="ribbon-button">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Export as PDF</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Export</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="printBtn" class="ribbon-button">
+                            <i class="fas fa-print"></i>
+                            <span>Print</span>
+                        </button>
+                        <button id="shareBtn" class="ribbon-button">
+                            <i class="fas fa-share-alt"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Output</div>
+                </div>
+            </div>
+            
+            <div id="home-ribbon" class="ribbon-content">
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="newSlideBtn" class="ribbon-button">
                             <i class="fas fa-plus"></i>
-                            <span>새 슬라이드</span>
+                            <span>New Slide</span>
                         </button>
                         <button id="duplicateSlideBtn" class="ribbon-button">
                             <i class="fas fa-copy"></i>
-                            <span>슬라이드 복제</span>
+                            <span>Duplicate</span>
                         </button>
                         <button id="deleteSlideBtn" class="ribbon-button">
                             <i class="fas fa-trash"></i>
-                            <span>슬라이드 삭제</span>
+                            <span>Delete</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">슬라이드</div>
+                    <div class="ribbon-title">Slides</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
-                        <button id="addTextBtn" class="ribbon-button">
-                            <i class="fas fa-font"></i>
-                            <span>텍스트 상자</span>
-                        </button>
-                        <button id="addShapeBtn" class="ribbon-button">
-                            <i class="fas fa-shapes"></i>
-                            <span>도형</span>
-                        </button>
-                        <button id="addImageBtn" class="ribbon-button">
-                            <i class="fas fa-image"></i>
-                            <span>이미지</span>
-                        </button>
-                    </div>
-                    <div class="ribbon-title">삽입</div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-buttons">
+                        <div class="font-controls">
+                            <select id="fontFamilySelect" class="ribbon-select">
+                                <option value="Pretendard">Pretendard</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                            </select>
+                            <select id="fontSizeSelect" class="ribbon-select">
+                                <option value="8">8</option>
+                                <option value="10">10</option>
+                                <option value="12">12</option>
+                                <option value="14">14</option>
+                                <option value="18">18</option>
+                                <option value="24">24</option>
+                                <option value="36">36</option>
+                                <option value="48">48</option>
+                                <option value="60">60</option>
+                                <option value="72">72</option>
+                            </select>
+                        </div>
                         <div class="font-style-buttons">
                             <button id="boldBtn" class="format-btn">
                                 <i class="fas fa-bold"></i>
@@ -84,6 +138,12 @@
                                 <i class="fas fa-underline"></i>
                             </button>
                         </div>
+                    </div>
+                    <div class="ribbon-title">Font</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
                         <div class="font-align-buttons">
                             <button id="alignLeftBtn" class="format-btn">
                                 <i class="fas fa-align-left"></i>
@@ -94,131 +154,251 @@
                             <button id="alignRightBtn" class="format-btn">
                                 <i class="fas fa-align-right"></i>
                             </button>
+                            <button id="alignJustifyBtn" class="format-btn">
+                                <i class="fas fa-align-justify"></i>
+                            </button>
+                        </div>
+                        <div class="line-spacing-buttons">
+                            <button id="decreaseLineSpacingBtn" class="format-btn">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button id="increaseLineSpacingBtn" class="format-btn">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="ribbon-title">글꼴</div>
+                    <div class="ribbon-title">Paragraph</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="color-controls">
+                        <button id="textColorBtn" class="color-btn">
+                            <i class="fas fa-font" style="color: #333;"></i>
+                            <span class="color-indicator"></span>
+                        </button>
+                        <button id="fillColorBtn" class="color-btn">
+                            <i class="fas fa-fill-drip"></i>
+                            <span class="color-indicator"></span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Colors</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="bringToFrontBtn" class="ribbon-button">
                             <i class="fas fa-bring-forward"></i>
-                            <span>앞으로 가져오기</span>
+                            <span>Bring Forward</span>
                         </button>
                         <button id="sendToBackBtn" class="ribbon-button">
                             <i class="fas fa-send-backward"></i>
-                            <span>뒤로 보내기</span>
+                            <span>Send Backward</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">정렬</div>
+                    <div class="ribbon-title">Arrange</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-controls">
                         <select id="slideLayoutSelect" class="ribbon-select">
-                            <option value="blank">빈 슬라이드</option>
-                            <option value="title">제목 슬라이드</option>
-                            <option value="title-content">제목 및 내용</option>
-                            <option value="two-column">두 개의 열</option>
+                            <option value="blank">Blank</option>
+                            <option value="title">Title Slide</option>
+                            <option value="title-content">Title and Content</option>
+                            <option value="two-column">Two Content</option>
+                            <option value="title-only">Title Only</option>
+                            <option value="comparison">Comparison</option>
+                            <option value="content-caption">Content with Caption</option>
+                            <option value="section-header">Section Header</option>
                         </select>
                     </div>
-                    <div class="ribbon-title">레이아웃</div>
+                    <div class="ribbon-title">Layout</div>
                 </div>
             </div>
             
             <div id="insert-ribbon" class="ribbon-content">
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
-                        <button id="addTextBtn2" class="ribbon-button">
+                        <button id="addTextBtn" class="ribbon-button">
                             <i class="fas fa-font"></i>
-                            <span>텍스트 상자</span>
+                            <span>Text Box</span>
                         </button>
-                        <button id="addShapeBtn2" class="ribbon-button">
-                            <i class="fas fa-shapes"></i>
-                            <span>도형</span>
-                        </button>
-                    </div>
-                    <div class="ribbon-title">텍스트</div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-buttons">
-                        <button id="addImageBtn2" class="ribbon-button">
-                            <i class="fas fa-image"></i>
-                            <span>이미지</span>
-                        </button>
-                        <button id="addChartBtn" class="ribbon-button">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>차트</span>
+                        <button id="addWordArtBtn" class="ribbon-button">
+                            <i class="fas fa-signature"></i>
+                            <span>WordArt</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">일러스트레이션</div>
+                    <div class="ribbon-title">Text</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="addTableBtn" class="ribbon-button">
                             <i class="fas fa-table"></i>
-                            <span>표</span>
+                            <span>Table</span>
                         </button>
                         <button id="addSmartArtBtn" class="ribbon-button">
                             <i class="fas fa-sitemap"></i>
-                            <span>스마트 아트</span>
+                            <span>SmartArt</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">표</div>
+                    <div class="ribbon-title">Tables</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="addImageBtn" class="ribbon-button">
+                            <i class="fas fa-image"></i>
+                            <span>Images</span>
+                        </button>
+                        <button id="addChartBtn" class="ribbon-button">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Chart</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Illustrations</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="addShapeBtn" class="ribbon-button">
+                            <i class="fas fa-shapes"></i>
+                            <span>Shapes</span>
+                        </button>
+                        <button id="addIconBtn" class="ribbon-button">
+                            <i class="fas fa-icons"></i>
+                            <span>Icons</span>
+                        </button>
+                        <button id="add3DModelBtn" class="ribbon-button">
+                            <i class="fas fa-cube"></i>
+                            <span>3D Models</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Graphics</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="addVideoBtn" class="ribbon-button">
+                            <i class="fas fa-video"></i>
+                            <span>Video</span>
+                        </button>
+                        <button id="addAudioBtn" class="ribbon-button">
+                            <i class="fas fa-volume-up"></i>
+                            <span>Audio</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Media</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="addCommentBtn" class="ribbon-button">
+                            <i class="fas fa-comment"></i>
+                            <span>Comment</span>
+                        </button>
+                        <button id="addFooterBtn" class="ribbon-button">
+                            <i class="fas fa-grip-lines"></i>
+                            <span>Header & Footer</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Notes</div>
                 </div>
             </div>
             
             <div id="design-ribbon" class="ribbon-content">
                 <div class="ribbon-group">
+                    <div class="theme-gallery">
+                        <button data-theme="modern" class="theme-btn">
+                            <div class="theme-preview theme-modern"></div>
+                            <span>Modern</span>
+                        </button>
+                        <button data-theme="classic" class="theme-btn">
+                            <div class="theme-preview theme-classic"></div>
+                            <span>Classic</span>
+                        </button>
+                        <button data-theme="colorful" class="theme-btn">
+                            <div class="theme-preview theme-colorful"></div>
+                            <span>Colorful</span>
+                        </button>
+                        <button data-theme="minimal" class="theme-btn">
+                            <div class="theme-preview theme-minimal"></div>
+                            <span>Minimal</span>
+                        </button>
+                        <button data-theme="corporate" class="theme-btn">
+                            <div class="theme-preview theme-corporate"></div>
+                            <span>Corporate</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">Themes</div>
+                </div>
+                
+                <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="bgColorBtn" class="ribbon-button">
                             <i class="fas fa-fill-drip"></i>
-                            <span>배경색</span>
+                            <span>Background Color</span>
                         </button>
                         <button id="bgImageBtn" class="ribbon-button">
                             <i class="fas fa-image"></i>
-                            <span>배경 이미지</span>
+                            <span>Background Image</span>
+                        </button>
+                        <button id="bgStylesBtn" class="ribbon-button">
+                            <i class="fas fa-brush"></i>
+                            <span>Format Background</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">배경</div>
+                    <div class="ribbon-title">Background</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-controls">
+                        <div class="color-scheme-gallery">
+                            <button data-palette="blue" class="color-btn active">
+                                <div class="color-preview color-blue"></div>
+                                <span>Blue</span>
+                            </button>
+                            <button data-palette="red" class="color-btn">
+                                <div class="color-preview color-red"></div>
+                                <span>Red</span>
+                            </button>
+                            <button data-palette="green" class="color-btn">
+                                <div class="color-preview color-green"></div>
+                                <span>Green</span>
+                            </button>
+                            <button data-palette="purple" class="color-btn">
+                                <div class="color-preview color-purple"></div>
+                                <span>Purple</span>
+                            </button>
+                            <button data-palette="orange" class="color-btn">
+                                <div class="color-preview color-orange"></div>
+                                <span>Orange</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ribbon-title">Colors</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-controls">
+                        <select id="fontThemeSelect" class="ribbon-select">
+                            <option value="default">Default</option>
+                            <option value="modern">Modern</option>
+                            <option value="classic">Classic</option>
+                            <option value="elegant">Elegant</option>
+                            <option value="display">Display</option>
+                        </select>
+                    </div>
+                    <div class="ribbon-title">Fonts</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
-                        <button data-theme="modern" class="theme-btn">
-                            <i class="fas fa-palette"></i>
-                            <span>모던</span>
-                        </button>
-                        <button data-theme="classic" class="theme-btn">
-                            <i class="fas fa-palette"></i>
-                            <span>클래식</span>
-                        </button>
-                        <button data-theme="colorful" class="theme-btn">
-                            <i class="fas fa-palette"></i>
-                            <span>컬러풀</span>
+                        <button id="slideSizeBtn" class="ribbon-button">
+                            <i class="fas fa-crop"></i>
+                            <span>Slide Size</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">테마</div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-buttons">
-                        <button data-palette="blue" class="color-btn active">
-                            <i class="fas fa-tint"></i>
-                            <span>파란색</span>
-                        </button>
-                        <button data-palette="red" class="color-btn">
-                            <i class="fas fa-tint"></i>
-                            <span>빨간색</span>
-                        </button>
-                        <button data-palette="green" class="color-btn">
-                            <i class="fas fa-tint"></i>
-                            <span>녹색</span>
-                        </button>
-                    </div>
-                    <div class="ribbon-title">색상</div>
+                    <div class="ribbon-title">Customize</div>
                 </div>
             </div>
             
@@ -294,18 +474,18 @@
                     <div class="ribbon-buttons">
                         <button id="slideShowBtn" class="ribbon-button">
                             <i class="fas fa-play"></i>
-                            <span>슬라이드 쇼</span>
+                            <span>Slide Show</span>
                         </button>
                         <button id="presenterViewBtn" class="ribbon-button">
                             <i class="fas fa-user"></i>
-                            <span>발표자 모드</span>
+                            <span>Presenter View</span>
                         </button>
                         <button id="exportBtn" class="ribbon-button">
                             <i class="fas fa-file-export"></i>
-                            <span>내보내기</span>
+                            <span>Export</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">프레젠테이션</div>
+                    <div class="ribbon-title">Presentation</div>
                 </div>
                 
                 <div class="ribbon-group">
@@ -319,31 +499,111 @@
                             <option value="2">200%</option>
                         </select>
                     </div>
-                    <div class="ribbon-title">확대/축소</div>
+                    <div class="ribbon-title">Zoom</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="gridBtn" class="ribbon-button">
                             <i class="fas fa-th"></i>
-                            <span>눈금자</span>
+                            <span>Grid</span>
                         </button>
                         <button id="rulerBtn" class="ribbon-button">
                             <i class="fas fa-ruler-combined"></i>
-                            <span>안내선</span>
+                            <span>Guides</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">표시</div>
+                    <div class="ribbon-title">Show</div>
                 </div>
                 
                 <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="toggleAIBtn" class="ribbon-button">
                             <i class="fas fa-robot"></i>
-                            <span>AI 도우미</span>
+                            <span>AI Assistant</span>
                         </button>
                     </div>
-                    <div class="ribbon-title">확장</div>
+                    <div class="ribbon-title">Extensions</div>
+                </div>
+            </div>
+
+            <!-- AI Assistant Ribbon -->
+            <div id="ai-assist-ribbon" class="ribbon-content">
+                <div class="ai-tools-container">
+                    <div class="ai-tools-section">
+                        <h3 class="ai-tools-header">Content Creation</h3>
+                        <button id="aiGenerateSlideBtn" class="ai-tool-btn">
+                            <i class="fas fa-magic ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Generate Slide</span>
+                                <span class="ai-tool-desc">Create a new slide based on your description</span>
+                            </div>
+                        </button>
+                        <button id="aiGenerateTemplateBtn" class="ai-tool-btn">
+                            <i class="fas fa-clipboard-list ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Complete Presentation</span>
+                                <span class="ai-tool-desc">Create a full presentation template</span>
+                            </div>
+                        </button>
+                        <button id="aiTransformTextBtn" class="ai-tool-btn">
+                            <i class="fas fa-font ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Enhance Text</span>
+                                <span class="ai-tool-desc">Improve selected text content</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="ai-tools-section">
+                        <h3 class="ai-tools-header">Design Assistance</h3>
+                        <button id="aiImproveLayoutBtn" class="ai-tool-btn">
+                            <i class="fas fa-th-large ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Improve Layout</span>
+                                <span class="ai-tool-desc">Enhance current slide layout</span>
+                            </div>
+                        </button>
+                        <button id="aiSuggestDesignBtn" class="ai-tool-btn">
+                            <i class="fas fa-paint-brush ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Suggest Design</span>
+                                <span class="ai-tool-desc">Get theme & color recommendations</span>
+                            </div>
+                        </button>
+                        <button id="aiSuggestImagesBtn" class="ai-tool-btn">
+                            <i class="fas fa-images ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Suggest Images</span>
+                                <span class="ai-tool-desc">Find relevant images for current slide</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="ai-tools-section">
+                        <h3 class="ai-tools-header">Analysis & Feedback</h3>
+                        <button id="aiAnalyzeSlideBtn" class="ai-tool-btn">
+                            <i class="fas fa-chart-pie ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Analyze Current Slide</span>
+                                <span class="ai-tool-desc">Get feedback on slide effectiveness</span>
+                            </div>
+                        </button>
+                        <button id="aiAnalyzePresentationBtn" class="ai-tool-btn">
+                            <i class="fas fa-search ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Analyze Full Presentation</span>
+                                <span class="ai-tool-desc">Check structure and flow of presentation</span>
+                            </div>
+                        </button>
+                        <button id="aiGenerateNotesBtn" class="ai-tool-btn">
+                            <i class="fas fa-comment-alt ai-tool-icon"></i>
+                            <div class="ai-tool-text">
+                                <span class="ai-tool-title">Generate Speaker Notes</span>
+                                <span class="ai-tool-desc">Create notes to help with presentation</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
