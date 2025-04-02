@@ -401,252 +401,282 @@ function setupStickyMenuBar() {
     
     // Save initial position of ribbon menu
     const ribbonTop = ribbonMenu.offsetTop;
+    const ribbonHeight = ribbonMenu.offsetHeight;
     
     // Add scroll event listener
     window.addEventListener('scroll', () => {
         if (window.scrollY >= ribbonTop) {
             ribbonMenu.classList.add('sticky');
-            workspace.style.marginTop = ribbonMenu.offsetHeight + 'px';
+            workspace.classList.add('has-sticky-menu');
+            workspace.style.marginTop = `${ribbonHeight}px`;
         } else {
             ribbonMenu.classList.remove('sticky');
+            workspace.classList.remove('has-sticky-menu');
             workspace.style.marginTop = '0';
         }
     });
+    
+    // 메뉴가 고정되면 전체 레이아웃이 점프하지 않도록 함
+    const observer = new ResizeObserver(() => {
+        if (ribbonMenu.classList.contains('sticky')) {
+            workspace.style.marginTop = `${ribbonMenu.offsetHeight}px`;
+        }
+    });
+    
+    observer.observe(ribbonMenu);
 }
 
 // Setup modal events
 function setupModalEvents() {
-    // Close button
+    // 모달 닫기 버튼
     document.querySelectorAll('.modal .close-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const modal = e.target.closest('.modal');
             if (modal) {
-                modal.style.display = 'none';
+                closeModal(modal);
             }
         });
     });
     
-    // Close modal on external click
+    // 모달 외부 클릭 시 닫기
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                modal.style.display = 'none';
+                closeModal(modal);
             }
         });
     });
     
-    // Shape selection modal events
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const openModals = document.querySelectorAll('.modal.show');
+            if (openModals.length > 0) {
+                closeModal(openModals[openModals.length - 1]);
+            }
+        }
+    });
+    
+    // 도형 선택 모달 이벤트
     setupShapeModalEvents();
     
-    // Image upload modal events
+    // 이미지 업로드 모달 이벤트
     setupImageModalEvents();
     
-    // Export modal events
+    // 내보내기 모달 이벤트
     setupExportModalEvents();
+}
+
+// 모달 열기 함수
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // 애니메이션을 위한 클래스 추가
+    modal.style.display = 'block';
+    
+    // 강제 리플로우 - 트랜지션 효과를 위해 필요
+    modal.offsetHeight;
+    
+    // 애니메이션 클래스 추가
+    modal.classList.add('show');
+    
+    // 모달이 열릴 때 포커스 잡기
+    const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (firstFocusable) {
+        firstFocusable.focus();
+    }
+    
+    // 모달 열림 이벤트 발생
+    document.dispatchEvent(new CustomEvent('modal-opened', { detail: { modalId } }));
+    
+    // 스크롤 방지
+    document.body.style.overflow = 'hidden';
+}
+
+// 모달 닫기 함수
+function closeModal(modal) {
+    if (!modal) return;
+    
+    // 애니메이션 클래스 제거
+    modal.classList.remove('show');
+    
+    // 트랜지션 종료 후 display 속성 변경
+    setTimeout(() => {
+        modal.style.display = 'none';
+        
+        // 모달 닫힘 이벤트 발생
+        document.dispatchEvent(new CustomEvent('modal-closed', { 
+            detail: { modalId: modal.id } 
+        }));
+        
+        // 스크롤 복원
+        if (!document.querySelector('.modal.show')) {
+            document.body.style.overflow = '';
+        }
+    }, 300); // CSS transition 지속시간과 맞춤
 }
 
 // Shape selection modal events
 function setupShapeModalEvents() {
-    const shapeModal = document.getElementById('shapeModal');
     const shapeItems = document.querySelectorAll('.shape-item');
     
     shapeItems.forEach(item => {
         item.addEventListener('click', () => {
             const shapeType = item.getAttribute('data-shape');
             addShapeElement(shapeType);
-            shapeModal.style.display = 'none';
+            closeModal(document.getElementById('shapeModal'));
         });
     });
 }
 
 // Image upload modal events
 function setupImageModalEvents() {
-    const imageModal = document.getElementById('imageModal');
     const uploadInput = document.getElementById('imageUploadInput');
     const uploadBtn = document.getElementById('uploadImageBtn');
     const cancelBtn = document.getElementById('cancelImageBtn');
     const addToSlideBtn = document.getElementById('addImageToSlideBtn');
     const imagePreview = document.getElementById('imagePreview');
+    const uploadArea = document.querySelector('.upload-area');
     
-    // File select button
+    // 드래그 앤 드롭 지원
+    if (uploadArea) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('highlight');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('highlight');
+            }, false);
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                uploadInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        }, false);
+    }
+    
+    // 파일 선택 버튼
     uploadBtn?.addEventListener('click', () => {
         uploadInput.click();
     });
     
-    // File select preview
+    // 파일 선택 미리보기
     uploadInput?.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                imagePreview.src = event.target.result;
-            };
-            reader.readAsDataURL(e.target.files[0]);
+            handleFileSelect(e.target.files[0]);
         }
     });
     
-    // Cancel button
+    function handleFileSelect(file) {
+        if (!file.type.match('image.*')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            imagePreview.src = event.target.result;
+            imagePreview.style.display = 'block';
+            addToSlideBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // 취소 버튼
     cancelBtn?.addEventListener('click', () => {
-        imageModal.style.display = 'none';
+        closeModal(document.getElementById('imageModal'));
     });
     
-    // Add to slide button
+    // 슬라이드에 추가 버튼
     addToSlideBtn?.addEventListener('click', () => {
         if (imagePreview.src) {
             addImageElement(imagePreview.src);
-            imageModal.style.display = 'none';
+            closeModal(document.getElementById('imageModal'));
+            
+            // 이미지 미리보기 초기화
+            setTimeout(() => {
+                imagePreview.src = '';
+                imagePreview.style.display = 'none';
+                uploadInput.value = '';
+                addToSlideBtn.disabled = true;
+            }, 300);
         }
     });
 }
 
 // Export modal events
 function setupExportModalEvents() {
-    const exportModal = document.getElementById('exportModal');
     const cancelBtn = document.getElementById('cancelExportBtn');
     const confirmBtn = document.getElementById('confirmExportBtn');
     
-    // Cancel button
+    // 취소 버튼
     cancelBtn?.addEventListener('click', () => {
-        exportModal.style.display = 'none';
+        closeModal(document.getElementById('exportModal'));
     });
     
-    // Export button
+    // 내보내기 버튼
     confirmBtn?.addEventListener('click', () => {
         const format = document.getElementById('exportFormat').value;
         const quality = document.getElementById('exportQuality').value;
         
-        // Update export status
+        // 내보내기 상태 업데이트
         AppState.exportConfig = {
             format,
             quality
         };
         
-        // Execute export
-        exportPresentation();
+        // 내보내기 진행 중 UI 표시
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 내보내는 중...';
         
-        exportModal.style.display = 'none';
+        // 내보내기 실행
+        exportPresentation()
+            .then(() => {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '내보내기';
+                closeModal(document.getElementById('exportModal'));
+            })
+            .catch(error => {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '내보내기';
+                alert(`내보내기 중 오류가 발생했습니다: ${error.message}`);
+            });
     });
 }
 
-// Setup independent scroll
-function setupIndependentScroll() {
-    const slideEditor = document.querySelector('.slide-editor');
-    const slideExplorer = document.querySelector('.slide-explorer');
-    
-    if (slideEditor) {
-        slideEditor.classList.add('independent-scroll');
-    }
-    
-    if (slideExplorer) {
-        slideExplorer.classList.add('independent-scroll');
-    }
-}
-
-// Initial UI state setup
-function updateUIState() {
-    // Ribbon menu initial state
-    document.querySelector('.ribbon-tab[data-tab="home"]')?.classList.add('active');
-    document.getElementById('home-ribbon')?.classList.add('active');
-    
-    // Properties panel initial state
-    document.querySelector('.panel-tab[data-panel="style"]')?.classList.add('active');
-    document.getElementById('style-panel')?.classList.add('active');
-}
-
-// Selected element style update
-function updateSelectedElementStyle(property, value) {
-    if (!AppState.selectedElement) return;
-    
-    const elementId = AppState.selectedElement.elementId;
-    const elementEl = document.getElementById(`element-${elementId}`);
-    
-    if (elementEl) {
-        // DOM element style update
-        elementEl.style[property] = value;
-        
-        // App state update
-        const currentSlide = AppState.slides[AppState.currentSlideIndex];
-        const element = currentSlide.elements.find(el => el.id === elementId);
-        
-        if (element) {
-            if (!element.style) element.style = {};
-            element.style[property] = value;
-            
-            // Element update event
-            document.dispatchEvent(new CustomEvent('element-updated', {
-                detail: { element }
-            }));
-        }
-    }
-}
-
-// Selected element position update
-function updateSelectedElementPosition(axis, value) {
-    if (!AppState.selectedElement) return;
-    
-    const elementId = AppState.selectedElement.elementId;
-    const elementEl = document.getElementById(`element-${elementId}`);
-    
-    if (elementEl) {
-        // DOM element position update
-        elementEl.style[axis === 'x' ? 'left' : 'top'] = `${value}px`;
-        
-        // App state update
-        const currentSlide = AppState.slides[AppState.currentSlideIndex];
-        const element = currentSlide.elements.find(el => el.id === elementId);
-        
-        if (element) {
-            element[axis] = value;
-            
-            // Element update event
-            document.dispatchEvent(new CustomEvent('element-updated', {
-                detail: { element }
-            }));
-        }
-    }
-}
-
-// Selected element size update
-function updateSelectedElementSize(dimension, value) {
-    if (!AppState.selectedElement) return;
-    
-    const elementId = AppState.selectedElement.elementId;
-    const elementEl = document.getElementById(`element-${elementId}`);
-    
-    if (elementEl) {
-        // DOM element size update
-        elementEl.style[dimension] = `${value}px`;
-        
-        // App state update
-        const currentSlide = AppState.slides[AppState.currentSlideIndex];
-        const element = currentSlide.elements.find(el => el.id === elementId);
-        
-        if (element) {
-            element[dimension] = value;
-            
-            // Element update event
-            document.dispatchEvent(new CustomEvent('element-updated', {
-                detail: { element }
-            }));
-        }
-    }
-}
-
-// Modal open functions
+// 모달 열기 함수들
 function openShapeModal() {
-    document.getElementById('shapeModal').style.display = 'block';
+    openModal('shapeModal');
 }
 
 function openImageModal() {
-    document.getElementById('imageModal').style.display = 'block';
+    openModal('imageModal');
 }
 
 function openChartModal() {
-    // Chart modal implementation needed
-    alert('Chart addition feature is still under development.');
+    // 차트 모달 구현 필요
+    alert('차트 추가 기능은 아직 구현 중입니다.');
 }
 
 function openExportModal() {
-    document.getElementById('exportModal').style.display = 'block';
+    openModal('exportModal');
 }
 
 // Element addition functions
