@@ -16,22 +16,146 @@ let collaborators = [];
 // AI 확장 기능 관련 변수
 let aiEnabled = false;
 
-// 문서 로드 완료 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-    // 디버그 기능 초기화
-    initializeDebug();
+// Main script file for initial loading and setup
+
+// Use the DOMContentLoaded event to ensure the DOM is fully loaded before running
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM content loaded, initializing scripts');
     
-    // UI 초기화
-    initializeUI();
+    // Load all required modules
+    loadModules()
+        .then(() => {
+            console.log('All modules loaded successfully');
+        })
+        .catch(error => {
+            console.error('Error loading modules:', error);
+            showError('Could not load application modules. Please refresh the page.');
+        });
     
-    // 이벤트 리스너 초기화
-    initializeEventListeners();
-    
-    // 슬라이드 로드
-    loadSlides();
-    
-    console.log('App initialized');
+    // Set up global event handlers
+    setupGlobalHandlers();
 });
+
+// Function to load all JS modules
+function loadModules() {
+    return new Promise((resolve, reject) => {
+        try {
+            // Dynamically import the main module
+            import('/static/js/main.js')
+                .then(() => {
+                    console.log('Main script loaded');
+                    resolve();
+                })
+                .catch(err => {
+                    console.error('Error loading main script:', err);
+                    reject(err);
+                });
+        } catch (error) {
+            console.error('Module loading error:', error);
+            reject(error);
+        }
+    });
+}
+
+// Set up global event handlers
+function setupGlobalHandlers() {
+    // Handle unhandled errors globally
+    window.addEventListener('error', function(event) {
+        console.error('Global error:', event.error);
+        showError('An error occurred. Please try again or refresh the page.');
+    });
+    
+    // Handle unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+    });
+    
+    // Handle visibility changes (for restoring state when tab becomes visible again)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            console.log('Tab became visible again');
+            // Refresh or update state if needed when tab is visible again
+        }
+    });
+}
+
+// Show an error message to the user
+function showError(message) {
+    const errorElement = document.createElement('div');
+    errorElement.className = 'error-notification';
+    errorElement.innerHTML = `
+        <div class="error-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${message}</span>
+            <button class="close-error">×</button>
+        </div>
+    `;
+    
+    // Add to the body
+    document.body.appendChild(errorElement);
+    
+    // Add close button functionality
+    errorElement.querySelector('.close-error').addEventListener('click', function() {
+        document.body.removeChild(errorElement);
+    });
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (document.body.contains(errorElement)) {
+            document.body.removeChild(errorElement);
+        }
+    }, 10000);
+}
+
+// Add CSS for error notifications
+(function addErrorStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            background-color: #f44336;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s forwards;
+        }
+        
+        .error-content {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-content i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .error-content span {
+            flex: 1;
+        }
+        
+        .close-error {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 8px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+})();
 
 // 디버그 기능 초기화
 function initializeDebug() {
@@ -860,18 +984,6 @@ function hideLoading() {
     if (loading) {
         loading.remove();
     }
-}
-
-// 에러 메시지 표시
-function showError(message) {
-    const error = document.createElement('div');
-    error.className = 'error-message';
-    error.textContent = message;
-    document.body.appendChild(error);
-    
-    setTimeout(() => {
-        error.remove();
-    }, 3000);
 }
 
 // AI 확장 기능 초기화

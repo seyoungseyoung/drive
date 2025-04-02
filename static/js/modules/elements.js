@@ -539,4 +539,46 @@ function rgbToHex(rgb) {
     }
     
     return rgb; // Return as-is if not in expected format
+}
+
+// 선택 핸들 생성
+function createSelectionHandles(element, container) {
+    // 기존 핸들 제거
+    clearSelectionHandles(container);
+    
+    // 각 모서리 및 중간 지점에 핸들 추가
+    const handlePositions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
+    
+    // 핸들 생성
+    handlePositions.forEach(position => {
+        const handle = document.createElement('div');
+        handle.className = `selection-handle handle-${position}`;
+        handle.setAttribute('data-handle', position);
+        container.appendChild(handle);
+    });
+    
+    // 회전 핸들 추가
+    const rotateHandle = document.createElement('div');
+    rotateHandle.className = 'selection-handle handle-rotate';
+    container.appendChild(rotateHandle);
+    
+    // 기울이기 핸들 추가
+    const skewXHandle = document.createElement('div');
+    skewXHandle.className = 'selection-handle handle-skew-x';
+    skewXHandle.setAttribute('data-handle', 'skew-x');
+    skewXHandle.style.left = '50%';
+    skewXHandle.style.top = '-20px';
+    skewXHandle.style.transform = 'translateX(-50%) translateY(-100%)';
+    container.appendChild(skewXHandle);
+    
+    const skewYHandle = document.createElement('div');
+    skewYHandle.className = 'selection-handle handle-skew-y';
+    skewYHandle.setAttribute('data-handle', 'skew-y');
+    skewYHandle.style.left = '-20px';
+    skewYHandle.style.top = '50%';
+    skewYHandle.style.transform = 'translateX(-100%) translateY(-50%)';
+    container.appendChild(skewYHandle);
+    
+    // 핸들 드래그 이벤트 설정
+    setupHandleDragEvents(container, element);
 } 

@@ -1,902 +1,630 @@
 /**
- * Shape Editor Module
- * 향상된 도형 편집 기능 제공 (PPT와 유사한 미세 조정 제공)
+ * 도형 에디터 모듈
+ * 다양한 도형 생성 및 편집 기능
  */
 
-// 전역 상태
-let selectedShape = null;
-let resizeHandles = [];
-let rotationHandle = null;
-let fineControlsVisible = false;
+// 사용 가능한 도형 목록
+const AVAILABLE_SHAPES = {
+    // 기본 도형
+    basic: [
+        { id: 'rectangle', name: '직사각형', icon: 'rectangle' },
+        { id: 'rounded-rectangle', name: '둥근 직사각형', icon: 'rounded-rectangle' },
+        { id: 'circle', name: '원', icon: 'circle' },
+        { id: 'triangle', name: '삼각형', icon: 'triangle' },
+        { id: 'pentagon', name: '오각형', icon: 'pentagon' },
+        { id: 'hexagon', name: '육각형', icon: 'hexagon' },
+        { id: 'octagon', name: '팔각형', icon: 'octagon' },
+        { id: 'star', name: '별', icon: 'star' },
+        { id: 'diamond', name: '다이아몬드', icon: 'diamond' },
+        { id: 'trapezoid', name: '사다리꼴', icon: 'trapezoid' },
+        { id: 'oval', name: '타원', icon: 'oval' },
+    ],
+    
+    // 화살표 및 선
+    arrows: [
+        { id: 'arrow', name: '화살표', icon: 'arrow' },
+        { id: 'arrow-left', name: '왼쪽 화살표', icon: 'arrow-left' },
+        { id: 'double-arrow', name: '양방향 화살표', icon: 'double-arrow' },
+        { id: 'curved-arrow', name: '곡선 화살표', icon: 'curved-arrow' },
+        { id: 'circular-arrow', name: '원형 화살표', icon: 'circular-arrow' },
+        { id: 'line', name: '선', icon: 'line' },
+        { id: 'dashed-line', name: '점선', icon: 'dashed-line' },
+        { id: 'curved-line', name: '곡선', icon: 'curved-line' },
+        { id: 'connector', name: '연결선', icon: 'connector' },
+    ],
+    
+    // 플로우차트
+    flowchart: [
+        { id: 'process', name: '프로세스', icon: 'process' },
+        { id: 'decision', name: '결정', icon: 'decision' },
+        { id: 'document', name: '문서', icon: 'document' },
+        { id: 'predefined-process', name: '사전 정의된 프로세스', icon: 'predefined-process' },
+        { id: 'data', name: '데이터', icon: 'data' },
+        { id: 'database', name: '데이터베이스', icon: 'database' },
+        { id: 'card', name: '카드', icon: 'card' },
+    ],
+    
+    // 콜아웃
+    callouts: [
+        { id: 'rectangular-callout', name: '직사각형 설명선', icon: 'rectangular-callout' },
+        { id: 'oval-callout', name: '타원형 설명선', icon: 'oval-callout' },
+        { id: 'cloud-callout', name: '구름 설명선', icon: 'cloud-callout' },
+        { id: 'thought-bubble', name: '생각 풍선', icon: 'thought-bubble' },
+    ],
+    
+    // 특수 도형
+    special: [
+        { id: 'brace', name: '중괄호', icon: 'brace' },
+        { id: 'bracket', name: '대괄호', icon: 'bracket' },
+        { id: 'heart', name: '하트', icon: 'heart' },
+        { id: 'lightning', name: '번개', icon: 'lightning' },
+        { id: 'sun', name: '태양', icon: 'sun' },
+        { id: 'moon', name: '달', icon: 'moon' },
+        { id: 'cloud', name: '구름', icon: 'cloud' },
+        { id: 'wave', name: '파도', icon: 'wave' },
+        { id: 'cross', name: '십자가', icon: 'cross' },
+        { id: 'puzzle', name: '퍼즐 조각', icon: 'puzzle' },
+    ]
+};
 
-// 상수 정의
-const HANDLE_POSITIONS = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
-const ROTATION_HANDLE_OFFSET = 30; // 회전 핸들 오프셋
+// 도형 사용자 정의 설정
+const DEFAULT_SHAPE_PROPS = {
+    width: 100,
+    height: 100,
+    fillColor: '#3498db',
+    strokeColor: '#2980b9',
+    strokeWidth: 2,
+    opacity: 1,
+    rotation: 0,
+    skewX: 0,
+    skewY: 0,
+    shadow: 'none'
+};
 
-// 모듈 초기화
+// 도형 에디터 모듈 초기화
 export function initShapeEditor() {
-    console.log('도형 편집 모듈 초기화');
-    setupEventListeners();
-    createFineControlPanel();
-}
-
-// 이벤트 리스너 설정
-function setupEventListeners() {
-    // 슬라이드 캔버스에서 도형 선택 이벤트 리스닝
-    document.addEventListener('element-selected', (e) => {
-        const elementId = e.detail.elementId;
-        const elementType = e.detail.elementType;
-        
-        if (elementType === 'shape' || elementType === 'text' || elementType === 'image') {
-            const element = document.getElementById(elementId);
-            if (element) {
-                selectShape(element);
-            } else {
-                deselectShape();
-            }
-        } else {
-            deselectShape();
+    console.log('도형 에디터 모듈 초기화');
+    
+    // 도형 선택 모달 요소
+    const shapeModal = document.getElementById('shapeModal');
+    const shapeGrid = shapeModal ? shapeModal.querySelector('.shape-grid') : null;
+    
+    // 도형 추가 버튼들 (여러 위치에 있을 수 있음)
+    const addShapeBtns = document.querySelectorAll('#addShapeBtn, #addShapeBtn2');
+    
+    // 이벤트 리스너 등록
+    addShapeBtns.forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', openShapeModal);
         }
     });
     
-    // 키보드 단축키 설정
-    document.addEventListener('keydown', handleKeyDown);
-    
-    // 슬라이드 캔버스 클릭 시 선택 해제
-    const slideCanvas = document.getElementById('currentSlide');
-    if (slideCanvas) {
-        slideCanvas.addEventListener('click', (e) => {
-            if (e.target === slideCanvas) {
-                deselectShape();
+    // 도형 모달 초기화
+    if (shapeModal) {
+        const closeBtn = shapeModal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeShapeModal);
+        }
+        
+        // 모달 외부 클릭 시 닫기
+        window.addEventListener('click', (event) => {
+            if (event.target === shapeModal) {
+                closeShapeModal();
             }
         });
+        
+        // 도형 목록 생성
+        buildShapeGallery();
+    }
+    
+    // 변형 툴 이벤트 리스너 등록
+    document.addEventListener('slides-updated', setupTransformHandlers);
+    
+    console.log('도형 에디터 초기화 완료');
+    return true;
+}
+
+// 도형 갤러리 구성
+function buildShapeGallery() {
+    const shapeModal = document.getElementById('shapeModal');
+    const modalBody = shapeModal ? shapeModal.querySelector('.modal-body') : null;
+    
+    if (!modalBody) return;
+    
+    // 기존 내용 초기화
+    modalBody.innerHTML = '';
+    
+    // 각 카테고리별 도형 추가
+    for (const [category, shapes] of Object.entries(AVAILABLE_SHAPES)) {
+        let categoryTitle;
+        switch (category) {
+            case 'basic': categoryTitle = '기본 도형'; break;
+            case 'arrows': categoryTitle = '화살표 및 선'; break;
+            case 'flowchart': categoryTitle = '플로우차트'; break;
+            case 'callouts': categoryTitle = '설명선'; break;
+            case 'special': categoryTitle = '특수 도형'; break;
+            default: categoryTitle = category;
+        }
+        
+        // 카테고리 제목 추가
+        const categoryElement = document.createElement('div');
+        categoryElement.className = 'shape-category';
+        categoryElement.textContent = categoryTitle;
+        modalBody.appendChild(categoryElement);
+        
+        // 도형 그리드 추가
+        const gridElement = document.createElement('div');
+        gridElement.className = 'shape-grid';
+        
+        // 도형 아이템 추가
+        shapes.forEach(shape => {
+            const shapeItem = document.createElement('div');
+            shapeItem.className = 'shape-item';
+            shapeItem.setAttribute('data-shape', shape.id);
+            
+            shapeItem.innerHTML = `
+                <div class="shape-preview ${shape.icon}"></div>
+                <span>${shape.name}</span>
+            `;
+            
+            // 클릭 이벤트
+            shapeItem.addEventListener('click', () => {
+                addShapeToSlide(shape.id);
+                closeShapeModal();
+            });
+            
+            gridElement.appendChild(shapeItem);
+        });
+        
+        modalBody.appendChild(gridElement);
     }
 }
 
-// 도형 선택 처리
-export function selectShape(element) {
-    // 기존 선택 해제
-    deselectShape();
-    
-    // 새 도형 선택
-    selectedShape = element;
-    selectedShape.classList.add('selected');
-    
-    // 크기 조절 및 회전 핸들 추가
-    addResizeHandles(selectedShape);
-    addRotationHandle(selectedShape);
-    
-    // 정밀 편집 패널 표시
-    showFineControlPanel(selectedShape);
-    
-    // 선택된 요소 정보를 속성 패널에 표시
-    updatePropertiesPanel(selectedShape);
-}
-
-// 도형 선택 해제
-export function deselectShape() {
-    if (selectedShape) {
-        selectedShape.classList.remove('selected');
-        
-        // 핸들 제거
-        removeHandles();
-        
-        // 정밀 편집 패널 숨기기
-        hideFineControlPanel();
-        
-        selectedShape = null;
+// 도형 모달 열기
+function openShapeModal() {
+    const shapeModal = document.getElementById('shapeModal');
+    if (shapeModal) {
+        shapeModal.style.display = 'block';
+        setTimeout(() => {
+            shapeModal.classList.add('show');
+        }, 10);
     }
 }
 
-// 크기 조절 핸들 추가
-function addResizeHandles(element) {
-    const rect = element.getBoundingClientRect();
-    
-    HANDLE_POSITIONS.forEach(position => {
-        const handle = document.createElement('div');
-        handle.className = `resize-handle handle-${position}`;
-        handle.setAttribute('data-position', position);
+// 도형 모달 닫기
+function closeShapeModal() {
+    const shapeModal = document.getElementById('shapeModal');
+    if (shapeModal) {
+        shapeModal.classList.remove('show');
+        setTimeout(() => {
+            shapeModal.style.display = 'none';
+        }, 300);
+    }
+}
+
+// 슬라이드에 도형 추가
+function addShapeToSlide(shapeType) {
+    import('../index.js').then(module => {
+        // 새 도형 요소 생성
+        const shapeElement = {
+            id: Date.now(),
+            type: 'shape',
+            shapeType: shapeType,
+            x: 400 - DEFAULT_SHAPE_PROPS.width / 2,
+            y: 270 - DEFAULT_SHAPE_PROPS.height / 2,
+            width: DEFAULT_SHAPE_PROPS.width,
+            height: DEFAULT_SHAPE_PROPS.height,
+            fillColor: DEFAULT_SHAPE_PROPS.fillColor,
+            strokeColor: DEFAULT_SHAPE_PROPS.strokeColor,
+            strokeWidth: DEFAULT_SHAPE_PROPS.strokeWidth,
+            opacity: DEFAULT_SHAPE_PROPS.opacity,
+            rotation: DEFAULT_SHAPE_PROPS.rotation,
+            skewX: DEFAULT_SHAPE_PROPS.skewX,
+            skewY: DEFAULT_SHAPE_PROPS.skewY,
+            shadow: DEFAULT_SHAPE_PROPS.shadow
+        };
         
-        // 핸들 위치 조정
-        positionHandle(handle, position, rect);
+        // 특정 도형 유형에 따른 크기 조정
+        if (['line', 'dashed-line', 'curved-line', 'arrow', 'double-arrow'].includes(shapeType)) {
+            shapeElement.width = 150;
+            shapeElement.height = 3;
+        } else if (['circle', 'oval'].includes(shapeType)) {
+            shapeElement.width = 120;
+            shapeElement.height = 120;
+        } else if (['decision'].includes(shapeType)) {
+            shapeElement.width = 120;
+            shapeElement.height = 120;
+        }
         
-        // 마우스 이벤트 리스너
-        handle.addEventListener('mousedown', startResize);
-        
-        // 도형에 핸들 추가
-        element.appendChild(handle);
-        resizeHandles.push(handle);
+        // 요소 추가
+        module.addElement(shapeElement);
+    }).catch(error => {
+        console.error('도형 추가 오류:', error);
     });
 }
 
-// 회전 핸들 추가
-function addRotationHandle(element) {
-    const handle = document.createElement('div');
-    handle.className = 'rotation-handle';
+// 도형 렌더링 (SVG 경로 기반)
+export function renderShape(element, container) {
+    const { width, height, fillColor, strokeColor, strokeWidth, opacity, rotation, skewX, skewY, shadow } = element;
     
-    // 핸들 위치 조정 (상단 중앙 + 오프셋)
-    const rect = element.getBoundingClientRect();
-    handle.style.left = '50%';
-    handle.style.top = `-${ROTATION_HANDLE_OFFSET}px`;
-    handle.style.transform = 'translateX(-50%)';
+    // SVG 요소 생성
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
     
-    // 회전 핸들 라인 추가
-    const line = document.createElement('div');
-    line.className = 'rotation-line';
-    handle.appendChild(line);
+    // 그림자 효과가 있는 경우
+    if (shadow !== 'none') {
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+        filter.setAttribute('id', `shadow-${element.id}`);
+        
+        const shadowIntensity = {
+            'light': { dx: 2, dy: 2, blur: 3, opacity: 0.3 },
+            'medium': { dx: 4, dy: 4, blur: 5, opacity: 0.4 },
+            'strong': { dx: 6, dy: 6, blur: 8, opacity: 0.5 }
+        }[shadow] || { dx: 2, dy: 2, blur: 3, opacity: 0.3 };
+        
+        const feDropShadow = document.createElementNS('http://www.w3.org/2000/svg', 'feDropShadow');
+        feDropShadow.setAttribute('dx', shadowIntensity.dx);
+        feDropShadow.setAttribute('dy', shadowIntensity.dy);
+        feDropShadow.setAttribute('stdDeviation', shadowIntensity.blur);
+        feDropShadow.setAttribute('flood-opacity', shadowIntensity.opacity);
+        
+        filter.appendChild(feDropShadow);
+        defs.appendChild(filter);
+        svg.appendChild(defs);
+    }
     
-    // 마우스 이벤트 리스너
-    handle.addEventListener('mousedown', startRotation);
+    // 도형 경로 생성
+    const shapePath = createShapePath(element.shapeType, width, height);
     
-    // 도형에 핸들 추가
-    element.appendChild(handle);
-    rotationHandle = handle;
+    // SVG 경로 요소 생성
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', shapePath);
+    path.setAttribute('fill', fillColor);
+    path.setAttribute('stroke', strokeColor);
+    path.setAttribute('stroke-width', strokeWidth);
+    path.setAttribute('opacity', opacity);
+    
+    // 변형 적용 (회전, 기울이기)
+    let transform = '';
+    
+    // 기울이기 변형이 있을 경우
+    if (skewX !== 0 || skewY !== 0) {
+        transform += `skew(${skewX}deg, ${skewY}deg) `;
+    }
+    
+    // 회전 변형이 있을 경우
+    if (rotation !== 0) {
+        const centerX = width / 2;
+        const centerY = height / 2;
+        transform += `rotate(${rotation} ${centerX} ${centerY}) `;
+    }
+    
+    if (transform !== '') {
+        path.setAttribute('transform', transform);
+    }
+    
+    // 그림자 적용
+    if (shadow !== 'none') {
+        path.setAttribute('filter', `url(#shadow-${element.id})`);
+    }
+    
+    svg.appendChild(path);
+    container.appendChild(svg);
 }
 
-// 핸들 위치 설정
-function positionHandle(handle, position, rect) {
-    switch (position) {
-        case 'nw': // 좌상단
-            handle.style.left = '-5px';
-            handle.style.top = '-5px';
-            handle.style.cursor = 'nwse-resize';
-            break;
-        case 'n': // 상단 중앙
-            handle.style.left = '50%';
-            handle.style.top = '-5px';
-            handle.style.transform = 'translateX(-50%)';
-            handle.style.cursor = 'ns-resize';
-            break;
-        case 'ne': // 우상단
-            handle.style.right = '-5px';
-            handle.style.top = '-5px';
-            handle.style.cursor = 'nesw-resize';
-            break;
-        case 'e': // 우측 중앙
-            handle.style.right = '-5px';
-            handle.style.top = '50%';
-            handle.style.transform = 'translateY(-50%)';
-            handle.style.cursor = 'ew-resize';
-            break;
-        case 'se': // 우하단
-            handle.style.right = '-5px';
-            handle.style.bottom = '-5px';
-            handle.style.cursor = 'nwse-resize';
-            break;
-        case 's': // 하단 중앙
-            handle.style.left = '50%';
-            handle.style.bottom = '-5px';
-            handle.style.transform = 'translateX(-50%)';
-            handle.style.cursor = 'ns-resize';
-            break;
-        case 'sw': // 좌하단
-            handle.style.left = '-5px';
-            handle.style.bottom = '-5px';
-            handle.style.cursor = 'nesw-resize';
-            break;
-        case 'w': // 좌측 중앙
-            handle.style.left = '-5px';
-            handle.style.top = '50%';
-            handle.style.transform = 'translateY(-50%)';
-            handle.style.cursor = 'ew-resize';
-            break;
+// 도형 경로 생성 함수
+function createShapePath(shapeType, width, height) {
+    const w = width;
+    const h = height;
+    
+    switch (shapeType) {
+        case 'rectangle':
+            return `M0,0 H${w} V${h} H0 Z`;
+            
+        case 'rounded-rectangle': {
+            const r = Math.min(w, h) * 0.1; // 모서리 반경
+            return `M${r},0 H${w-r} Q${w},0 ${w},${r} V${h-r} Q${w},${h} ${w-r},${h} H${r} Q0,${h} 0,${h-r} V${r} Q0,0 ${r},0 Z`;
+        }
+            
+        case 'circle':
+            return `M${w/2},0 A${w/2},${h/2} 0 0 1 ${w/2},${h} A${w/2},${h/2} 0 0 1 ${w/2},0 Z`;
+            
+        case 'triangle':
+            return `M${w/2},0 L${w},${h} L0,${h} Z`;
+            
+        case 'pentagon': {
+            const points = [];
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2);
+                const x = w/2 + (w/2) * Math.cos(angle);
+                const y = h/2 + (h/2) * Math.sin(angle);
+                points.push(`${x},${y}`);
+            }
+            return `M${points[0]} L${points[1]} L${points[2]} L${points[3]} L${points[4]} Z`;
+        }
+            
+        case 'hexagon': {
+            const points = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * 2 * Math.PI / 6) - (Math.PI / 2);
+                const x = w/2 + (w/2) * Math.cos(angle);
+                const y = h/2 + (h/2) * Math.sin(angle);
+                points.push(`${x},${y}`);
+            }
+            return `M${points[0]} L${points[1]} L${points[2]} L${points[3]} L${points[4]} L${points[5]} Z`;
+        }
+            
+        case 'octagon': {
+            const points = [];
+            for (let i = 0; i < 8; i++) {
+                const angle = (i * 2 * Math.PI / 8) - (Math.PI / 2);
+                const x = w/2 + (w/2) * Math.cos(angle);
+                const y = h/2 + (h/2) * Math.sin(angle);
+                points.push(`${x},${y}`);
+            }
+            return `M${points[0]} L${points[1]} L${points[2]} L${points[3]} L${points[4]} L${points[5]} L${points[6]} L${points[7]} Z`;
+        }
+            
+        case 'star': {
+            const outerRadius = Math.min(w, h) / 2;
+            const innerRadius = outerRadius * 0.4;
+            const points = [];
+            
+            for (let i = 0; i < 10; i++) {
+                const angle = (i * Math.PI / 5) - (Math.PI / 2);
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const x = w/2 + radius * Math.cos(angle);
+                const y = h/2 + radius * Math.sin(angle);
+                points.push(`${x},${y}`);
+            }
+            
+            return `M${points.join(' L')} Z`;
+        }
+            
+        case 'diamond':
+            return `M${w/2},0 L${w},${h/2} L${w/2},${h} L0,${h/2} Z`;
+            
+        case 'trapezoid':
+            return `M${w*0.2},${h} L${w*0.8},${h} L${w},0 L0,0 Z`;
+            
+        case 'oval':
+            return `M${w/2},0 A${w/2},${h/2} 0 0 1 ${w/2},${h} A${w/2},${h/2} 0 0 1 ${w/2},0 Z`;
+            
+        case 'arrow':
+            return `M0,${h/2} L${w-h*2},${h/2} L${w-h*2},0 L${w},${h*1.5} L${w-h*2},${h*3} L${w-h*2},${h*2} L0,${h*2} Z`;
+            
+        case 'arrow-left':
+            return `M${w},${h/2} L${h*2},${h/2} L${h*2},0 L0,${h*1.5} L${h*2},${h*3} L${h*2},${h*2} L${w},${h*2} Z`;
+            
+        case 'double-arrow':
+            return `M0,${h*1.5} L${h*2},0 L${h*2},${h} L${w-h*2},${h} L${w-h*2},0 L${w},${h*1.5} L${w-h*2},${h*3} L${w-h*2},${h*2} L${h*2},${h*2} L${h*2},${h*3} Z`;
+            
+        case 'curved-arrow':
+            return `M${w*0.1},${h*0.5} C${w*0.3},${h*0.1} ${w*0.7},${h*0.1} ${w*0.9},${h*0.5} L${w*0.7},${h*0.3} M${w*0.9},${h*0.5} L${w*0.7},${h*0.7}`;
+            
+        case 'circular-arrow':
+            return `M${w*0.5},${h*0.1} A${w*0.4},${h*0.4} 0 1 1 ${w*0.1},${h*0.5} L${w*0.2},${h*0.3} M${w*0.1},${h*0.5} L${w*0.2},${h*0.7}`;
+            
+        case 'line':
+            return `M0,${h/2} L${w},${h/2}`;
+            
+        case 'dashed-line':
+            return `M0,${h/2} L${w},${h/2}`; // SVG stroke-dasharray로 점선 처리
+            
+        case 'curved-line':
+            return `M0,${h} C${w/3},0 ${w*2/3},${h} ${w},0`;
+            
+        case 'connector':
+            return `M0,${h/2} L${w/3},${h/2} L${w/3},${h/6} L${w*2/3},${h/6} L${w*2/3},${h/2} L${w},${h/2}`;
+            
+        case 'process':
+            return `M0,0 H${w} V${h} H0 Z`;
+            
+        case 'decision':
+            return `M${w/2},0 L${w},${h/2} L${w/2},${h} L0,${h/2} Z`;
+            
+        case 'document':
+            return `M0,0 H${w} V${h*0.8} C${w*0.75},${h*1.1} ${w*0.25},${h*0.7} 0,${h*0.8} Z`;
+            
+        case 'predefined-process':
+            return `M0,0 H${w} V${h} H0 Z M${w*0.1},0 V${h} M${w*0.9},0 V${h}`;
+            
+        case 'data':
+            return `M${w*0.1},0 H${w} L${w*0.9},${h} H0 Z`;
+            
+        case 'database':
+            return `M0,${h*0.2} A${w/2},${h*0.2} 0 0 1 ${w},${h*0.2} V${h*0.8} A${w/2},${h*0.2} 0 0 1 0,${h*0.8} Z
+                   M0,${h*0.2} A${w/2},${h*0.2} 0 0 0 ${w},${h*0.2}`;
+            
+        case 'card':
+            return `M${w*0.1},0 H${w} V${h} H0 V${h*0.1} Z`;
+            
+        case 'rectangular-callout':
+            return `M${w*0.1},${h*0.1} H${w*0.9} V${h*0.7} H${w*0.6} L${w*0.5},${h} L${w*0.4},${h*0.7} H${w*0.1} Z`;
+            
+        case 'oval-callout':
+            return `M${w/2},${h*0.1} A${w*0.4},${h*0.3} 0 0 1 ${w/2},${h*0.7} A${w*0.4},${h*0.3} 0 0 1 ${w/2},${h*0.1} Z
+                   M${w*0.45},${h*0.7} L${w*0.4},${h} L${w*0.35},${h*0.7}`;
+            
+        case 'cloud-callout': {
+            const p = `M${w*0.3},${h*0.3} A${w*0.15},${h*0.15} 0 0 1 ${w*0.5},${h*0.2} A${w*0.15},${h*0.15} 0 0 1 ${w*0.7},${h*0.3}
+                      A${w*0.15},${h*0.15} 0 0 1 ${w*0.75},${h*0.5} A${w*0.15},${h*0.15} 0 0 1 ${w*0.6},${h*0.65}
+                      A${w*0.15},${h*0.15} 0 0 1 ${w*0.4},${h*0.65} A${w*0.15},${h*0.15} 0 0 1 ${w*0.25},${h*0.5}
+                      A${w*0.15},${h*0.15} 0 0 1 ${w*0.3},${h*0.3} Z`;
+            return `${p} M${w*0.45},${h*0.65} L${w*0.4},${h} L${w*0.35},${h*0.65}`;
+        }
+            
+        case 'thought-bubble': {
+            const mainBubble = `M${w*0.5},${h*0.2} A${w*0.3},${h*0.2} 0 0 1 ${w*0.5},${h*0.6} A${w*0.3},${h*0.2} 0 0 1 ${w*0.5},${h*0.2} Z`;
+            const smallBubble1 = `M${w*0.3},${h*0.7} A${w*0.05},${h*0.05} 0 0 1 ${w*0.3},${h*0.8} A${w*0.05},${h*0.05} 0 0 1 ${w*0.3},${h*0.7} Z`;
+            const smallBubble2 = `M${w*0.2},${h*0.85} A${w*0.03},${h*0.03} 0 0 1 ${w*0.2},${h*0.91} A${w*0.03},${h*0.03} 0 0 1 ${w*0.2},${h*0.85} Z`;
+            return `${mainBubble} ${smallBubble1} ${smallBubble2}`;
+        }
+            
+        case 'brace':
+            return `M0,0 C${w*0.3},0 ${w*0.3},${h/2} ${w/2},${h/2} C${w*0.7},${h/2} ${w*0.7},${h} ${w},${h}`;
+            
+        case 'bracket':
+            return `M${w*0.3},0 H0 V${h} H${w*0.3}`;
+            
+        case 'heart':
+            return `M${w/2},${h*0.2} C${w*0.8},0 ${w},${h*0.4} ${w/2},${h} C0,${h*0.4} ${w*0.2},0 ${w/2},${h*0.2} Z`;
+            
+        case 'lightning':
+            return `M${w*0.6},0 L${w*0.2},${h*0.5} L${w*0.5},${h*0.5} L${w*0.4},${h} L${w*0.8},${h*0.5} L${w*0.5},${h*0.5} Z`;
+            
+        case 'sun': {
+            const center = `M${w*0.5},${h*0.3} A${w*0.2},${h*0.2} 0 0 1 ${w*0.5},${h*0.7} A${w*0.2},${h*0.2} 0 0 1 ${w*0.5},${h*0.3} Z`;
+            const rays = `M${w*0.5},${h*0.1} V${h*0.2} M${w*0.5},${h*0.8} V${h*0.9} 
+                         M${w*0.3},${h*0.2} L${w*0.2},${h*0.1} M${w*0.7},${h*0.2} L${w*0.8},${h*0.1}
+                         M${w*0.3},${h*0.8} L${w*0.2},${h*0.9} M${w*0.7},${h*0.8} L${w*0.8},${h*0.9}
+                         M${w*0.2},${h*0.5} H${w*0.1} M${w*0.8},${h*0.5} H${w*0.9}`;
+            return `${center} ${rays}`;
+        }
+            
+        case 'moon':
+            return `M${w*0.5},${h*0.2} A${w*0.3},${h*0.3} 0 0 1 ${w*0.5},${h*0.8} A${w*0.4},${h*0.4} 0 0 0 ${w*0.5},${h*0.2} Z`;
+            
+        case 'cloud':
+            return `M${w*0.3},${h*0.5} A${w*0.2},${h*0.2} 0 0 1 ${w*0.5},${h*0.3} A${w*0.2},${h*0.2} 0 0 1 ${w*0.7},${h*0.5} 
+                   A${w*0.15},${h*0.15} 0 0 1 ${w*0.85},${h*0.6} A${w*0.15},${h*0.15} 0 0 1 ${w*0.7},${h*0.7}
+                   A${w*0.2},${h*0.2} 0 0 1 ${w*0.5},${h*0.8} A${w*0.2},${h*0.2} 0 0 1 ${w*0.3},${h*0.7}
+                   A${w*0.15},${h*0.15} 0 0 1 ${w*0.15},${h*0.6} A${w*0.15},${h*0.15} 0 0 1 ${w*0.3},${h*0.5} Z`;
+            
+        case 'wave':
+            return `M0,${h*0.5} C${w*0.25},${h*0.25} ${w*0.25},${h*0.75} ${w*0.5},${h*0.5} 
+                   C${w*0.75},${h*0.25} ${w*0.75},${h*0.75} ${w},${h*0.5}`;
+            
+        case 'cross':
+            return `M${w*0.3},${h*0.1} H${w*0.7} V${h*0.35} H${w*0.9} V${h*0.65} H${w*0.7} V${h*0.9} H${w*0.3} V${h*0.65} H${w*0.1} V${h*0.35} H${w*0.3} Z`;
+            
+        case 'puzzle': {
+            const top = `M${w*0.3},0 H${w*0.7} C${w*0.7},${h*0.1} ${w*0.8},${h*0.1} ${w*0.8},${h*0.2} H${w}`;
+            const right = `V${h*0.7} C${w*0.9},${h*0.7} ${w*0.9},${h*0.8} ${w*0.8},${h*0.8} V${h}`;
+            const bottom = `H${w*0.3} C${w*0.3},${h*0.9} ${w*0.2},${h*0.9} ${w*0.2},${h*0.8} H0`;
+            const left = `V${h*0.3} C${w*0.1},${h*0.3} ${w*0.1},${h*0.2} ${w*0.2},${h*0.2} V0`;
+            return `${top} ${right} ${bottom} ${left}`;
+        }
+            
+        // 기본값은 직사각형
+        default:
+            return `M0,0 H${w} V${h} H0 Z`;
     }
 }
 
-// 핸들 제거
-function removeHandles() {
-    // 크기 조절 핸들 제거
-    resizeHandles.forEach(handle => {
-        if (handle.parentNode) {
-            handle.parentNode.removeChild(handle);
-        }
+// 자유 변형을 위한 핸들러 설정
+function setupTransformHandlers() {
+    const handleElements = document.querySelectorAll('.selection-handle');
+    
+    // 회전 핸들 이벤트
+    const rotateHandle = document.querySelector('.handle-rotate');
+    if (rotateHandle) {
+        rotateHandle.addEventListener('mousedown', startRotation);
+    }
+    
+    // 기울이기 핸들 이벤트 (새로 추가)
+    const skewHandles = document.querySelectorAll('.handle-skew-x, .handle-skew-y');
+    skewHandles.forEach(handle => {
+        handle.addEventListener('mousedown', startSkew);
     });
-    resizeHandles = [];
-    
-    // 회전 핸들 제거
-    if (rotationHandle && rotationHandle.parentNode) {
-        rotationHandle.parentNode.removeChild(rotationHandle);
-    }
-    rotationHandle = null;
-}
-
-// 크기 조절 시작
-function startResize(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!selectedShape) return;
-    
-    const position = this.getAttribute('data-position');
-    const shapeRect = selectedShape.getBoundingClientRect();
-    const startX = e.clientX;
-    const startY = e.clientY;
-    
-    // 초기 크기와 위치
-    const initialWidth = selectedShape.offsetWidth;
-    const initialHeight = selectedShape.offsetHeight;
-    const initialLeft = selectedShape.offsetLeft;
-    const initialTop = selectedShape.offsetTop;
-    
-    // 크기 조절 이벤트 등록
-    function resize(e) {
-        let newWidth = initialWidth;
-        let newHeight = initialHeight;
-        let newLeft = initialLeft;
-        let newTop = initialTop;
-        
-        // 방향에 따른 크기 및 위치 조정
-        switch (position) {
-            case 'nw': // 좌상단
-                newWidth = initialWidth - (e.clientX - startX);
-                newHeight = initialHeight - (e.clientY - startY);
-                newLeft = initialLeft + (e.clientX - startX);
-                newTop = initialTop + (e.clientY - startY);
-                break;
-            case 'n': // 상단 중앙
-                newHeight = initialHeight - (e.clientY - startY);
-                newTop = initialTop + (e.clientY - startY);
-                break;
-            case 'ne': // 우상단
-                newWidth = initialWidth + (e.clientX - startX);
-                newHeight = initialHeight - (e.clientY - startY);
-                newTop = initialTop + (e.clientY - startY);
-                break;
-            case 'e': // 우측 중앙
-                newWidth = initialWidth + (e.clientX - startX);
-                break;
-            case 'se': // 우하단
-                newWidth = initialWidth + (e.clientX - startX);
-                newHeight = initialHeight + (e.clientY - startY);
-                break;
-            case 's': // 하단 중앙
-                newHeight = initialHeight + (e.clientY - startY);
-                break;
-            case 'sw': // 좌하단
-                newWidth = initialWidth - (e.clientX - startX);
-                newHeight = initialHeight + (e.clientY - startY);
-                newLeft = initialLeft + (e.clientX - startX);
-                break;
-            case 'w': // 좌측 중앙
-                newWidth = initialWidth - (e.clientX - startX);
-                newLeft = initialLeft + (e.clientX - startX);
-                break;
-        }
-        
-        // 최소 크기 제한
-        newWidth = Math.max(20, newWidth);
-        newHeight = Math.max(20, newHeight);
-        
-        // 도형 크기 및 위치 업데이트
-        selectedShape.style.width = `${newWidth}px`;
-        selectedShape.style.height = `${newHeight}px`;
-        selectedShape.style.left = `${newLeft}px`;
-        selectedShape.style.top = `${newTop}px`;
-        
-        // 정밀 편집 패널 업데이트
-        updateFineControlPanel(selectedShape);
-        
-        // 핸들 위치 업데이트는 크기 조절 완료 후 수행
-    }
-    
-    // 크기 조절 종료
-    function stopResize() {
-        document.removeEventListener('mousemove', resize);
-        document.removeEventListener('mouseup', stopResize);
-        
-        // 도형 데이터 저장 (실제 구현 시 필요)
-        saveElementData(selectedShape);
-        
-        // 핸들 위치 갱신
-        removeHandles();
-        addResizeHandles(selectedShape);
-        addRotationHandle(selectedShape);
-    }
-    
-    document.addEventListener('mousemove', resize);
-    document.addEventListener('mouseup', stopResize);
 }
 
 // 회전 시작
-function startRotation(e) {
-    e.preventDefault();
-    e.stopPropagation();
+function startRotation(event) {
+    event.preventDefault();
     
-    if (!selectedShape) return;
-    
-    const rect = selectedShape.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    // 현재 회전 각도 가져오기
-    let currentRotation = 0;
-    const transform = selectedShape.style.transform;
-    const rotateMatch = transform.match(/rotate\((-?\d+(?:\.\d+)?)deg\)/);
-    if (rotateMatch) {
-        currentRotation = parseFloat(rotateMatch[1]);
-    }
-    
-    // 초기 각도 계산
-    const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-    
-    // 회전 이벤트 등록
-    function rotate(e) {
-        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-        let newRotation = currentRotation + (angle - startAngle);
+    import('../index.js').then(module => {
+        const selectedElement = module.AppState.selectedElement;
+        if (!selectedElement) return;
         
-        // Shift 키를 누르면 15도 단위로 회전
-        if (e.shiftKey) {
-            newRotation = Math.round(newRotation / 15) * 15;
+        // 선택된 요소의 정보
+        const elementId = selectedElement.elementId;
+        const element = module.AppState.slides[module.AppState.currentSlideIndex].elements
+            .find(el => el.id === elementId);
+        
+        if (!element) return;
+        
+        // 요소의 중심점
+        const rect = document.querySelector(`.slide-element[data-id="${elementId}"]`).getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // 회전 처리 함수
+        function handleRotation(e) {
+            const dx = e.clientX - centerX;
+            const dy = e.clientY - centerY;
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            
+            // 회전각 업데이트 (90도 추가하여 오른쪽이 0도 기준이 되게 함)
+            module.updateElement(elementId, { rotation: (angle + 90) % 360 });
         }
         
-        // 회전 각도를 0-360 범위로 정규화
-        newRotation = (newRotation % 360 + 360) % 360;
+        // 마우스 이동 이벤트
+        document.addEventListener('mousemove', handleRotation);
         
-        // 기존 transform 스타일에서 rotate 부분만 업데이트
-        let newTransform = transform.replace(/rotate\(-?\d+(?:\.\d+)?deg\)/, '');
-        if (newTransform.trim() === '') {
-            newTransform = `rotate(${newRotation}deg)`;
-        } else {
-            newTransform += ` rotate(${newRotation}deg)`;
-        }
-        
-        selectedShape.style.transform = newTransform;
-        
-        // 정밀 편집 패널 업데이트
-        updateFineControlPanel(selectedShape);
-    }
-    
-    // 회전 종료
-    function stopRotation() {
-        document.removeEventListener('mousemove', rotate);
-        document.removeEventListener('mouseup', stopRotation);
-        
-        // 도형 데이터 저장 (실제 구현 시 필요)
-        saveElementData(selectedShape);
-    }
-    
-    document.addEventListener('mousemove', rotate);
-    document.addEventListener('mouseup', stopRotation);
+        // 마우스 업 이벤트 (회전 종료)
+        document.addEventListener('mouseup', function endRotation() {
+            document.removeEventListener('mousemove', handleRotation);
+            document.removeEventListener('mouseup', endRotation);
+        });
+    }).catch(error => {
+        console.error('회전 처리 오류:', error);
+    });
 }
 
-// 정밀 편집 패널 생성
-function createFineControlPanel() {
-    // 이미 존재하는 경우 제거
-    const existingPanel = document.getElementById('fine-control-panel');
-    if (existingPanel) {
-        existingPanel.parentNode.removeChild(existingPanel);
-    }
+// 기울이기 시작
+function startSkew(event) {
+    event.preventDefault();
     
-    // 패널 생성
-    const panel = document.createElement('div');
-    panel.id = 'fine-control-panel';
-    panel.style.display = 'none';
+    const isX = event.target.classList.contains('handle-skew-x');
+    const startX = event.clientX;
+    const startY = event.clientY;
     
-    // 패널 내용
-    panel.innerHTML = `
-        <div class="panel-header">
-            <h4>정밀 편집</h4>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-x">X 위치</label>
-            <input type="number" id="shape-x" min="0" step="1">
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-y">Y 위치</label>
-            <input type="number" id="shape-y" min="0" step="1">
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-width">너비</label>
-            <input type="number" id="shape-width" min="10" step="1">
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-height">높이</label>
-            <input type="number" id="shape-height" min="10" step="1">
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-rotation">회전</label>
-            <input type="number" id="shape-rotation" min="0" max="359" step="1">
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-opacity">투명도</label>
-            <input type="range" id="shape-opacity" min="0" max="100" step="1">
-            <span id="opacity-value">100%</span>
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-background">배경색</label>
-            <input type="color" id="shape-background">
-        </div>
-        <div class="fine-control-group">
-            <label for="shape-border">테두리</label>
-            <div class="border-controls">
-                <input type="color" id="shape-border-color">
-                <input type="number" id="shape-border-width" min="0" max="10" step="1" placeholder="두께">
-                <select id="shape-border-style">
-                    <option value="solid">실선</option>
-                    <option value="dashed">점선</option>
-                    <option value="dotted">점선 (점)</option>
-                    <option value="double">이중선</option>
-                    <option value="none">없음</option>
-                </select>
-            </div>
-        </div>
-        <div class="aspect-control">
-            <label>
-                <input type="checkbox" id="shape-lock-aspect">
-                비율 고정
-            </label>
-        </div>
-    `;
-    
-    // 문서에 추가
-    document.body.appendChild(panel);
-    
-    // 닫기 버튼 이벤트 리스너
-    const closeBtn = panel.querySelector('.close-btn');
-    closeBtn.addEventListener('click', () => {
-        panel.style.display = 'none';
-        fineControlsVisible = false;
-    });
-    
-    // 정밀 편집 입력 이벤트 리스너
-    setupFineControlListeners();
-}
-
-// 정밀 편집 패널 입력 이벤트 리스너 설정
-function setupFineControlListeners() {
-    // X 위치 변경
-    const shapeX = document.getElementById('shape-x');
-    shapeX.addEventListener('input', () => {
-        if (!selectedShape) return;
-        selectedShape.style.left = `${shapeX.value}px`;
-        saveElementData(selectedShape);
-    });
-    
-    // Y 위치 변경
-    const shapeY = document.getElementById('shape-y');
-    shapeY.addEventListener('input', () => {
-        if (!selectedShape) return;
-        selectedShape.style.top = `${shapeY.value}px`;
-        saveElementData(selectedShape);
-    });
-    
-    // 너비 변경
-    const shapeWidth = document.getElementById('shape-width');
-    shapeWidth.addEventListener('input', () => {
-        if (!selectedShape) return;
+    import('../index.js').then(module => {
+        const selectedElement = module.AppState.selectedElement;
+        if (!selectedElement) return;
         
-        // 비율 고정 확인
-        const lockAspect = document.getElementById('shape-lock-aspect').checked;
-        const newWidth = parseInt(shapeWidth.value);
+        // 선택된 요소의 정보
+        const elementId = selectedElement.elementId;
+        const element = module.AppState.slides[module.AppState.currentSlideIndex].elements
+            .find(el => el.id === elementId);
         
-        selectedShape.style.width = `${newWidth}px`;
+        if (!element) return;
         
-        // 비율 고정이 활성화된 경우 높이도 비례하여 변경
-        if (lockAspect) {
-            const aspectRatio = selectedShape.getAttribute('data-aspect-ratio');
-            if (aspectRatio) {
-                const newHeight = Math.round(newWidth / aspectRatio);
-                selectedShape.style.height = `${newHeight}px`;
-                document.getElementById('shape-height').value = newHeight;
+        const originalSkewX = element.skewX || 0;
+        const originalSkewY = element.skewY || 0;
+        
+        // 기울이기 처리 함수
+        function handleSkew(e) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            // 마우스 이동에 따른 기울기 변화 (10픽셀당 1도)
+            const skewDelta = (isX ? dx : dy) / 10;
+            
+            if (isX) {
+                module.updateElement(elementId, { skewX: originalSkewX + skewDelta });
             } else {
-                // 비율 정보가 없으면 현재 비율 계산 및 저장
-                const ratio = newWidth / selectedShape.offsetHeight;
-                selectedShape.setAttribute('data-aspect-ratio', ratio);
+                module.updateElement(elementId, { skewY: originalSkewY + skewDelta });
             }
         }
         
-        saveElementData(selectedShape);
+        // 마우스 이동 이벤트
+        document.addEventListener('mousemove', handleSkew);
         
-        // 핸들 위치 업데이트
-        removeHandles();
-        addResizeHandles(selectedShape);
-        addRotationHandle(selectedShape);
-    });
-    
-    // 높이 변경
-    const shapeHeight = document.getElementById('shape-height');
-    shapeHeight.addEventListener('input', () => {
-        if (!selectedShape) return;
-        
-        // 비율 고정 확인
-        const lockAspect = document.getElementById('shape-lock-aspect').checked;
-        const newHeight = parseInt(shapeHeight.value);
-        
-        selectedShape.style.height = `${newHeight}px`;
-        
-        // 비율 고정이 활성화된 경우 너비도 비례하여 변경
-        if (lockAspect) {
-            const aspectRatio = selectedShape.getAttribute('data-aspect-ratio');
-            if (aspectRatio) {
-                const newWidth = Math.round(newHeight * aspectRatio);
-                selectedShape.style.width = `${newWidth}px`;
-                document.getElementById('shape-width').value = newWidth;
-            } else {
-                // 비율 정보가 없으면 현재 비율 계산 및 저장
-                const ratio = selectedShape.offsetWidth / newHeight;
-                selectedShape.setAttribute('data-aspect-ratio', ratio);
-            }
-        }
-        
-        saveElementData(selectedShape);
-        
-        // 핸들 위치 업데이트
-        removeHandles();
-        addResizeHandles(selectedShape);
-        addRotationHandle(selectedShape);
-    });
-    
-    // 회전 변경
-    const shapeRotation = document.getElementById('shape-rotation');
-    shapeRotation.addEventListener('input', () => {
-        if (!selectedShape) return;
-        
-        const angle = parseInt(shapeRotation.value);
-        
-        // 기존 transform 스타일에서 rotate 부분만 업데이트
-        let transform = selectedShape.style.transform || '';
-        transform = transform.replace(/rotate\(-?\d+(?:\.\d+)?deg\)/, '').trim();
-        
-        if (transform === '') {
-            transform = `rotate(${angle}deg)`;
-        } else {
-            transform += ` rotate(${angle}deg)`;
-        }
-        
-        selectedShape.style.transform = transform;
-        saveElementData(selectedShape);
-    });
-    
-    // 투명도 변경
-    const shapeOpacity = document.getElementById('shape-opacity');
-    const opacityValue = document.getElementById('opacity-value');
-    shapeOpacity.addEventListener('input', () => {
-        if (!selectedShape) return;
-        
-        const opacity = shapeOpacity.value;
-        selectedShape.style.opacity = opacity / 100;
-        opacityValue.textContent = `${opacity}%`;
-        saveElementData(selectedShape);
-    });
-    
-    // 배경색 변경
-    const shapeBackground = document.getElementById('shape-background');
-    shapeBackground.addEventListener('input', () => {
-        if (!selectedShape) return;
-        selectedShape.style.backgroundColor = shapeBackground.value;
-        saveElementData(selectedShape);
-    });
-    
-    // 테두리 색상 변경
-    const shapeBorderColor = document.getElementById('shape-border-color');
-    shapeBorderColor.addEventListener('input', () => {
-        if (!selectedShape) return;
-        updateBorder();
-    });
-    
-    // 테두리 두께 변경
-    const shapeBorderWidth = document.getElementById('shape-border-width');
-    shapeBorderWidth.addEventListener('input', () => {
-        if (!selectedShape) return;
-        updateBorder();
-    });
-    
-    // 테두리 스타일 변경
-    const shapeBorderStyle = document.getElementById('shape-border-style');
-    shapeBorderStyle.addEventListener('change', () => {
-        if (!selectedShape) return;
-        updateBorder();
-    });
-    
-    // 비율 고정 변경
-    const shapeLockAspect = document.getElementById('shape-lock-aspect');
-    shapeLockAspect.addEventListener('change', () => {
-        if (!selectedShape) return;
-        
-        if (shapeLockAspect.checked) {
-            // 현재 비율 계산 및 저장
-            const ratio = selectedShape.offsetWidth / selectedShape.offsetHeight;
-            selectedShape.setAttribute('data-aspect-ratio', ratio);
-        } else {
-            // 비율 정보 제거
-            selectedShape.removeAttribute('data-aspect-ratio');
-        }
+        // 마우스 업 이벤트 (기울이기 종료)
+        document.addEventListener('mouseup', function endSkew() {
+            document.removeEventListener('mousemove', handleSkew);
+            document.removeEventListener('mouseup', endSkew);
+        });
+    }).catch(error => {
+        console.error('기울이기 처리 오류:', error);
     });
 }
 
-// 테두리 업데이트 헬퍼 함수
-function updateBorder() {
-    if (!selectedShape) return;
-    
-    const color = document.getElementById('shape-border-color').value;
-    const width = document.getElementById('shape-border-width').value;
-    const style = document.getElementById('shape-border-style').value;
-    
-    if (style === 'none') {
-        selectedShape.style.border = 'none';
-    } else {
-        selectedShape.style.border = `${width}px ${style} ${color}`;
-    }
-    
-    saveElementData(selectedShape);
-}
-
-// 정밀 편집 패널 표시
-function showFineControlPanel(element) {
-    const panel = document.getElementById('fine-control-panel');
-    if (!panel) return;
-    
-    // 패널 위치 설정 (요소 가까이)
-    const rect = element.getBoundingClientRect();
-    panel.style.left = `${rect.right + 10}px`;
-    panel.style.top = `${rect.top}px`;
-    
-    // 패널 표시
-    panel.style.display = 'block';
-    fineControlsVisible = true;
-    
-    // 패널 값 업데이트
-    updateFineControlPanel(element);
-}
-
-// 정밀 편집 패널 숨기기
-function hideFineControlPanel() {
-    const panel = document.getElementById('fine-control-panel');
-    if (panel) {
-        panel.style.display = 'none';
-    }
-    fineControlsVisible = false;
-}
-
-// 정밀 편집 패널 값 업데이트
-function updateFineControlPanel(element) {
-    if (!element) return;
-    
-    // 크기 및 위치 값 설정
-    document.getElementById('shape-x').value = Math.round(element.offsetLeft);
-    document.getElementById('shape-y').value = Math.round(element.offsetTop);
-    document.getElementById('shape-width').value = Math.round(element.offsetWidth);
-    document.getElementById('shape-height').value = Math.round(element.offsetHeight);
-    
-    // 회전 값 설정
-    let rotation = 0;
-    const transform = element.style.transform;
-    const rotateMatch = transform.match(/rotate\((-?\d+(?:\.\d+)?)deg\)/);
-    if (rotateMatch) {
-        rotation = parseFloat(rotateMatch[1]);
-        // 0-359 범위로 정규화
-        rotation = (rotation % 360 + 360) % 360;
-    }
-    document.getElementById('shape-rotation').value = Math.round(rotation);
-    
-    // 투명도 값 설정
-    const opacity = element.style.opacity !== '' ? parseFloat(element.style.opacity) * 100 : 100;
-    document.getElementById('shape-opacity').value = Math.round(opacity);
-    document.getElementById('opacity-value').textContent = `${Math.round(opacity)}%`;
-    
-    // 배경색 값 설정
-    const backgroundColor = element.style.backgroundColor;
-    if (backgroundColor && backgroundColor !== 'transparent') {
-        document.getElementById('shape-background').value = rgbToHex(backgroundColor);
-    }
-    
-    // 테두리 값 설정
-    const border = element.style.border;
-    if (border && border !== 'none') {
-        const borderMatch = border.match(/(\d+)px\s+(\w+)\s+([^,)]+)/);
-        if (borderMatch) {
-            document.getElementById('shape-border-width').value = borderMatch[1];
-            document.getElementById('shape-border-style').value = borderMatch[2];
-            document.getElementById('shape-border-color').value = rgbToHex(borderMatch[3]);
-        }
-    } else {
-        document.getElementById('shape-border-width').value = 0;
-        document.getElementById('shape-border-style').value = 'none';
-    }
-}
-
-// 키보드 단축키 처리
-function handleKeyDown(e) {
-    if (!selectedShape) return;
-    
-    switch (e.key) {
-        case 'Delete':
-            // 선택된 요소 삭제
-            if (selectedShape.parentNode) {
-                selectedShape.parentNode.removeChild(selectedShape);
-                deselectShape();
-            }
-            break;
-        case 'ArrowUp':
-            // 위로 이동
-            moveShape(0, e.shiftKey ? -10 : -1);
-            e.preventDefault();
-            break;
-        case 'ArrowDown':
-            // 아래로 이동
-            moveShape(0, e.shiftKey ? 10 : 1);
-            e.preventDefault();
-            break;
-        case 'ArrowLeft':
-            // 왼쪽으로 이동
-            moveShape(e.shiftKey ? -10 : -1, 0);
-            e.preventDefault();
-            break;
-        case 'ArrowRight':
-            // 오른쪽으로 이동
-            moveShape(e.shiftKey ? 10 : 1, 0);
-            e.preventDefault();
-            break;
-        case 'r':
-            if (e.ctrlKey) {
-                // Ctrl+R: 회전 초기화
-                resetRotation();
-                e.preventDefault();
-            }
-            break;
-        case '0':
-            if (e.ctrlKey) {
-                // Ctrl+0: 불투명도 100%
-                resetOpacity();
-                e.preventDefault();
-            }
-            break;
-    }
-}
-
-// 도형 이동
-function moveShape(deltaX, deltaY) {
-    if (!selectedShape) return;
-    
-    const currentLeft = parseInt(selectedShape.style.left) || 0;
-    const currentTop = parseInt(selectedShape.style.top) || 0;
-    
-    selectedShape.style.left = `${currentLeft + deltaX}px`;
-    selectedShape.style.top = `${currentTop + deltaY}px`;
-    
-    // 정밀 편집 패널 업데이트
-    updateFineControlPanel(selectedShape);
-    
-    // 도형 데이터 저장
-    saveElementData(selectedShape);
-}
-
-// 회전 초기화
-function resetRotation() {
-    if (!selectedShape) return;
-    
-    // 기존 transform 스타일에서 rotate 부분 제거
-    let transform = selectedShape.style.transform || '';
-    transform = transform.replace(/rotate\(-?\d+(?:\.\d+)?deg\)/, '').trim();
-    
-    selectedShape.style.transform = transform;
-    
-    // 정밀 편집 패널 업데이트
-    updateFineControlPanel(selectedShape);
-    
-    // 도형 데이터 저장
-    saveElementData(selectedShape);
-}
-
-// 불투명도 초기화
-function resetOpacity() {
-    if (!selectedShape) return;
-    
-    selectedShape.style.opacity = 1;
-    
-    // 정밀 편집 패널 업데이트
-    updateFineControlPanel(selectedShape);
-    
-    // 도형 데이터 저장
-    saveElementData(selectedShape);
-}
-
-// 속성 패널 업데이트
-function updatePropertiesPanel(element) {
-    // 여기서는 메인 코드에 맞게 구현해야 함
-    // 예시 코드이며, 요소 유형에 따라 다른 속성 패널 표시
-    const elementType = element.getAttribute('data-type');
-    console.log(`속성 패널 업데이트: ${elementType}`);
-    
-    // 예시: 이벤트 디스패치하여 메인 코드에 알림
-    const event = new CustomEvent('update-properties-panel', {
-        detail: {
-            elementId: element.id,
-            elementType: elementType,
-            element: element
-        }
-    });
-    document.dispatchEvent(event);
-}
-
-// 요소 데이터 저장
-function saveElementData(element) {
-    // 예시: 이벤트 디스패치하여 메인 코드에 알림
-    const event = new CustomEvent('save-element-data', {
-        detail: {
-            elementId: element.id,
-            elementType: element.getAttribute('data-type'),
-            properties: {
-                x: element.offsetLeft,
-                y: element.offsetTop,
-                width: element.offsetWidth,
-                height: element.offsetHeight,
-                backgroundColor: element.style.backgroundColor,
-                border: element.style.border,
-                opacity: element.style.opacity,
-                transform: element.style.transform
-            }
-        }
-    });
-    document.dispatchEvent(event);
-}
-
-// RGB -> HEX 변환 유틸리티
-function rgbToHex(rgb) {
-    // 이미 HEX 형식이면 그대로 반환
-    if (rgb.startsWith('#')) return rgb;
-    
-    // RGB 형식 변환
-    const rgbMatch = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
-    if (rgbMatch) {
-        return `#${
-            ('0' + parseInt(rgbMatch[1], 10).toString(16)).slice(-2)
-        }${
-            ('0' + parseInt(rgbMatch[2], 10).toString(16)).slice(-2)
-        }${
-            ('0' + parseInt(rgbMatch[3], 10).toString(16)).slice(-2)
-        }`;
-    }
-    
-    return rgb;
-}
-
-// 테두리 스타일 가져오기
-export function getBorderStyles() {
-    return [
-        { value: 'solid', label: '실선' },
-        { value: 'dashed', label: '점선' },
-        { value: 'dotted', label: '점선 (점)' },
-        { value: 'double', label: '이중선' },
-        { value: 'none', label: '없음' }
-    ];
-}
-
-// 프리셋 색상 가져오기
-export function getColorPresets() {
-    return [
-        { value: '#000000', label: '검정' },
-        { value: '#FFFFFF', label: '흰색' },
-        { value: '#FF0000', label: '빨강' },
-        { value: '#00FF00', label: '녹색' },
-        { value: '#0000FF', label: '파랑' },
-        { value: '#FFFF00', label: '노랑' },
-        { value: '#FF00FF', label: '자홍' },
-        { value: '#00FFFF', label: '청록' },
-        { value: '#FFA500', label: '주황' },
-        { value: '#800080', label: '보라' },
-        { value: '#808080', label: '회색' }
-    ];
-}
-
-// 도형 유형 가져오기
-export function getShapeTypes() {
-    return [
-        { value: 'rectangle', label: '직사각형' },
-        { value: 'square', label: '정사각형' },
-        { value: 'circle', label: '원' },
-        { value: 'ellipse', label: '타원' },
-        { value: 'triangle', label: '삼각형' },
-        { value: 'right-triangle', label: '직각삼각형' },
-        { value: 'pentagon', label: '오각형' },
-        { value: 'hexagon', label: '육각형' },
-        { value: 'octagon', label: '팔각형' },
-        { value: 'star', label: '별' },
-        { value: 'arrow', label: '화살표' },
-        { value: 'double-arrow', label: '양방향 화살표' },
-        { value: 'line', label: '선' },
-        { value: 'dashed-line', label: '점선' },
-        { value: 'dotted-line', label: '점선 (점)' }
-    ];
-} 
+// 도형 에디터 함수와 상수 내보내기
+export { AVAILABLE_SHAPES, DEFAULT_SHAPE_PROPS }; 

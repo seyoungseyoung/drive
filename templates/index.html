@@ -28,32 +28,14 @@
                 <div class="ribbon-tab active" data-tab="home">홈</div>
                 <div class="ribbon-tab" data-tab="insert">삽입</div>
                 <div class="ribbon-tab" data-tab="design">디자인</div>
+                <div class="ribbon-tab" data-tab="transitions">전환</div>
                 <div class="ribbon-tab" data-tab="animations">애니메이션</div>
                 <div class="ribbon-tab" data-tab="view">보기</div>
             </div>
             
             <!-- 리본 콘텐츠 영역 -->
-            <div class="ribbon-content active" id="home-ribbon">
+            <div id="home-ribbon" class="ribbon-content active">
                 <div class="ribbon-group">
-                    <div class="ribbon-title">클립보드</div>
-                    <div class="ribbon-buttons">
-                        <button id="cutBtn" class="ribbon-button">
-                            <i class="fas fa-cut"></i>
-                            <span>잘라내기</span>
-                        </button>
-                        <button id="copyBtn" class="ribbon-button">
-                            <i class="fas fa-copy"></i>
-                            <span>복사</span>
-                        </button>
-                        <button id="pasteBtn" class="ribbon-button">
-                            <i class="fas fa-paste"></i>
-                            <span>붙여넣기</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">슬라이드</div>
                     <div class="ribbon-buttons">
                         <button id="newSlideBtn" class="ribbon-button">
                             <i class="fas fa-plus"></i>
@@ -68,78 +50,14 @@
                             <span>슬라이드 삭제</span>
                         </button>
                     </div>
+                    <div class="ribbon-title">슬라이드</div>
                 </div>
                 
                 <div class="ribbon-group">
-                    <div class="ribbon-title">글꼴</div>
-                    <div class="ribbon-controls">
-                        <select id="fontFamilySelect" class="ribbon-select">
-                            <option value="Pretendard">Pretendard</option>
-                            <option value="Arial">Arial</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                        </select>
-                        <div class="ribbon-number-group">
-                            <input type="number" id="fontSizeInput" value="16" min="8" max="96">
-                            <div class="ribbon-number-buttons">
-                                <button id="increaseFontBtn"><i class="fas fa-chevron-up"></i></button>
-                                <button id="decreaseFontBtn"><i class="fas fa-chevron-down"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ribbon-buttons font-style-buttons">
-                        <button id="boldBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-bold"></i>
-                        </button>
-                        <button id="italicBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-italic"></i>
-                        </button>
-                        <button id="underlineBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-underline"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">단락</div>
-                    <div class="ribbon-buttons">
-                        <button id="alignLeftBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-align-left"></i>
-                        </button>
-                        <button id="alignCenterBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-align-center"></i>
-                        </button>
-                        <button id="alignRightBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-align-right"></i>
-                        </button>
-                        <button id="alignJustifyBtn" class="ribbon-button format-btn">
-                            <i class="fas fa-align-justify"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">정렬</div>
-                    <div class="ribbon-buttons">
-                        <button id="bringForwardBtn" class="ribbon-button">
-                            <i class="fas fa-bring-forward"></i>
-                            <span>앞으로</span>
-                        </button>
-                        <button id="sendBackwardBtn" class="ribbon-button">
-                            <i class="fas fa-send-backward"></i>
-                            <span>뒤로</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="ribbon-content" id="insert-ribbon">
-                <div class="ribbon-group">
-                    <div class="ribbon-title">요소</div>
                     <div class="ribbon-buttons">
                         <button id="addTextBtn" class="ribbon-button">
                             <i class="fas fa-font"></i>
-                            <span>텍스트</span>
+                            <span>텍스트 상자</span>
                         </button>
                         <button id="addShapeBtn" class="ribbon-button">
                             <i class="fas fa-shapes"></i>
@@ -149,164 +67,248 @@
                             <i class="fas fa-image"></i>
                             <span>이미지</span>
                         </button>
+                    </div>
+                    <div class="ribbon-title">삽입</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <div class="font-style-buttons">
+                            <button id="boldBtn" class="format-btn">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button id="italicBtn" class="format-btn">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button id="underlineBtn" class="format-btn">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                        </div>
+                        <div class="font-align-buttons">
+                            <button id="alignLeftBtn" class="format-btn">
+                                <i class="fas fa-align-left"></i>
+                            </button>
+                            <button id="alignCenterBtn" class="format-btn">
+                                <i class="fas fa-align-center"></i>
+                            </button>
+                            <button id="alignRightBtn" class="format-btn">
+                                <i class="fas fa-align-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ribbon-title">글꼴</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="bringToFrontBtn" class="ribbon-button">
+                            <i class="fas fa-bring-forward"></i>
+                            <span>앞으로 가져오기</span>
+                        </button>
+                        <button id="sendToBackBtn" class="ribbon-button">
+                            <i class="fas fa-send-backward"></i>
+                            <span>뒤로 보내기</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">정렬</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-controls">
+                        <select id="slideLayoutSelect" class="ribbon-select">
+                            <option value="blank">빈 슬라이드</option>
+                            <option value="title">제목 슬라이드</option>
+                            <option value="title-content">제목 및 내용</option>
+                            <option value="two-column">두 개의 열</option>
+                        </select>
+                    </div>
+                    <div class="ribbon-title">레이아웃</div>
+                </div>
+            </div>
+            
+            <div id="insert-ribbon" class="ribbon-content">
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="addTextBtn2" class="ribbon-button">
+                            <i class="fas fa-font"></i>
+                            <span>텍스트 상자</span>
+                        </button>
+                        <button id="addShapeBtn2" class="ribbon-button">
+                            <i class="fas fa-shapes"></i>
+                            <span>도형</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">텍스트</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button id="addImageBtn2" class="ribbon-button">
+                            <i class="fas fa-image"></i>
+                            <span>이미지</span>
+                        </button>
                         <button id="addChartBtn" class="ribbon-button">
                             <i class="fas fa-chart-bar"></i>
                             <span>차트</span>
                         </button>
+                    </div>
+                    <div class="ribbon-title">일러스트레이션</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
                         <button id="addTableBtn" class="ribbon-button">
                             <i class="fas fa-table"></i>
                             <span>표</span>
                         </button>
-                    </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">미디어</div>
-                    <div class="ribbon-buttons">
-                        <button id="addVideoBtn" class="ribbon-button">
-                            <i class="fas fa-video"></i>
-                            <span>비디오</span>
-                        </button>
-                        <button id="addAudioBtn" class="ribbon-button">
-                            <i class="fas fa-music"></i>
-                            <span>오디오</span>
+                        <button id="addSmartArtBtn" class="ribbon-button">
+                            <i class="fas fa-sitemap"></i>
+                            <span>스마트 아트</span>
                         </button>
                     </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">링크</div>
-                    <div class="ribbon-buttons">
-                        <button id="addLinkBtn" class="ribbon-button">
-                            <i class="fas fa-link"></i>
-                            <span>하이퍼링크</span>
-                        </button>
-                    </div>
+                    <div class="ribbon-title">표</div>
                 </div>
             </div>
             
-            <div class="ribbon-content" id="design-ribbon">
+            <div id="design-ribbon" class="ribbon-content">
                 <div class="ribbon-group">
-                    <div class="ribbon-title">테마</div>
-                    <div class="ribbon-buttons theme-btns">
-                        <button class="theme-btn" data-theme="modern">
-                            <div class="theme-preview modern"></div>
-                            <span>모던</span>
-                        </button>
-                        <button class="theme-btn" data-theme="minimal">
-                            <div class="theme-preview minimal"></div>
-                            <span>미니멀</span>
-                        </button>
-                        <button class="theme-btn" data-theme="classic">
-                            <div class="theme-preview classic"></div>
-                            <span>클래식</span>
-                        </button>
-                        <button class="theme-btn" data-theme="corporate">
-                            <div class="theme-preview corporate"></div>
-                            <span>기업형</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">색상 팔레트</div>
-                    <div class="ribbon-buttons color-btns">
-                        <button class="color-btn" data-palette="blue">
-                            <div class="color-preview blue"></div>
-                        </button>
-                        <button class="color-btn" data-palette="green">
-                            <div class="color-preview green"></div>
-                        </button>
-                        <button class="color-btn" data-palette="red">
-                            <div class="color-preview red"></div>
-                        </button>
-                        <button class="color-btn" data-palette="purple">
-                            <div class="color-preview purple"></div>
-                        </button>
-                        <button class="color-btn" data-palette="orange">
-                            <div class="color-preview orange"></div>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ribbon-group">
-                    <div class="ribbon-title">배경</div>
                     <div class="ribbon-buttons">
                         <button id="bgColorBtn" class="ribbon-button">
                             <i class="fas fa-fill-drip"></i>
-                            <span>색상</span>
+                            <span>배경색</span>
                         </button>
                         <button id="bgImageBtn" class="ribbon-button">
                             <i class="fas fa-image"></i>
-                            <span>이미지</span>
+                            <span>배경 이미지</span>
                         </button>
                     </div>
-                </div>
-            </div>
-            
-            <div class="ribbon-content" id="animations-ribbon">
-                <div class="ribbon-group">
-                    <div class="ribbon-title">애니메이션</div>
-                    <div class="ribbon-buttons animation-btns">
-                        <button class="animation-btn" data-animation="fade">
-                            <div class="animation-preview fade"></div>
-                            <span>페이드</span>
-                        </button>
-                        <button class="animation-btn" data-animation="slide">
-                            <div class="animation-preview slide"></div>
-                            <span>슬라이드</span>
-                        </button>
-                        <button class="animation-btn" data-animation="zoom">
-                            <div class="animation-preview zoom"></div>
-                            <span>확대</span>
-                        </button>
-                        <button class="animation-btn" data-animation="flip">
-                            <div class="animation-preview flip"></div>
-                            <span>뒤집기</span>
-                        </button>
-                    </div>
+                    <div class="ribbon-title">배경</div>
                 </div>
                 
                 <div class="ribbon-group">
-                    <div class="ribbon-title">전환</div>
-                    <div class="ribbon-buttons transition-btns">
-                        <button class="transition-btn" data-transition="none">
-                            <div class="transition-preview none"></div>
-                            <span>없음</span>
+                    <div class="ribbon-buttons">
+                        <button data-theme="modern" class="theme-btn">
+                            <i class="fas fa-palette"></i>
+                            <span>모던</span>
                         </button>
-                        <button class="transition-btn" data-transition="fade">
-                            <div class="transition-preview fade"></div>
-                            <span>페이드</span>
+                        <button data-theme="classic" class="theme-btn">
+                            <i class="fas fa-palette"></i>
+                            <span>클래식</span>
                         </button>
-                        <button class="transition-btn" data-transition="slide">
-                            <div class="transition-preview slide"></div>
-                            <span>슬라이드</span>
-                        </button>
-                        <button class="transition-btn" data-transition="push">
-                            <div class="transition-preview push"></div>
-                            <span>푸시</span>
+                        <button data-theme="colorful" class="theme-btn">
+                            <i class="fas fa-palette"></i>
+                            <span>컬러풀</span>
                         </button>
                     </div>
+                    <div class="ribbon-title">테마</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button data-palette="blue" class="color-btn active">
+                            <i class="fas fa-tint"></i>
+                            <span>파란색</span>
+                        </button>
+                        <button data-palette="red" class="color-btn">
+                            <i class="fas fa-tint"></i>
+                            <span>빨간색</span>
+                        </button>
+                        <button data-palette="green" class="color-btn">
+                            <i class="fas fa-tint"></i>
+                            <span>녹색</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">색상</div>
                 </div>
             </div>
             
-            <div class="ribbon-content" id="view-ribbon">
+            <div id="transitions-ribbon" class="ribbon-content">
                 <div class="ribbon-group">
-                    <div class="ribbon-title">보기</div>
                     <div class="ribbon-buttons">
-                        <button id="normalViewBtn" class="ribbon-button">
-                            <i class="fas fa-edit"></i>
-                            <span>편집</span>
+                        <button data-transition="none" class="transition-btn active">
+                            <i class="fas fa-ban"></i>
+                            <span>없음</span>
                         </button>
+                        <button data-transition="fade" class="transition-btn">
+                            <i class="fas fa-object-ungroup"></i>
+                            <span>페이드</span>
+                        </button>
+                        <button data-transition="slide" class="transition-btn">
+                            <i class="fas fa-arrow-right"></i>
+                            <span>슬라이드</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">전환</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-controls">
+                        <div class="input-group">
+                            <label>지속 시간:</label>
+                            <input type="number" id="transitionDuration" min="0" max="10" step="0.1" value="1">
+                            <span>초</span>
+                        </div>
+                    </div>
+                    <div class="ribbon-title">타이밍</div>
+                </div>
+            </div>
+            
+            <div id="animations-ribbon" class="ribbon-content">
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button data-animation="none" class="animation-btn active">
+                            <i class="fas fa-ban"></i>
+                            <span>없음</span>
+                        </button>
+                        <button data-animation="fade-in" class="animation-btn">
+                            <i class="fas fa-eye"></i>
+                            <span>페이드</span>
+                        </button>
+                        <button data-animation="slide-in" class="animation-btn">
+                            <i class="fas fa-long-arrow-alt-right"></i>
+                            <span>슬라이드</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">애니메이션</div>
+                </div>
+                
+                <div class="ribbon-group">
+                    <div class="ribbon-controls">
+                        <div class="input-group">
+                            <label>지속 시간:</label>
+                            <input type="number" id="animationDuration" min="0" max="10" step="0.1" value="1">
+                            <span>초</span>
+                        </div>
+                        <div class="input-group">
+                            <label>지연 시간:</label>
+                            <input type="number" id="animationDelay" min="0" max="10" step="0.1" value="0">
+                            <span>초</span>
+                        </div>
+                    </div>
+                    <div class="ribbon-title">타이밍</div>
+                </div>
+            </div>
+            
+            <div id="view-ribbon" class="ribbon-content">
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
                         <button id="slideShowBtn" class="ribbon-button">
                             <i class="fas fa-play"></i>
                             <span>슬라이드 쇼</span>
                         </button>
+                        <button id="presenterViewBtn" class="ribbon-button">
+                            <i class="fas fa-user"></i>
+                            <span>발표자 모드</span>
+                        </button>
+                        <button id="exportBtn" class="ribbon-button">
+                            <i class="fas fa-file-export"></i>
+                            <span>내보내기</span>
+                        </button>
                     </div>
+                    <div class="ribbon-title">프레젠테이션</div>
                 </div>
                 
                 <div class="ribbon-group">
-                    <div class="ribbon-title">확대/축소</div>
                     <div class="ribbon-controls">
                         <select id="zoomSelect" class="ribbon-select">
                             <option value="0.5">50%</option>
@@ -317,16 +319,31 @@
                             <option value="2">200%</option>
                         </select>
                     </div>
+                    <div class="ribbon-title">확대/축소</div>
                 </div>
                 
                 <div class="ribbon-group">
-                    <div class="ribbon-title">AI 확장</div>
+                    <div class="ribbon-buttons">
+                        <button id="gridBtn" class="ribbon-button">
+                            <i class="fas fa-th"></i>
+                            <span>눈금자</span>
+                        </button>
+                        <button id="rulerBtn" class="ribbon-button">
+                            <i class="fas fa-ruler-combined"></i>
+                            <span>안내선</span>
+                        </button>
+                    </div>
+                    <div class="ribbon-title">표시</div>
+                </div>
+                
+                <div class="ribbon-group">
                     <div class="ribbon-buttons">
                         <button id="toggleAIBtn" class="ribbon-button">
                             <i class="fas fa-robot"></i>
-                            <span>AI 도구</span>
+                            <span>AI 도우미</span>
                         </button>
                     </div>
+                    <div class="ribbon-title">확장</div>
                 </div>
             </div>
         </div>
@@ -380,9 +397,22 @@
                 </div>
                 
                 <!-- 슬라이드 편집 영역 -->
-                <div class="slide-editor">
-                    <div class="slide-canvas-container">
-                        <div id="currentSlide" class="slide-canvas"></div>
+                <div class="slide-editor independent-scroll">
+                    <div id="currentSlide" class="slide-canvas">
+                        <!-- Slide elements will be rendered here -->
+                    </div>
+                </div>
+                
+                <!-- 발표자 노트 패널 추가 -->
+                <div class="presenter-notes-panel">
+                    <div class="presenter-notes-header">
+                        <h3>발표자 노트</h3>
+                        <button id="toggleNotesBtn" class="toggle-btn">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                    </div>
+                    <div class="presenter-notes-content">
+                        <textarea id="slideNotes" placeholder="이 슬라이드에 대한 발표자 노트를 작성하세요"></textarea>
                     </div>
                 </div>
             </div>
@@ -552,10 +582,31 @@
                     </div>
                     
                     <div class="panel-section">
+                        <h4>기울이기</h4>
+                        <div class="slider-group">
+                            <label>X축 <span id="skewXValue">0°</span></label>
+                            <input type="range" id="elementSkewX" min="-45" max="45" value="0">
+                        </div>
+                        <div class="slider-group">
+                            <label>Y축 <span id="skewYValue">0°</span></label>
+                            <input type="range" id="elementSkewY" min="-45" max="45" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
                         <h4>순서</h4>
                         <div class="button-group">
                             <button id="bringToFrontBtn">맨 앞으로</button>
                             <button id="sendToBackBtn">맨 뒤로</button>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h4>AI 분석</h4>
+                        <div class="button-group">
+                            <button id="analyzeElementBtn" class="btn-primary">
+                                <i class="fas fa-magic"></i> 요소 분석 및 개선
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -629,6 +680,77 @@
             </div>
             <div class="status-right">
                 <span id="zoomInfo">100%</span>
+            </div>
+        </div>
+
+        <!-- DeepSeek AI 확장 패널 -->
+        <div class="deep-seek-panel collapsed">
+            <div class="deep-seek-header">
+                <h3><i class="fas fa-robot"></i> DeepSeek AI 도우미</h3>
+                <button id="toggleDeepSeekPanelBtn" class="toggle-btn">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            <div class="deep-seek-content">
+                <div class="ai-prompt-container">
+                    <textarea class="ai-prompt" id="aiPrompt" placeholder="AI에게 질문하거나 도움을 요청하세요. 예: '이 슬라이드에 맞는 제목을 추천해줘'"></textarea>
+                    <div class="ai-actions">
+                        <button class="ai-btn primary" id="aiSubmitBtn">
+                            <i class="fas fa-paper-plane"></i> 전송
+                        </button>
+                        <button class="ai-btn" id="aiMoreOptionsBtn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ai-features">
+                    <div class="ai-feature" data-feature="design">
+                        <div class="ai-feature-icon"><i class="fas fa-paint-brush"></i></div>
+                        <div class="ai-feature-title">디자인 개선</div>
+                        <div class="ai-feature-desc">슬라이드 디자인 자동 개선</div>
+                    </div>
+                    <div class="ai-feature" data-feature="content">
+                        <div class="ai-feature-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="ai-feature-title">내용 생성</div>
+                        <div class="ai-feature-desc">텍스트와 내용 자동 생성</div>
+                    </div>
+                    <div class="ai-feature" data-feature="image">
+                        <div class="ai-feature-icon"><i class="fas fa-image"></i></div>
+                        <div class="ai-feature-title">이미지 생성</div>
+                        <div class="ai-feature-desc">슬라이드에 맞는 이미지 생성</div>
+                    </div>
+                    <div class="ai-feature" data-feature="layout">
+                        <div class="ai-feature-icon"><i class="fas fa-th-large"></i></div>
+                        <div class="ai-feature-title">레이아웃 추천</div>
+                        <div class="ai-feature-desc">최적의 레이아웃 제안</div>
+                    </div>
+                    <div class="ai-feature" data-feature="summary">
+                        <div class="ai-feature-icon"><i class="fas fa-list"></i></div>
+                        <div class="ai-feature-title">내용 요약</div>
+                        <div class="ai-feature-desc">텍스트를 핵심 포인트로 요약</div>
+                    </div>
+                    <div class="ai-feature" data-feature="translate">
+                        <div class="ai-feature-icon"><i class="fas fa-language"></i></div>
+                        <div class="ai-feature-title">번역</div>
+                        <div class="ai-feature-desc">다양한 언어로 콘텐츠 번역</div>
+                    </div>
+                </div>
+                
+                <div class="ai-results">
+                    <!-- AI 결과가 여기에 추가됩니다 -->
+                    <div class="ai-result-item">
+                        <div class="ai-result-title">
+                            환영합니다
+                            <div class="ai-result-actions">
+                                <button class="ai-result-action"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="ai-result-content">
+                            DeepSeek AI 도우미를 통해 프레젠테이션을 빠르고 효과적으로 만들 수 있습니다. 어떻게 도와드릴까요?
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -755,6 +877,48 @@
         </div>
     </div>
     
+    <!-- 발표자 모드 모달 추가 -->
+    <div id="presenterModal" class="modal">
+        <div class="presenter-modal-content">
+            <div class="presenter-header">
+                <h3>발표자 모드</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="presenter-body">
+                <div class="presenter-main-slide">
+                    <div id="presenterCurrentSlide" class="presenter-slide"></div>
+                    <div class="presenter-controls">
+                        <button id="prevSlideBtn"><i class="fas fa-arrow-left"></i></button>
+                        <span id="slideCounter">1/10</span>
+                        <button id="nextSlideBtn"><i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                <div class="presenter-sidebar">
+                    <div class="presenter-next-slide">
+                        <h4>다음 슬라이드</h4>
+                        <div id="presenterNextSlide" class="presenter-preview"></div>
+                    </div>
+                    <div class="presenter-notes">
+                        <h4>발표자 노트</h4>
+                        <div id="presenterNotes" class="notes-content"></div>
+                    </div>
+                    <div class="presenter-timer">
+                        <h4>발표 시간</h4>
+                        <div class="timer-display">
+                            <span id="presenterTimer">00:00:00</span>
+                            <button id="startTimerBtn" class="timer-btn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button id="resetTimerBtn" class="timer-btn">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- 디버그 정보 -->
     <div id="debug-info" style="display: none;"></div>
     <button id="show-debug" style="display: none;">Debug</button>
@@ -778,5 +942,109 @@
                 });
         });
     </script>
+
+    <!-- DeepSeek AI 모달 -->
+    <div id="deepSeekModal" class="modal deep-seek-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>DeepSeek AI 도우미</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="deep-seek-tabs">
+                    <div class="deep-seek-tab active" data-tab="design">디자인 개선</div>
+                    <div class="deep-seek-tab" data-tab="content">내용 생성</div>
+                    <div class="deep-seek-tab" data-tab="image">이미지 생성</div>
+                </div>
+                
+                <div class="deep-seek-tab-content active" id="design-tab">
+                    <div class="deep-seek-options">
+                        <div class="deep-seek-option selected">
+                            <div class="deep-seek-option-icon"><i class="fas fa-magic"></i></div>
+                            <div class="deep-seek-option-title">자동 개선</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-palette"></i></div>
+                            <div class="deep-seek-option-title">색상 조정</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-th"></i></div>
+                            <div class="deep-seek-option-title">레이아웃</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-font"></i></div>
+                            <div class="deep-seek-option-title">타이포그래피</div>
+                        </div>
+                    </div>
+                    
+                    <div class="deep-seek-prompt-container">
+                        <label for="designPrompt">상세 요청 사항:</label>
+                        <textarea id="designPrompt" class="deep-seek-prompt" placeholder="원하는 디자인 스타일이나 요청사항을 입력하세요"></textarea>
+                    </div>
+                </div>
+                
+                <div class="deep-seek-tab-content" id="content-tab">
+                    <div class="deep-seek-options">
+                        <div class="deep-seek-option selected">
+                            <div class="deep-seek-option-icon"><i class="fas fa-heading"></i></div>
+                            <div class="deep-seek-option-title">제목 생성</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-list-ul"></i></div>
+                            <div class="deep-seek-option-title">글머리 기호</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-paragraph"></i></div>
+                            <div class="deep-seek-option-title">단락 생성</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-quote-right"></i></div>
+                            <div class="deep-seek-option-title">인용문</div>
+                        </div>
+                    </div>
+                    
+                    <div class="deep-seek-prompt-container">
+                        <label for="contentPrompt">주제 또는 요청 사항:</label>
+                        <textarea id="contentPrompt" class="deep-seek-prompt" placeholder="어떤 내용을 생성할지 설명해주세요"></textarea>
+                    </div>
+                </div>
+                
+                <div class="deep-seek-tab-content" id="image-tab">
+                    <div class="deep-seek-options">
+                        <div class="deep-seek-option selected">
+                            <div class="deep-seek-option-icon"><i class="fas fa-image"></i></div>
+                            <div class="deep-seek-option-title">사진</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-vector-square"></i></div>
+                            <div class="deep-seek-option-title">아이콘</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-chart-pie"></i></div>
+                            <div class="deep-seek-option-title">차트</div>
+                        </div>
+                        <div class="deep-seek-option">
+                            <div class="deep-seek-option-icon"><i class="fas fa-sitemap"></i></div>
+                            <div class="deep-seek-option-title">다이어그램</div>
+                        </div>
+                    </div>
+                    
+                    <div class="deep-seek-prompt-container">
+                        <label for="imagePrompt">이미지 설명:</label>
+                        <textarea id="imagePrompt" class="deep-seek-prompt" placeholder="생성할 이미지에 대해 상세히 설명해주세요"></textarea>
+                    </div>
+                </div>
+                
+                <div class="deep-seek-progress" style="display: none;">
+                    <div class="deep-seek-spinner"></div>
+                    <div class="deep-seek-progress-text">AI가 작업을 처리하고 있습니다...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelDeepSeekBtn" class="btn-secondary">취소</button>
+                <button id="confirmDeepSeekBtn" class="btn-primary">생성하기</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
