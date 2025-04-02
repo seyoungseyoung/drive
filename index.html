@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Agent Tool - DriveAI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>PPT Agent Tool</h1>
+            <p>AI-powered presentation creation assistant</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>Create Professional Presentations with AI</h2>
+            <p>Transform your ideas into beautiful PowerPoint presentations with our AI-powered tool.</p>
+            <button id="startBtn" class="btn-primary">Get Started</button>
+        </section>
+
+        <section class="features">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Text to Slides</h3>
+                    <p>Type your content and let AI generate structured slides</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Beautiful Templates</h3>
+                    <p>Choose from dozens of professionally designed templates</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Smart Formatting</h3>
+                    <p>AI automatically formats content for optimal presentation</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Image Generation</h3>
+                    <p>Create relevant images for your slides with AI</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tool-area" id="toolArea">
+            <h2>Create Your Presentation</h2>
+            <div class="input-area">
+                <textarea id="promptInput" placeholder="Describe your presentation content here..."></textarea>
+                <div class="controls">
+                    <button id="generateBtn" class="btn-primary">Generate Slides</button>
+                    <button id="downloadBtn" class="btn-secondary" disabled>Download PPT</button>
+                </div>
+            </div>
+            <div class="preview-area" id="previewArea">
+                <!-- Preview slides will appear here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 DriveAI.kr - All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
