@@ -1,1 +1,308 @@
- 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT 자동 생성 에이전트</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-text">
+                <h1>PPT 자동 생성 에이전트</h1>
+                <p>인공지능을 활용한 프레젠테이션 자동 생성 도구</p>
+                <button id="startBtn" class="btn-primary">시작하기</button>
+            </div>
+        </div>
+        
+        <div class="workspace" id="workspace">
+            <div class="initial-setup" id="initialSetup">
+                <h2>프레젠테이션 설정</h2>
+                <div class="form-group">
+                    <label for="topicInput">주제</label>
+                    <input type="text" id="topicInput" placeholder="프레젠테이션 주제를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label for="slideCountInput">슬라이드 개수</label>
+                    <input type="number" id="slideCountInput" min="1" max="20" value="5" required>
+                </div>
+                <button id="createPresentationBtn" class="btn-primary">프레젠테이션 생성</button>
+            </div>
+            
+            <div class="prompt-container" id="promptContainer" style="display: none;">
+                <h2>프레젠테이션 생성</h2>
+                <div class="form-group">
+                    <label for="promptInput">제목 및 내용 입력</label>
+                    <textarea id="promptInput" placeholder="만들고 싶은 프레젠테이션의 제목과 주요 내용을 입력하세요"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="themeSelect">테마 선택</label>
+                    <select id="themeSelect">
+                        <option value="default">기본 테마</option>
+                        <option value="modern">모던 테마</option>
+                        <option value="business">비즈니스 테마</option>
+                        <option value="creative">크리에이티브 테마</option>
+                    </select>
+                </div>
+                <div class="form-controls">
+                    <button id="generateBtn" class="btn-primary">생성하기</button>
+                </div>
+            </div>
+            
+            <div class="workspace-tools">
+                <div class="slide-controls">
+                    <button id="addSlideBtn" class="control-btn">+ 슬라이드 추가</button>
+                    <button id="analyzeBtn" class="control-btn analyze-btn">슬라이드 분석</button>
+                    <button id="previewBtn" class="control-btn">미리보기</button>
+                    <button id="downloadBtn" class="control-btn">다운로드</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 분석 모달 -->
+    <div id="analyze-modal" class="modal">
+        <div class="modal-content analysis-modal">
+            <span class="close">&times;</span>
+            <h3>슬라이드 분석 결과</h3>
+            <div id="analysis-loading" class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>슬라이드를 분석 중입니다...</p>
+            </div>
+            <div id="analysis-content" style="display: none;">
+                <div class="overall-feedback">
+                    <h4>전체 피드백</h4>
+                    <p id="overall-feedback-text"></p>
+                </div>
+                <div class="suggestions-container">
+                    <h4>개선 제안</h4>
+                    <div id="suggestions-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 제안사항 템플릿 (JS에서 복제하여 사용) -->
+    <template id="suggestion-template">
+        <div class="suggestion-item">
+            <div class="suggestion-header">
+                <span class="slide-number">슬라이드 1</span>
+                <span class="priority high">높음</span>
+            </div>
+            <p class="suggestion-text"></p>
+            <div class="suggestion-actions">
+                <button class="apply-btn">제가 할까요?</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- 추가 도형 및 선 옵션 추가 -->
+    <div class="dropdown-content" id="shape-dropdown">
+        <!-- 기본 도형 -->
+        <div class="shape-category">기본 도형</div>
+        <div data-shape="rectangle">사각형</div>
+        <div data-shape="square">정사각형</div>
+        <div data-shape="circle">원</div>
+        <div data-shape="oval">타원</div>
+        
+        <!-- 다각형 -->
+        <div class="shape-category">다각형</div>
+        <div data-shape="triangle">삼각형</div>
+        <div data-shape="right-triangle">직각삼각형</div>
+        <div data-shape="pentagon">오각형</div>
+        <div data-shape="hexagon">육각형</div>
+        <div data-shape="octagon">팔각형</div>
+        
+        <!-- 특수 도형 -->
+        <div class="shape-category">특수 도형</div>
+        <div data-shape="star">별</div>
+        <div data-shape="callout">말풍선</div>
+        <div data-shape="heart">하트</div>
+        <div data-shape="diamond">다이아몬드</div>
+        
+        <!-- 화살표 -->
+        <div class="shape-category">화살표</div>
+        <div data-shape="arrow">화살표</div>
+        <div data-shape="double-arrow">양방향 화살표</div>
+        <div data-shape="curved-arrow">곡선 화살표</div>
+        <div data-shape="block-arrow">블록 화살표</div>
+        
+        <!-- 선 -->
+        <div class="shape-category">선</div>
+        <div data-shape="line">직선</div>
+        <div data-shape="dashed-line">점선</div>
+        <div data-shape="dotted-line">점선 2</div>
+        <div data-shape="curve">곡선</div>
+    </div>
+
+    <!-- 선 스타일 툴바 추가 -->
+    <div class="style-toolbar" id="lineStyleToolbar" style="display: none;">
+        <div class="style-control">
+            <label>선 색상:</label>
+            <input type="color" id="lineColor" value="#000000">
+        </div>
+        <div class="style-control">
+            <label>선 두께:</label>
+            <input type="range" id="lineWidth" min="1" max="10" value="2" class="slider">
+            <span id="lineWidthValue">2px</span>
+        </div>
+        <div class="style-control">
+            <label>선 스타일:</label>
+            <select id="lineStyle">
+                <option value="solid">실선</option>
+                <option value="dashed">점선</option>
+                <option value="dotted">점선 2</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 단축키 도움말 버튼 추가 -->
+    <button id="shortcutHelpBtn" class="control-btn help-btn" title="단축키 도움말"><i class="fas fa-keyboard"></i> 단축키</button>
+
+    <!-- 단축키 도움말 모달 -->
+    <div id="shortcut-modal" class="modal">
+        <div class="modal-content shortcut-modal">
+            <span class="close">&times;</span>
+            <h3>단축키 도움말</h3>
+            <div class="shortcut-list">
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+S</span>
+                    <span class="shortcut-desc">현재 슬라이드 저장</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+Z</span>
+                    <span class="shortcut-desc">실행 취소</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Delete</span>
+                    <span class="shortcut-desc">선택된 요소 삭제</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">↑↓←→</span>
+                    <span class="shortcut-desc">선택된 요소 이동 (1px)</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Shift+↑↓←→</span>
+                    <span class="shortcut-desc">선택된 요소 이동 (10px)</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+D</span>
+                    <span class="shortcut-desc">선택된 요소 복제</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+[</span>
+                    <span class="shortcut-desc">뒤로 보내기</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+]</span>
+                    <span class="shortcut-desc">앞으로 가져오기</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 스타일 업데이트 -->
+    <style>
+        /* 도형 드롭다운 스타일 개선 */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #f9f9f9;
+            min-width: 240px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        
+        .dropdown-content div {
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .dropdown-content div:hover:not(.shape-category) {
+            background-color: #ddd;
+        }
+        
+        .shape-category {
+            font-weight: bold;
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            margin-top: 8px;
+            cursor: default;
+            padding: 4px 12px;
+        }
+        
+        /* 슬라이더 스타일 */
+        .slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 5px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            transition: opacity 0.2s;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+        
+        /* 단축키 도움말 스타일 */
+        .help-btn {
+            background-color: #95a5a6;
+        }
+        
+        .help-btn:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .shortcut-modal {
+            max-width: 500px;
+        }
+        
+        .shortcut-list {
+            margin-top: 15px;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .shortcut-key {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-weight: bold;
+        }
+        
+        .shortcut-desc {
+            color: #555;
+        }
+    </style>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 
