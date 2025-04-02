@@ -124,6 +124,13 @@ input, select, textarea {
     padding: 4px 6px;
     min-width: 52px;
     border-radius: 2px;
+    aspect-ratio: 1;
+    min-height: 52px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .ribbon-button:hover {
@@ -167,6 +174,12 @@ input, select, textarea {
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
+    aspect-ratio: 1;
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .format-btn.active {
@@ -480,6 +493,27 @@ input[type="color"] {
     min-height: 30px;
 }
 
+.slide-element[data-type="shape"] {
+    position: relative;
+    overflow: visible;
+}
+
+/* Shape text styling */
+.shape-text {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    z-index: 5;
+    cursor: text;
+    overflow: visible;
+    user-select: text;
+}
+
+.shape-text:focus {
+    border: 1px dashed #2b579a;
+    padding: 4px;
+}
+
 /* 요소 핸들 */
 .selection-handle {
     position: absolute;
@@ -495,14 +529,15 @@ input[type="color"] {
     background-color: #106ebe;
 }
 
-.handle-n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-.handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
-.handle-e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
-.handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
-.handle-s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-.handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-.handle-w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-.handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
+.handle-n { top: -6px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.handle-ne { top: -6px; right: -6px; cursor: ne-resize; }
+.handle-e { top: 50%; right: -6px; transform: translateY(-50%); cursor: e-resize; }
+.handle-se { bottom: -6px; right: -6px; cursor: se-resize; }
+.handle-s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.handle-sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+.handle-w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
+.handle-nw { top: -6px; left: -6px; cursor: nw-resize; }
+
 .handle-rotate {
     top: -20px; 
     left: 50%; 
@@ -595,15 +630,19 @@ input[type="color"] {
 }
 
 .close-btn {
-    font-size: 24px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-    transition: color 0.2s;
     background: none;
     border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
     padding: 0;
-    line-height: 1;
+    margin: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .close-btn:hover {
@@ -729,6 +768,13 @@ input[type="color"] {
     cursor: pointer;
     font-weight: 500;
     transition: background-color 0.2s, transform 0.1s;
+    aspect-ratio: 1;
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .btn-primary:hover {
@@ -747,6 +793,13 @@ input[type="color"] {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
+    aspect-ratio: 1;
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .btn-secondary:hover {
@@ -993,6 +1046,12 @@ input[type="color"] {
     color: #666;
     cursor: pointer;
     transition: transform 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .presenter-notes-panel.collapsed .toggle-btn i {
@@ -1100,17 +1159,19 @@ input[type="color"] {
 }
 
 .presenter-controls button {
-    background-color: #444;
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
     border: none;
-    border-radius: 50%;
+    border-radius: 4px;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s;
+    aspect-ratio: 1;
+    border-radius: 8px;
 }
 
 .presenter-controls button:hover {
@@ -1191,7 +1252,7 @@ input[type="color"] {
 }
 
 .timer-btn {
-    background-color: #2b579a;
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
     border: none;
     border-radius: 4px;
@@ -1201,11 +1262,14 @@ input[type="color"] {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    margin-left: 10px;
+    transition: background-color 0.2s;
+    aspect-ratio: 1;
+    border-radius: 8px;
 }
 
 .timer-btn:hover {
-    background-color: #1e4273;
+    background-color: #2b579a;
 }
 
 /* 발표자 모드 반응형 디자인 */
@@ -1311,16 +1375,21 @@ input[type="color"] {
 }
 
 .ai-btn {
-    background-color: #f3f2f1;
-    border: 1px solid #e1dfdd;
-    border-radius: 2px;
-    color: #323130;
-    padding: 0 10px;
-    height: 36px;
-    display: flex;
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s, transform 0.1s;
+    aspect-ratio: 1;
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    border-radius: 8px;
 }
 
 .ai-btn:hover {

@@ -1,0 +1,182 @@
+/* Quick Access Toolbar */
+.quick-access-toolbar {
+    display: flex;
+    align-items: center;
+    background-color: #f0f3f5;
+    border-bottom: 1px solid #d6d6d6;
+    padding: 5px 10px;
+}
+
+.quick-button {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+    cursor: pointer;
+    color: #333;
+}
+
+.quick-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.quick-button:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.quick-button i {
+    font-size: 16px;
+}
+
+/* Workspace Layout */
+.layout-toggle-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.layout-toggle {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #eaeaea;
+    cursor: pointer;
+    color: #666;
+}
+
+.layout-toggle:last-child {
+    border-bottom: none;
+}
+
+.layout-toggle:hover {
+    background-color: #f8f8f8;
+}
+
+.layout-toggle.active {
+    color: #106ebe;
+    background-color: #e5effa;
+}
+
+/* Resizable Panels */
+.resize-handle {
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    top: 0;
+    background-color: transparent;
+    cursor: col-resize;
+    z-index: 10;
+}
+
+.resize-handle-right {
+    right: 0;
+}
+
+.resize-handle-left {
+    left: 0;
+}
+
+.resize-handle:hover, .resize-handle:active {
+    background-color: rgba(16, 110, 190, 0.1);
+}
+
+/* Workspace Layouts */
+.workspace.layout-standard {
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
+}
+
+.workspace.layout-maximized .slide-editor {
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+.workspace.layout-presentation .slide-editor {
+    width: 100%;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1a1a1a;
+}
+
+.workspace.layout-presentation #currentSlide {
+    transform: scale(1.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Keyboard Shortcuts Dialog */
+.shortcuts-help-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.shortcuts-help-header h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+}
+
+.shortcuts-help-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.shortcuts-category {
+    margin-bottom: 20px;
+}
+
+.shortcuts-category h4 {
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eaeaea;
+    font-size: 15px;
+}
+
+.shortcuts-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 3px;
+    background-color: #f8f8f8;
+}
+
+.shortcut-keys {
+    font-family: monospace;
+    background-color: #e6e6e6;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.shortcut-desc {
+    font-size: 13px;
+    color: #333;
+}
+
+.shortcuts-footer {
+    margin-top: 20px;
+    text-align: right;
+} 
