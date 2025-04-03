@@ -9,40 +9,54 @@
 
 .quick-button {
     background: none;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 3px;
+    border: 1px solid #d6d6d6;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 5px;
+    margin-right: 4px;
     cursor: pointer;
     color: #333;
+    transition: all 0.2s ease;
 }
 
 .quick-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #f0f0f0;
+    border-color: #106ebe;
 }
 
 .quick-button:active {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: #e6e6e6;
 }
 
 .quick-button i {
-    font-size: 16px;
+    font-size: 14px;
 }
 
 /* PowerPoint Ribbon Enhancements */
 .ribbon-menu {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-bottom: 1px solid #d0d0d0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
 }
 
 .ribbon-tabs {
     display: flex;
     background-color: #f3f3f3;
     border-bottom: 1px solid #d6d6d6;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;  /* Hide scrollbar in IE and Edge */
+    scrollbar-width: none;  /* Hide scrollbar in Firefox */
+}
+
+.ribbon-tabs::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in Chrome, Safari and Opera */
 }
 
 .ribbon-tab {
@@ -67,11 +81,15 @@
     display: none;
     padding: 5px;
     background-color: #fff;
+    overflow-x: auto;
+    height: auto;
+    min-height: 110px;
 }
 
 .ribbon-content.active {
     display: flex;
     align-items: flex-start;
+    flex-wrap: nowrap;
 }
 
 .ribbon-group {
@@ -105,26 +123,28 @@
 
 .ribbon-button {
     background: none;
-    border: none;
+    border: 1px solid #d6d6d6;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 5px;
+    padding: 4px;
     margin: 2px;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
-    width: 60px;
+    width: 48px;
+    height: 48px;
+    transition: all 0.2s ease;
 }
 
 .ribbon-button i {
-    font-size: 18px;
-    margin-bottom: 3px;
+    font-size: 16px;
+    margin-bottom: 2px;
     color: #444;
 }
 
 .ribbon-button span {
-    font-size: 11px;
+    font-size: 10px;
     color: #444;
     text-align: center;
     white-space: nowrap;
@@ -135,10 +155,17 @@
 
 .ribbon-button:hover {
     background-color: #f0f0f0;
+    border-color: #106ebe;
 }
 
 .ribbon-button:active {
     background-color: #e6e6e6;
+}
+
+.ribbon-button.active {
+    background-color: #e5effa;
+    border-color: #106ebe;
+    color: #106ebe;
 }
 
 .ribbon-select {
@@ -168,22 +195,25 @@
 .format-btn {
     background: none;
     border: 1px solid #d6d6d6;
-    width: 28px;
-    height: 28px;
-    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 2px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .format-btn:hover {
     background-color: #f0f0f0;
+    border-color: #106ebe;
 }
 
 .format-btn.active {
     background-color: #e5effa;
+    border-color: #106ebe;
     color: #106ebe;
 }
 
@@ -199,21 +229,29 @@
     flex-direction: column;
     align-items: center;
     background: none;
-    border: none;
-    padding: 5px;
+    border: 1px solid #d6d6d6;
+    padding: 4px;
     margin: 2px;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
+    width: 32px;
+    height: 32px;
+    transition: all 0.2s ease;
+}
+
+.color-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #106ebe;
 }
 
 .color-btn i {
-    font-size: 16px;
-    margin-bottom: 3px;
+    font-size: 14px;
+    margin-bottom: 2px;
 }
 
 .color-indicator {
-    width: 24px;
-    height: 3px;
+    width: 16px;
+    height: 2px;
     background-color: #333;
     display: block;
     margin-top: 2px;
@@ -532,6 +570,13 @@
     border-right: 1px solid #e0e0e0;
     background-color: #f8f8f8;
     overflow-y: auto;
+    height: 100%;
+    position: relative;
+    z-index: 10;
+    width: 250px;
+    min-width: 200px;
+    max-width: 300px;
+    flex-shrink: 0;
 }
 
 .slides-header {
@@ -576,14 +621,13 @@
 }
 
 .slide-thumbnail {
-    position: relative;
+    cursor: pointer;
     margin-bottom: 10px;
     border: 1px solid #d6d6d6;
-    border-radius: 2px;
-    overflow: hidden;
     background-color: white;
-    cursor: pointer;
+    padding: 5px;
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .slide-thumbnail:hover {
@@ -605,47 +649,47 @@
 }
 
 .slide-thumbnail-content {
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: #999;
-    text-align: center;
-    padding: 5px;
+    width: 100%;
+    aspect-ratio: 16/9;
     background-color: white;
+    position: relative;
+    overflow: hidden;
 }
 
 /* Slide editor enhancements */
 .slide-editor {
+    flex: 1;
     background-color: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     overflow: auto;
+    height: 100%;
 }
 
 .slide-canvas {
-    background-color: white;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
     position: relative;
-    transition: transform 0.3s ease;
+    background-color: white;
+    width: 960px;
+    height: 540px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
 }
 
 /* Element styles */
 .slide-element {
     position: absolute;
     cursor: move;
-    border: 1px solid transparent;
+    z-index: 10;
 }
 
 .slide-element:hover {
-    border: 1px dashed #106ebe;
+    outline: 1px dashed #106ebe;
 }
 
 .slide-element.selected {
-    border: 1px solid #106ebe;
+    outline: 2px solid #106ebe;
 }
 
 .resize-handle {
@@ -710,10 +754,13 @@
 
 /* Properties panel */
 .properties-panel {
-    background-color: #f8f8f8;
+    width: 300px;
+    min-width: 250px;
+    max-width: 350px;
     border-left: 1px solid #e0e0e0;
-    padding: 15px;
+    background-color: #f8f8f8;
     overflow-y: auto;
+    flex-shrink: 0;
 }
 
 .panel-section {
@@ -788,4 +835,342 @@
     padding: 8px;
     font-size: 13px;
     resize: vertical;
+}
+
+/* Fix scrolling in the workspace to ensure long ribbon doesn't cause issues */
+.workspace {
+    display: flex;
+    height: calc(100vh - 150px);
+    overflow: hidden;
+    position: relative;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Fix body scrolling issues */
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Make the ribbon menu sticky at the top */
+.ribbon-menu.sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* When ribbon is sticky, add appropriate spacing */
+.workspace.has-sticky-menu {
+    padding-top: 140px; /* Adjust this value based on your ribbon height */
+}
+
+/* Make sure independent scrolling works correctly */
+.independent-scroll {
+    overflow: auto;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure the app container takes full height */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Ensure each panel has its own scrolling */
+.slide-explorer, .slide-editor, .properties-panel {
+    overflow: auto;
+    height: 100%;
+}
+
+/* Make elements properly interactive */
+.slide-element {
+    position: absolute;
+    cursor: move;
+    z-index: 10;
+}
+
+.slide-element:hover {
+    outline: 1px dashed #106ebe;
+}
+
+.slide-element.selected {
+    outline: 2px solid #106ebe;
+}
+
+/* Ensure the slide canvas is visible */
+.slide-canvas {
+    position: relative;
+    background-color: white;
+    width: 960px;
+    height: 540px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+}
+
+/* Make ribbon menu bar sticky but not causing jumps */
+.ribbon-menu {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: white;
+    border-bottom: 1px solid #d0d0d0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure ribbon content doesn't push down the workspace */
+.ribbon-content {
+    height: auto;
+    min-height: 110px;
+    max-height: 130px;
+    overflow-y: hidden;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* AI Assistant Panel */
+.ai-assistant-panel {
+    position: absolute;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    height: 100%;
+    background-color: white;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    transition: right 0.3s ease;
+}
+
+.ai-assistant-panel.active {
+    right: 0;
+}
+
+.ai-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f8f8;
+}
+
+.ai-panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.ai-panel-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+}
+
+.ai-panel-content {
+    padding: 15px;
+    overflow-y: auto;
+    height: calc(100% - 60px);
+}
+
+.ai-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 15px;
+}
+
+.ai-tab {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 2px solid transparent;
+}
+
+.ai-tab.active {
+    border-bottom-color: #0078d4;
+    color: #0078d4;
+    font-weight: 500;
+}
+
+.ai-tab-content {
+    display: none;
+}
+
+.ai-tab-content.active {
+    display: block;
+}
+
+.ai-intro {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+.ai-suggestion {
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-left: 3px solid #0078d4;
+}
+
+.ai-suggestion-title {
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+.ai-suggestion-desc {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.ai-apply-btn, .ai-analyze-btn, .ai-generate-btn {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ai-apply-btn:hover, .ai-analyze-btn:hover, .ai-generate-btn:hover {
+    background-color: #106ebe;
+}
+
+.ai-generate-controls, .ai-analyze-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ai-generate-type {
+    padding: 8px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.ai-prompt {
+    padding: 8px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    font-size: 14px;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.ai-analysis-result {
+    margin-top: 15px;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.ai-score {
+    margin: 5px 0;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ai-score.good {
+    background-color: #e6f7ed;
+    color: #27ae60;
+}
+
+.ai-score.average {
+    background-color: #fff5e6;
+    color: #f39c12;
+}
+
+.ai-score.poor {
+    background-color: #ffe6e6;
+    color: #e74c3c;
+}
+
+.ai-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Notification System */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    padding: 12px 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    color: white;
+    font-size: 14px;
+    max-width: 300px;
+    animation: slideIn 0.3s forwards;
+}
+
+.notification.info {
+    background-color: #0078d4;
+}
+
+.notification.success {
+    background-color: #27ae60;
+}
+
+.notification.warning {
+    background-color: #f39c12;
+}
+
+.notification.error {
+    background-color: #e74c3c;
+}
+
+.notification.fade-out {
+    animation: fadeOut 0.3s forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
 } 
