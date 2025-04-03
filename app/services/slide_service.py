@@ -1,6 +1,7 @@
 import json
+import time
 from app.utils.logger import logger
-from app.services.ai_service import call_deepseak_api
+from app.services.ai_service import generate_ai_response
 
 # Store active presentation sessions
 ppt_sessions = {}
@@ -115,7 +116,7 @@ def generate_slides_from_topic(session_id, topic, slide_count):
         
         # Call DeepSeek API
         logger.info(f"Generating slides for topic: {topic}, count: {slide_count}")
-        api_response = call_deepseak_api(messages)
+        api_response = generate_ai_response(messages)
         
         # Check for error messages
         if '오류' in api_response or '잔액' in api_response:
@@ -202,7 +203,7 @@ def add_elements_with_ai(session_id, slide_index, prompt):
         """}
     ]
     
-    api_response = call_deepseak_api(messages)
+    api_response = generate_ai_response(messages)
     
     # Check for error messages
     if '오류' in api_response or '잔액' in api_response:

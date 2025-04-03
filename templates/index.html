@@ -609,9 +609,9 @@
         </div>
         
         <!-- 메인 작업 영역 -->
-        <div class="workspace">
-            <!-- 왼쪽 슬라이드 탐색기 -->
-            <div class="slide-explorer">
+        <div class="main-content">
+            <!-- 슬라이드 목록 패널 -->
+            <div class="slides-panel">
                 <div class="slides-header">
                     <h3>슬라이드</h3>
                     <div class="slide-controls">
@@ -630,8 +630,8 @@
                 <div id="slideList" class="slide-list"></div>
             </div>
             
-            <!-- 중앙 편집 영역 -->
-            <div class="editor-area">
+            <!-- 슬라이드 편집 영역 -->
+            <div class="editor-panel">
                 <div class="editor-toolbar">
                     <div class="toolbar-left">
                         <button id="undoBtn" title="실행 취소">
@@ -674,6 +674,28 @@
                     <div class="presenter-notes-content">
                         <textarea id="slideNotes" placeholder="이 슬라이드에 대한 발표자 노트를 작성하세요"></textarea>
                     </div>
+                </div>
+            </div>
+            
+            <!-- AI 패널 -->
+            <div class="deep-seek-panel">
+                <div class="deep-seek-header">
+                    <h3>AI 어시스턴트</h3>
+                    <button id="toggleAIPanelBtn" class="toggle-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="deep-seek-content">
+                    <div class="ai-conversation">
+                        <!-- AI 대화 내용이 여기에 표시됩니다 -->
+                        <div class="ai-message assistant">
+                            안녕하세요! 프레젠테이션 준비를 도와드릴 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-input">
+                    <textarea id="ai-prompt-input" placeholder="AI에게 질문하거나 작업을 요청하세요..."></textarea>
+                    <button id="ai-submit">전송</button>
                 </div>
             </div>
             
@@ -942,77 +964,6 @@
                 <span id="zoomInfo">100%</span>
             </div>
         </div>
-
-        <!-- DeepSeek AI 확장 패널 -->
-        <div class="deep-seek-panel collapsed">
-            <div class="deep-seek-header">
-                <h3><i class="fas fa-robot"></i> DeepSeek AI 도우미</h3>
-                <button id="toggleDeepSeekPanelBtn" class="toggle-btn">
-                    <i class="fas fa-chevron-up"></i>
-                </button>
-            </div>
-            <div class="deep-seek-content">
-                <div class="ai-prompt-container">
-                    <textarea class="ai-prompt" id="aiPrompt" placeholder="AI에게 질문하거나 도움을 요청하세요. 예: '이 슬라이드에 맞는 제목을 추천해줘'"></textarea>
-                    <div class="ai-actions">
-                        <button class="ai-btn primary" id="aiSubmitBtn">
-                            <i class="fas fa-paper-plane"></i> 전송
-                        </button>
-                        <button class="ai-btn" id="aiMoreOptionsBtn">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ai-features">
-                    <div class="ai-feature" data-feature="design">
-                        <div class="ai-feature-icon"><i class="fas fa-paint-brush"></i></div>
-                        <div class="ai-feature-title">디자인 개선</div>
-                        <div class="ai-feature-desc">슬라이드 디자인 자동 개선</div>
-                    </div>
-                    <div class="ai-feature" data-feature="content">
-                        <div class="ai-feature-icon"><i class="fas fa-file-alt"></i></div>
-                        <div class="ai-feature-title">내용 생성</div>
-                        <div class="ai-feature-desc">텍스트와 내용 자동 생성</div>
-                    </div>
-                    <div class="ai-feature" data-feature="image">
-                        <div class="ai-feature-icon"><i class="fas fa-image"></i></div>
-                        <div class="ai-feature-title">이미지 생성</div>
-                        <div class="ai-feature-desc">슬라이드에 맞는 이미지 생성</div>
-                    </div>
-                    <div class="ai-feature" data-feature="layout">
-                        <div class="ai-feature-icon"><i class="fas fa-th-large"></i></div>
-                        <div class="ai-feature-title">레이아웃 추천</div>
-                        <div class="ai-feature-desc">최적의 레이아웃 제안</div>
-                    </div>
-                    <div class="ai-feature" data-feature="summary">
-                        <div class="ai-feature-icon"><i class="fas fa-list"></i></div>
-                        <div class="ai-feature-title">내용 요약</div>
-                        <div class="ai-feature-desc">텍스트를 핵심 포인트로 요약</div>
-                    </div>
-                    <div class="ai-feature" data-feature="translate">
-                        <div class="ai-feature-icon"><i class="fas fa-language"></i></div>
-                        <div class="ai-feature-title">번역</div>
-                        <div class="ai-feature-desc">다양한 언어로 콘텐츠 번역</div>
-                    </div>
-                </div>
-                
-                <div class="ai-results">
-                    <!-- AI 결과가 여기에 추가됩니다 -->
-                    <div class="ai-result-item">
-                        <div class="ai-result-title">
-                            환영합니다
-                            <div class="ai-result-actions">
-                                <button class="ai-result-action"><i class="fas fa-copy"></i></button>
-                            </div>
-                        </div>
-                        <div class="ai-result-content">
-                            DeepSeek AI 도우미를 통해 프레젠테이션을 빠르고 효과적으로 만들 수 있습니다. 어떻게 도와드릴까요?
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     
     <!-- 모달 대화상자 -->
@@ -1023,57 +974,68 @@
                 <h3>도형 선택</h3>
                 <button class="close-btn">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="shape-category">기본 도형</div>
-                <div class="shape-grid">
-                    <div class="shape-item" data-shape="rectangle">
-                        <div class="shape-preview rectangle"></div>
-                        <span>직사각형</span>
-                    </div>
-                    <div class="shape-item" data-shape="circle">
-                        <div class="shape-preview circle"></div>
-                        <span>원</span>
-                    </div>
-                    <div class="shape-item" data-shape="triangle">
-                        <div class="shape-preview triangle"></div>
-                        <span>삼각형</span>
-                    </div>
-                    <div class="shape-item" data-shape="pentagon">
-                        <div class="shape-preview pentagon"></div>
-                        <span>오각형</span>
-                    </div>
-                    <div class="shape-item" data-shape="hexagon">
-                        <div class="shape-preview hexagon"></div>
-                        <span>육각형</span>
-                    </div>
-                    <div class="shape-item" data-shape="star">
-                        <div class="shape-preview star"></div>
-                        <span>별</span>
-                    </div>
+            
+            <div class="shape-category">기본 도형</div>
+            <div class="shape-grid">
+                <div class="shape-item" data-shape="rectangle">
+                    <div class="shape-preview rectangle"></div>
+                    <span>사각형</span>
                 </div>
-                
-                <div class="shape-category">화살표 및 선</div>
-                <div class="shape-grid">
-                    <div class="shape-item" data-shape="arrow">
-                        <div class="shape-preview arrow"></div>
-                        <span>화살표</span>
-                    </div>
-                    <div class="shape-item" data-shape="arrow-left">
-                        <div class="shape-preview arrow-left"></div>
-                        <span>왼쪽 화살표</span>
-                    </div>
-                    <div class="shape-item" data-shape="double-arrow">
-                        <div class="shape-preview double-arrow"></div>
-                        <span>양방향 화살표</span>
-                    </div>
-                    <div class="shape-item" data-shape="line">
-                        <div class="shape-preview line"></div>
-                        <span>선</span>
-                    </div>
-                    <div class="shape-item" data-shape="dashed-line">
-                        <div class="shape-preview dashed-line"></div>
-                        <span>점선</span>
-                    </div>
+                <div class="shape-item" data-shape="circle">
+                    <div class="shape-preview circle"></div>
+                    <span>원</span>
+                </div>
+                <div class="shape-item" data-shape="triangle">
+                    <div class="shape-preview triangle"></div>
+                    <span>삼각형</span>
+                </div>
+                <div class="shape-item" data-shape="diamond">
+                    <div class="shape-preview diamond"></div>
+                    <span>다이아몬드</span>
+                </div>
+                <div class="shape-item" data-shape="parallelogram">
+                    <div class="shape-preview parallelogram"></div>
+                    <span>평행사변형</span>
+                </div>
+                <div class="shape-item" data-shape="trapezoid">
+                    <div class="shape-preview trapezoid"></div>
+                    <span>사다리꼴</span>
+                </div>
+            </div>
+            
+            <div class="shape-category">다각형</div>
+            <div class="shape-grid">
+                <div class="shape-item" data-shape="pentagon">
+                    <div class="shape-preview pentagon"></div>
+                    <span>오각형</span>
+                </div>
+                <div class="shape-item" data-shape="hexagon">
+                    <div class="shape-preview hexagon"></div>
+                    <span>육각형</span>
+                </div>
+                <div class="shape-item" data-shape="star">
+                    <div class="shape-preview star"></div>
+                    <span>별</span>
+                </div>
+                <div class="shape-item" data-shape="cross">
+                    <div class="shape-preview cross"></div>
+                    <span>십자가</span>
+                </div>
+            </div>
+            
+            <div class="shape-category">화살표 및 말풍선</div>
+            <div class="shape-grid">
+                <div class="shape-item" data-shape="arrow">
+                    <div class="shape-preview arrow"></div>
+                    <span>화살표</span>
+                </div>
+                <div class="shape-item" data-shape="double-arrow">
+                    <div class="shape-preview double-arrow"></div>
+                    <span>양방향 화살표</span>
+                </div>
+                <div class="shape-item" data-shape="callout">
+                    <div class="shape-preview callout"></div>
+                    <span>말풍선</span>
                 </div>
             </div>
         </div>
@@ -1187,124 +1149,7 @@
     <!-- Chart.js 필수 스크립트 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- 모듈 스크립트 -->
-    <script type="module">
-        // DOM이 로드된 후 앱 초기화
-        document.addEventListener('DOMContentLoaded', () => {
-            import("{{ url_for('static', filename='js/index.js') }}")
-                .then(module => {
-                    // 앱 초기화
-                    module.initApp();
-                    console.log('앱이 성공적으로 초기화되었습니다.');
-                })
-                .catch(err => {
-                    console.error('모듈 로드 오류:', err);
-                });
-        });
-    </script>
-
-    <!-- DeepSeek AI 모달 -->
-    <div id="deepSeekModal" class="modal deep-seek-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>DeepSeek AI 도우미</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="deep-seek-tabs">
-                    <div class="deep-seek-tab active" data-tab="design">디자인 개선</div>
-                    <div class="deep-seek-tab" data-tab="content">내용 생성</div>
-                    <div class="deep-seek-tab" data-tab="image">이미지 생성</div>
-                </div>
-                
-                <div class="deep-seek-tab-content active" id="design-tab">
-                    <div class="deep-seek-options">
-                        <div class="deep-seek-option selected">
-                            <div class="deep-seek-option-icon"><i class="fas fa-magic"></i></div>
-                            <div class="deep-seek-option-title">자동 개선</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-palette"></i></div>
-                            <div class="deep-seek-option-title">색상 조정</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-th"></i></div>
-                            <div class="deep-seek-option-title">레이아웃</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-font"></i></div>
-                            <div class="deep-seek-option-title">타이포그래피</div>
-                        </div>
-                    </div>
-                    
-                    <div class="deep-seek-prompt-container">
-                        <label for="designPrompt">상세 요청 사항:</label>
-                        <textarea id="designPrompt" class="deep-seek-prompt" placeholder="원하는 디자인 스타일이나 요청사항을 입력하세요"></textarea>
-                    </div>
-                </div>
-                
-                <div class="deep-seek-tab-content" id="content-tab">
-                    <div class="deep-seek-options">
-                        <div class="deep-seek-option selected">
-                            <div class="deep-seek-option-icon"><i class="fas fa-heading"></i></div>
-                            <div class="deep-seek-option-title">제목 생성</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-list-ul"></i></div>
-                            <div class="deep-seek-option-title">글머리 기호</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-paragraph"></i></div>
-                            <div class="deep-seek-option-title">단락 생성</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-quote-right"></i></div>
-                            <div class="deep-seek-option-title">인용문</div>
-                        </div>
-                    </div>
-                    
-                    <div class="deep-seek-prompt-container">
-                        <label for="contentPrompt">주제 또는 요청 사항:</label>
-                        <textarea id="contentPrompt" class="deep-seek-prompt" placeholder="어떤 내용을 생성할지 설명해주세요"></textarea>
-                    </div>
-                </div>
-                
-                <div class="deep-seek-tab-content" id="image-tab">
-                    <div class="deep-seek-options">
-                        <div class="deep-seek-option selected">
-                            <div class="deep-seek-option-icon"><i class="fas fa-image"></i></div>
-                            <div class="deep-seek-option-title">사진</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-vector-square"></i></div>
-                            <div class="deep-seek-option-title">아이콘</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-chart-pie"></i></div>
-                            <div class="deep-seek-option-title">차트</div>
-                        </div>
-                        <div class="deep-seek-option">
-                            <div class="deep-seek-option-icon"><i class="fas fa-sitemap"></i></div>
-                            <div class="deep-seek-option-title">다이어그램</div>
-                        </div>
-                    </div>
-                    
-                    <div class="deep-seek-prompt-container">
-                        <label for="imagePrompt">이미지 설명:</label>
-                        <textarea id="imagePrompt" class="deep-seek-prompt" placeholder="생성할 이미지에 대해 상세히 설명해주세요"></textarea>
-                    </div>
-                </div>
-                
-                <div class="deep-seek-progress" style="display: none;">
-                    <div class="deep-seek-spinner"></div>
-                    <div class="deep-seek-progress-text">AI가 작업을 처리하고 있습니다...</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="cancelDeepSeekBtn" class="btn-secondary">취소</button>
-                <button id="confirmDeepSeekBtn" class="btn-primary">생성하기</button>
-            </div>
-        </div>
-    </div>
+    <!-- 기본 JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

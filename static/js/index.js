@@ -3,38 +3,232 @@
  * Main Application Entry Point
  */
 
-// App State - 중앙 상태 관리
+// 모듈 가져오기
+import { initUI } from './modules/ui.js';
+import { initSlides } from './modules/slides.js';
+import { initElements } from './modules/elements.js';
+import { initThemes } from './modules/themes.js';
+import { initCharts } from './modules/charts.js';
+import { initShapeEditor } from './modules/shape-editor.js';
+import { initAI } from './modules/ai.js';
+import { initAIIntegration } from './modules/ai-integration.js';
+import { initTables } from './modules/tables.js';
+import { initAnimations } from './modules/animations.js';
+import { initDrawing } from './modules/drawing.js';
+import { initPresenter } from './modules/presenter.js';
+
+// 전역 상태 관리
 export const AppState = {
-    // 슬라이드 관련
     slides: [],
     currentSlideIndex: 0,
-    
-    // 선택된 요소
-    selectedElement: null,
-    
-    // 테마 및 스타일 설정
-    currentTheme: 'modern',
-    currentColorPalette: 'blue',
-    currentFontFamily: 'Pretendard',
-    
-    // 발표자 노트
-    notes: {},
-    
-    // 기록(undo/redo)
     history: [],
-    historyIndex: -1,
-    
-    // 내보내기 설정
-    exportConfig: {
-        format: 'pptx',
-        quality: 'high'
-    },
-    
-    // 확장 기능
-    extensions: {
-        aiEnabled: false
+    selectedElements: [],
+    clipboard: null,
+    theme: 'default',
+    isAIPanelOpen: false,
+    isDirty: false,
+    isFullscreen: false,
+    zoom: 1,
+    grid: {
+        show: false,
+        size: 20
     }
 };
+
+// 앱 초기화
+export async function initApp() {
+    try {
+        console.log('앱 초기화 시작');
+        
+        // UI 초기화 (가장 먼저 실행)
+        await initUI();
+        
+        // 테마 초기화
+        await initThemes();
+        
+        // 슬라이드 초기화
+        await initSlides();
+        
+        // 요소 초기화
+        await initElements();
+        
+        // 차트 초기화
+        await initCharts();
+        
+        // 도형 편집기 초기화
+        await initShapeEditor();
+        
+        // 테이블 초기화
+        await initTables();
+        
+        // 애니메이션 초기화
+        await initAnimations();
+        
+        // 드로잉 도구 초기화
+        await initDrawing();
+        
+        // 프레젠터 모드 초기화
+        await initPresenter();
+        
+        // AI 기능 초기화
+        await initAI();
+        await initAIIntegration();
+        
+        // 첫 번째 슬라이드 생성
+        createInitialSlide();
+        
+        // UI 업데이트
+        updateUI();
+        
+        console.log('앱 초기화 완료');
+    } catch (error) {
+        console.error('앱 초기화 오류:', error);
+        throw error;
+    }
+}
+
+// 초기 슬라이드 생성
+function createInitialSlide() {
+    const initialSlide = {
+        id: Date.now(),
+        elements: [],
+        notes: '',
+        background: '#ffffff'
+    };
+    
+    AppState.slides.push(initialSlide);
+    AppState.currentSlideIndex = 0;
+}
+
+// 슬라이드 관리 함수들
+export function addSlide() {
+    const newSlide = {
+        id: Date.now(),
+        elements: [],
+        notes: '',
+        background: '#ffffff'
+    };
+    
+    AppState.slides.push(newSlide);
+    AppState.currentSlideIndex = AppState.slides.length - 1;
+    updateUI();
+}
+
+export function deleteSlide(index) {
+    if (AppState.slides.length <= 1) {
+        alert('마지막 슬라이드는 삭제할 수 없습니다.');
+        return;
+    }
+    
+    AppState.slides.splice(index, 1);
+    AppState.currentSlideIndex = Math.min(AppState.currentSlideIndex, AppState.slides.length - 1);
+    updateUI();
+}
+
+export function selectSlide(index) {
+    AppState.currentSlideIndex = index;
+    updateUI();
+}
+
+// UI 업데이트
+function updateUI() {
+    // 슬라이드 목록 업데이트
+    const slideList = document.getElementById('slideList');
+    if (slideList) {
+        slideList.innerHTML = '';
+        AppState.slides.forEach((slide, index) => {
+            const slideItem = document.createElement('div');
+            slideItem.className = `slide-item ${index === AppState.currentSlideIndex ? 'active' : ''}`;
+            slideItem.innerHTML = `슬라이드 ${index + 1}`;
+            slideItem.addEventListener('click', () => selectSlide(index));
+            slideList.appendChild(slideItem);
+        });
+    }
+    
+    // 현재 슬라이드 렌더링
+    const currentSlide = document.getElementById('currentSlide');
+    if (currentSlide) {
+        const slide = AppState.slides[AppState.currentSlideIndex];
+        currentSlide.innerHTML = '';
+        
+        if (slide.elements.length === 0) {
+            currentSlide.innerHTML = '<div class="empty-slide">슬라이드를 편집하려면 클릭하세요</div>';
+        } else {
+            slide.elements.forEach(element => renderElement(element));
+        }
+    }
+    
+    // 상태 표시줄 업데이트
+    const slideInfo = document.getElementById('slideInfo');
+    if (slideInfo) {
+        slideInfo.textContent = `슬라이드 ${AppState.currentSlideIndex + 1}/${AppState.slides.length}`;
+    }
+}
+
+// 요소 렌더링
+function renderElement(element) {
+    const currentSlide = document.getElementById('currentSlide');
+    if (!currentSlide) return;
+    
+    const elementDiv = document.createElement('div');
+    elementDiv.className = `slide-element ${element.type}`;
+    elementDiv.style.position = 'absolute';
+    elementDiv.style.left = `${element.x}px`;
+    elementDiv.style.top = `${element.y}px`;
+    elementDiv.style.width = `${element.width}px`;
+    elementDiv.style.height = `${element.height}px`;
+    
+    switch (element.type) {
+        case 'text':
+            elementDiv.innerHTML = element.content;
+            elementDiv.style.fontSize = `${element.fontSize}px`;
+            elementDiv.style.fontFamily = element.fontFamily;
+            elementDiv.style.color = element.color;
+            elementDiv.style.textAlign = element.textAlign;
+            break;
+            
+        case 'image':
+            const img = document.createElement('img');
+            img.src = element.src;
+            img.alt = element.alt;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            elementDiv.appendChild(img);
+            break;
+            
+        // 다른 요소 타입들에 대한 처리...
+    }
+    
+    currentSlide.appendChild(elementDiv);
+}
+
+// 요소 관리 함수
+export function addElement(element) {
+    if (AppState.slides.length === 0) return null;
+    
+    // 히스토리 저장
+    addToHistory({
+        action: 'add_element',
+        slideIndex: AppState.currentSlideIndex,
+        elements: JSON.parse(JSON.stringify(AppState.slides[AppState.currentSlideIndex].elements))
+    });
+    
+    // 요소 추가
+    AppState.slides[AppState.currentSlideIndex].elements.push(element);
+    
+    // UI 업데이트
+    updateUIAfterChange();
+    
+    return element;
+}
+
+// 발표자 노트 업데이트
+export function updateNotes(slideId, notes) {
+    const slide = AppState.slides.find(s => s.id === slideId);
+    if (slide) {
+        slide.notes = notes;
+    }
+}
 
 // 히스토리 관리 (실행취소/다시실행)
 const MAX_HISTORY = 50;
@@ -172,26 +366,6 @@ export function changeSlideBackground(color) {
     updateUIAfterChange();
     
     return true;
-}
-
-// 요소 관리 함수
-export function addElement(element) {
-    if (AppState.slides.length === 0) return null;
-    
-    // 히스토리 저장
-    addToHistory({
-        action: 'add_element',
-        slideIndex: AppState.currentSlideIndex,
-        elements: JSON.parse(JSON.stringify(AppState.slides[AppState.currentSlideIndex].elements))
-    });
-    
-    // 요소 추가
-    AppState.slides[AppState.currentSlideIndex].elements.push(element);
-    
-    // UI 업데이트
-    updateUIAfterChange();
-    
-    return element;
 }
 
 export function updateElement(elementId, properties) {

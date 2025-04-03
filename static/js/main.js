@@ -25,6 +25,22 @@ const AppInit = {
     initCompleted: false
 };
 
+// 전역 상태
+let slides = [];
+let currentSlideIndex = 0;
+
+// DOM 요소
+const addSlideBtn = document.getElementById('addSlideBtn');
+const deleteSlideBtn = document.getElementById('deleteSlideBtn');
+const saveBtn = document.getElementById('saveBtn');
+const exportBtn = document.getElementById('exportBtn');
+const slideList = document.getElementById('slideList');
+const currentSlide = document.getElementById('currentSlide');
+const aiPanel = document.querySelector('.ai-panel');
+const closeAIBtn = document.querySelector('.close-panel');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+
 // 애플리케이션 시작
 document.addEventListener('DOMContentLoaded', () => {
     console.log('문서 로드 완료: 애플리케이션 초기화 시작');
@@ -44,6 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // 앱 상태 초기화 완료 표시
             AppInit.initCompleted = true;
+            
+            // 앱 초기화
+            initializeApp();
         })
         .catch(error => {
             // 오류 처리
@@ -957,4 +976,115 @@ export function initDeepSeekAI() {
 // 앱 초기화 시 DeepSeek AI 기능 초기화
 document.addEventListener('DOMContentLoaded', () => {
     initDeepSeekAI();
-}); 
+});
+
+// 앱 초기화
+function initializeApp() {
+    // 초기 슬라이드 생성
+    addNewSlide();
+    
+    // AI 패널 초기 상태 설정
+    const isAIPanelCollapsed = localStorage.getItem('aiPanelCollapsed') === 'true';
+    if (isAIPanelCollapsed) {
+        aiPanel.classList.add('collapsed');
+    }
+}
+
+// 새 슬라이드 추가
+function addNewSlide() {
+    const newSlide = {
+        id: Date.now(),
+        content: '',
+        elements: []
+    };
+    
+    slides.push(newSlide);
+    currentSlideIndex = slides.length - 1;
+    
+    updateSlideList();
+    renderCurrentSlide();
+    
+    console.log('새 슬라이드가 추가되었습니다:', newSlide);
+}
+
+// 현재 슬라이드 삭제
+function deleteCurrentSlide() {
+    if (slides.length <= 1) {
+        alert('마지막 슬라이드는 삭제할 수 없습니다.');
+        return;
+    }
+    
+    slides.splice(currentSlideIndex, 1);
+    currentSlideIndex = Math.min(currentSlideIndex, slides.length - 1);
+    
+    updateSlideList();
+    renderCurrentSlide();
+}
+
+// 슬라이드 목록 업데이트
+function updateSlideList() {
+    slideList.innerHTML = '';
+    
+    slides.forEach((slide, index) => {
+        const slideItem = document.createElement('div');
+        slideItem.className = `slide-item ${index === currentSlideIndex ? 'active' : ''}`;
+        slideItem.innerHTML = `슬라이드 ${index + 1}`;
+        slideItem.addEventListener('click', () => selectSlide(index));
+        
+        slideList.appendChild(slideItem);
+    });
+}
+
+// 슬라이드 선택
+function selectSlide(index) {
+    currentSlideIndex = index;
+    updateSlideList();
+    renderCurrentSlide();
+}
+
+// 현재 슬라이드 렌더링
+function renderCurrentSlide() {
+    const slide = slides[currentSlideIndex];
+    currentSlide.innerHTML = '';
+    
+    if (slide.elements.length === 0) {
+        currentSlide.innerHTML = '<div class="empty-slide">슬라이드를 편집하려면 클릭하세요</div>';
+    } else {
+        slide.elements.forEach(element => {
+            // 요소 렌더링 로직
+        });
+    }
+}
+
+// 프레젠테이션 저장
+function savePresentation() {
+    const data = {
+        slides: slides,
+        currentSlideIndex: currentSlideIndex
+    };
+    
+    localStorage.setItem('presentation', JSON.stringify(data));
+    console.log('프레젠테이션이 저장되었습니다.');
+}
+
+// 프레젠테이션 내보내기
+function exportPresentation() {
+    // 내보내기 로직 구현
+    console.log('프레젠테이션 내보내기');
+}
+
+// AI 패널 토글
+function toggleAIPanel() {
+    aiPanel.classList.toggle('collapsed');
+    localStorage.setItem('aiPanelCollapsed', aiPanel.classList.contains('collapsed'));
+}
+
+// AI 메시지 전송
+function sendMessage() {
+    const message = userInput.value.trim();
+    if (!message) return;
+    
+    // AI 통신 로직 구현
+    console.log('AI에게 메시지 전송:', message);
+    userInput.value = '';
+} 

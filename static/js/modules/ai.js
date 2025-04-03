@@ -9,7 +9,7 @@ import { AppState } from '../index.js';
 export function initAI() {
     console.log('AI 모듈 초기화');
     
-    // DeepSeek AI 확장 기능 노출
+    // AI 분석 기능 전역 노출
     window.slideAnalyzer = {
         analyzeCurrentSlide,
         suggestImprovements,
@@ -18,14 +18,183 @@ export function initAI() {
         suggestImages
     };
     
-    // AI 분석 이벤트 리스너 등록
+    // AI 패널 토글 버튼 이벤트 리스너 등록
+    const toggleAIPanelBtn = document.getElementById('toggleAIPanelBtn');
+    if (toggleAIPanelBtn) {
+        toggleAIPanelBtn.addEventListener('click', toggleAIPanel);
+        console.log('AI 패널 토글 버튼 이벤트 등록됨');
+    } else {
+        console.error('toggleAIPanelBtn 요소를 찾을 수 없습니다');
+    }
+    
+    // AI 제출 버튼 이벤트 리스너 추가
+    const aiSubmitBtn = document.getElementById('ai-submit');
+    if (aiSubmitBtn) {
+        aiSubmitBtn.addEventListener('click', handleAIPrompt);
+        console.log('AI 제출 버튼 이벤트 등록됨');
+    } else {
+        console.error('ai-submit 요소를 찾을 수 없습니다');
+    }
+    
+    // 키 이벤트 리스너 (Enter 키로 제출)
+    const aiPromptInput = document.getElementById('ai-prompt-input');
+    if (aiPromptInput) {
+        aiPromptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleAIPrompt();
+            }
+        });
+        console.log('AI 프롬프트 인풋 키 이벤트 등록됨');
+    } else {
+        console.error('ai-prompt-input 요소를 찾을 수 없습니다');
+    }
+    
+    // 리본 메뉴의 AI 버튼 이벤트 리스너
+    const toggleAIBtn = document.getElementById('toggleAIBtn');
+    if (toggleAIBtn) {
+        toggleAIBtn.addEventListener('click', toggleAIPanel);
+        console.log('리본 메뉴 AI 토글 버튼 이벤트 등록됨');
+    }
+    
+    // 초기 AI 패널 상태 설정
+    initAIPanelState();
+    
+    // 슬라이드 업데이트 이벤트 리스너 등록
     document.addEventListener('slides-updated', () => {
-        // 슬라이드 업데이트 시 AI 분석 준비
         prepareAnalysis();
+        console.log('slides-updated 이벤트 감지됨');
     });
     
     console.log('AI 모듈 초기화 완료');
     return true;
+}
+
+// AI 패널 토글 함수
+function toggleAIPanel() {
+    console.log('toggleAIPanel 함수 호출됨');
+    
+    const aiPanel = document.querySelector('.deep-seek-panel');
+    const toggleBtn = document.getElementById('toggleAIPanelBtn');
+    
+    if (!aiPanel) {
+        console.error('AI 패널 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 패널 상태 토글
+    if (aiPanel.classList.contains('collapsed')) {
+        // 패널 열기
+        aiPanel.classList.remove('collapsed');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        }
+        console.log('AI 패널 열림');
+    } else {
+        // 패널 닫기
+        aiPanel.classList.add('collapsed');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        }
+        console.log('AI 패널 닫힘');
+    }
+    
+    // 전역 상태 업데이트
+    AppState.isAIPanelOpen = !aiPanel.classList.contains('collapsed');
+}
+
+// AI 패널 초기 상태 설정
+function initAIPanelState() {
+    const aiPanel = document.querySelector('.deep-seek-panel');
+    if (!aiPanel) {
+        console.error('AI 패널 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 기본적으로 패널을 열어 둠
+    aiPanel.classList.remove('collapsed');
+    AppState.isAIPanelOpen = true;
+    
+    // 토글 버튼 아이콘 설정
+    const toggleBtn = document.getElementById('toggleAIPanelBtn');
+    if (toggleBtn) {
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    }
+    
+    console.log('AI 패널 초기 상태 설정됨');
+}
+
+// AI 프롬프트 처리 함수
+function handleAIPrompt() {
+    console.log('handleAIPrompt 함수 호출됨');
+    
+    const promptInput = document.getElementById('ai-prompt-input');
+    if (!promptInput) {
+        console.error('ai-prompt-input 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    const userPrompt = promptInput.value.trim();
+    if (!userPrompt) {
+        console.log('입력된 프롬프트가 없습니다');
+        return;
+    }
+    
+    promptInput.value = '';
+    
+    // 사용자 메시지 추가
+    addAIMessage('user', userPrompt);
+    
+    // AI 응답 시뮬레이션 (실제로는 서버 API 호출)
+    const loadingMsgId = addAIMessage('assistant', '<div class="loading"></div>');
+    
+    setTimeout(() => {
+        // 로딩 메시지 제거
+        removeAIMessage(loadingMsgId);
+        
+        // 더미 응답 (실제 구현에서는 API 호출)
+        const responses = [
+            '프레젠테이션에 텍스트 상자를 추가하려면 왼쪽 상단의 "Insert" 탭에서 "Text Box" 버튼을 클릭하세요.',
+            '슬라이드 배경을 변경하려면 "Design" 탭으로 이동한 후 "Background" 섹션에서 옵션을 선택하세요.',
+            '현재 슬라이드 구성이 잘 되어 있네요. 주요 내용이 명확하게 전달되고 있습니다.',
+            '이미지를 추가하려면 "Insert" 탭의 "Images" 버튼을 클릭한 후 컴퓨터에서 이미지를 선택하세요.',
+            '프레젠테이션의 일관성을 위해 같은 글꼴과 색상 테마를 유지하는 것이 좋습니다.',
+            '애니메이션을 추가하려면 요소를 선택한 후 "Animations" 탭에서 원하는 효과를 선택하세요.'
+        ];
+        
+        const randomIndex = Math.floor(Math.random() * responses.length);
+        addAIMessage('assistant', responses[randomIndex]);
+    }, 1000);
+}
+
+// AI 대화 메시지 추가 함수
+function addAIMessage(type, content) {
+    const conversationContainer = document.querySelector('.ai-conversation');
+    if (!conversationContainer) {
+        console.error('.ai-conversation 요소를 찾을 수 없습니다');
+        return null;
+    }
+    
+    const messageId = Date.now();
+    const messageElem = document.createElement('div');
+    messageElem.className = `ai-message ${type}`;
+    messageElem.dataset.id = messageId;
+    messageElem.innerHTML = content;
+    
+    conversationContainer.appendChild(messageElem);
+    
+    // 스크롤 맨 아래로
+    conversationContainer.scrollTop = conversationContainer.scrollHeight;
+    
+    return messageId;
+}
+
+// AI 메시지 제거 함수
+function removeAIMessage(messageId) {
+    const message = document.querySelector(`.ai-message[data-id="${messageId}"]`);
+    if (message) {
+        message.remove();
+    }
 }
 
 // 현재 슬라이드 컨텐츠 가져오기
@@ -52,6 +221,16 @@ function getCurrentSlideContent() {
         slideIndex: AppState.currentSlideIndex + 1,
         totalSlides: AppState.slides.length
     };
+}
+
+// AI 분석 준비
+function prepareAnalysis() {
+    // 현재 슬라이드 데이터를 캐시하여 분석 성능 향상
+    const slideContent = getCurrentSlideContent();
+    if (!slideContent) return;
+    
+    // 슬라이드 컨텍스트 캐시 (AI가 나중에 사용할 수 있도록)
+    window.currentSlideContext = slideContent;
 }
 
 // 전체 프레젠테이션 내용 가져오기
@@ -81,16 +260,6 @@ function getPresentationContent() {
         fontFamily: AppState.currentFontFamily,
         slides: slideContents
     };
-}
-
-// AI 분석 준비
-function prepareAnalysis() {
-    // 현재 슬라이드 데이터를 캐시하여 분석 성능 향상
-    const slideContent = getCurrentSlideContent();
-    if (!slideContent) return;
-    
-    // 슬라이드 컨텍스트 캐시 (AI가 나중에 사용할 수 있도록)
-    window.currentSlideContext = slideContent;
 }
 
 // 현재 슬라이드 분석

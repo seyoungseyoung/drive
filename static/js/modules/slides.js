@@ -412,12 +412,11 @@ function renderSlides() {
 
 // Add a new slide
 function addNewSlide() {
-    const newSlideIndex = slides.length;
+    console.log('Adding new slide');
     
-    // Create a simple empty slide
+    // Create new slide object
     const newSlide = {
-        title: `Slide ${newSlideIndex + 1}`,
-        content: '',
+        id: Date.now(),
         elements: [],
         transition: 'none',
         transitionDuration: 0.7
@@ -426,12 +425,19 @@ function addNewSlide() {
     // Add to slides array
     slides.push(newSlide);
     
-    // Render slides and select the new one
-    renderSlides();
-    selectSlide(newSlideIndex);
+    // Update current slide index to the new slide
+    currentSlideIndex = slides.length - 1;
     
-    // Save the updated slides
-    saveSlides();
+    // Render the new slide
+    renderSlides();
+    
+    // Select the new slide
+    selectSlide(currentSlideIndex);
+    
+    // Update slide counter
+    updateSlideCounter();
+    
+    console.log(`New slide added at index ${currentSlideIndex}`);
 }
 
 // Duplicate a slide
